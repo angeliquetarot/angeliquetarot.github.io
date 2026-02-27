@@ -2851,12 +2851,12 @@ font:12px/1.2 ui-sans-serif;">
       <div class="drawModeInline" aria-label="引き方">
         <label class="chip">
           <input type="radio" name="drawMode" value="1" checked />
-          <div><strong>1枚</strong><br><span>ワンオラクル</span></div>
+          <div><strong>ワンオラクル（1枚）</strong><br><span>ワンオラクル</span></div>
         </label>
 
         <label class="chip">
           <input type="radio" name="drawMode" value="3" />
-          <div><strong>3枚</strong><br><span>過去 / 現在 / 未来</span></div>
+          <div><strong>3枚引き（過去/現在/未来）</strong><br><span>過去 / 現在 / 未来</span></div>
         </label>
       </div>
     </div>
@@ -2874,7 +2874,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.15";
+    const VERSION = "2026.02.27.16";
 
     const THEME_STORAGE_KEY = "angelique_theme_selected_v1";
     const THEME_OPTIONS = ["全体運", "恋愛", "仕事", "金運", "人間関係"];
@@ -2930,31 +2930,9 @@ font:12px/1.2 ui-sans-serif;">
       return document.querySelector('input[name="drawMode"]:checked')?.value || "1";
     }
 
-    function ensureDrawHint() {
-      const host = document.querySelector(".drawBar");
-      if (!host) return null;
-      let el = document.getElementById("drawHintText");
-      if (!el) {
-        el = document.createElement("div");
-        el.id = "drawHintText";
-        el.style.cssText = "margin-top:6px;font-size:12px;opacity:.86;letter-spacing:.03em;text-align:center;";
-        host.appendChild(el);
-      }
-      return el;
-    }
-
     function updateDrawButtonLabels() {
-      const v = getCurrentDrawModeValue();
-      const label = (String(v) === "3") ? "カードを引く（3枚）" : "カードを引く（1枚）";
       const btn = document.getElementById("btnDraw");
-      if (btn) btn.textContent = label;
-
-      const hint = ensureDrawHint();
-      if (hint) {
-        hint.textContent = (String(v) === "3")
-          ? "いまは【3枚（過去/現在/未来）】が選ばれています → 下のボタンで引きます"
-          : "いまは【1枚】が選ばれています → 下のボタンで引きます";
-      }
+      if (btn) btn.textContent = "カードを引く";
     }
 
     function bindDrawModeLabelSync() {
@@ -3117,9 +3095,6 @@ font:12px/1.2 ui-sans-serif;">
     function boot() {
       applyCreatorMode();
       loadBundledCsv();
-      mountThemeSelector();
-      bindDrawModeLabelSync();
-      updateDrawButtonLabels();
     }
     boot();
 
