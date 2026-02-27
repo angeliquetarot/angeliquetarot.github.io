@@ -2245,13 +2245,59 @@
     body {
       background:
         radial-gradient(120% 90% at 50% 0%,
-          rgba(255, 255, 255, .065),
+          rgba(255, 242, 210, .08),
           rgba(255, 255, 255, 0) 55%),
-        radial-gradient(120% 110% at 50% 110%,
-          rgba(0, 0, 0, .55),
+        radial-gradient(90% 70% at 10% 15%,
+          rgba(165, 180, 252, .10),
+          rgba(165, 180, 252, 0) 60%),
+        radial-gradient(80% 70% at 90% 25%,
+          rgba(240, 171, 252, .08),
+          rgba(240, 171, 252, 0) 62%),
+        radial-gradient(120% 110% at 50% 115%,
+          rgba(0, 0, 0, .62),
           rgba(0, 0, 0, 0) 60%),
-        linear-gradient(to bottom, var(--bg1), var(--bg0));
-      color: var(--textA);
+        linear-gradient(to bottom, #0b1022 0%, #070914 60%, #05060f 100%);
+      background-attachment: fixed;
+      color: rgba(255, 255, 255, .92);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      /* うっすら粒子（CSSだけで擬似ノイズ） */
+      background:
+        repeating-linear-gradient(0deg,
+          rgba(255, 255, 255, .03) 0px,
+          rgba(255, 255, 255, .03) 1px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(0, 0, 0, 0) 4px);
+      opacity: .06;
+      mix-blend-mode: overlay;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      /* 上品なビネット（中心に視線が集まる） */
+      background: radial-gradient(120% 120% at 50% 50%,
+          rgba(0, 0, 0, 0) 45%,
+          rgba(0, 0, 0, .38) 100%);
+      opacity: .55;
+      z-index: 0;
+    }
+
+    /* 既存UIが上に来るように（安全） */
+    .app,
+    .panel,
+    .stage,
+    .summaryCard {
+      position: relative;
+      z-index: 1;
     }
 
     /* Panels: slightly brighter than background */
@@ -2759,12 +2805,33 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.3";
+    const VERSION = "2026.02.27.4";
 
     document.addEventListener("DOMContentLoaded", () => {
       const badge = document.getElementById("versionBadge");
       if (badge) badge.textContent = "VERSION: " + VERSION;
     });
+
+    function scrollToResultSmooth() {
+      const target = document.getElementById("result");
+      if (!target) return;
+
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const behavior = reduce ? "auto" : "smooth";
+
+      // 描画が完了してからスクロール（2フレーム待つ）
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          try {
+            target.scrollIntoView({ behavior, block: "start" });
+          } catch (_) {
+            // 古い環境フォールバック
+            const top = target.getBoundingClientRect().top + window.pageYOffset - 8;
+            window.scrollTo({ top, behavior });
+          }
+        });
+      });
+    }
 
     const STORAGE_KEY = "angelique_tarot_csv_rows_v2";
     let cards = [];
@@ -3541,6 +3608,7 @@ font:12px/1.2 ui-sans-serif;">
 `;
 
       setStatus(`結果表示：${count}枚引き。`);
+      scrollToResultSmooth();
     }
 
     // --- キーワード：| 区切りで最大10個 ---
