@@ -2867,7 +2867,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.13";
+    const VERSION = "2026.02.27.14";
 
     const THEME_STORAGE_KEY = "angelique_theme_selected_v1";
     const THEME_OPTIONS = ["全体運", "恋愛", "仕事", "金運", "人間関係"];
@@ -3316,11 +3316,6 @@ font:12px/1.2 ui-sans-serif;">
     }
 
 
-    function getDrawCount() {
-      const el = document.querySelector('input[name="drawMode"]:checked');
-      return el ? parseInt(el.value, 10) : 1;
-    }
-
     function showReady() {
       elResult.innerHTML = `<div class="empty">
         準備OK。<br>
@@ -3352,7 +3347,9 @@ font:12px/1.2 ui-sans-serif;">
         setStatus("先にCSVを読み込んでください。");
         return;
       }
-      const count = getDrawCount();
+      const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+      const count = (String(drawMode) === "3") ? 3 : 1;
+
       setStatus(`シャッフル中…（${count}枚引き）`);
       startShuffle();
       await new Promise(r => setTimeout(r, 1400));
