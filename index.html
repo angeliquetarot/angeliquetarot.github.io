@@ -2713,6 +2713,12 @@
       pointer-events: none;
     }
 
+    @media (min-width: 821px) {
+      body {
+        padding-bottom: 96px;
+      }
+    }
+
     @media (max-width: 520px) {
       .cardsGrid.three .kwWrap {
         display: grid !important;
@@ -2867,7 +2873,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.9";
+    const VERSION = "2026.02.27.10";
 
     const THEME_STORAGE_KEY = "angelique_theme_selected_v1";
     const THEME_OPTIONS = ["全体運", "恋愛", "仕事", "金運", "人間関係"];
@@ -2919,21 +2925,22 @@ font:12px/1.2 ui-sans-serif;">
       host.appendChild(wrap);
     }
 
+    function syncDrawMode(value) {
+      document.querySelectorAll('input[name="drawMode"]').forEach(r => {
+        r.checked = (String(r.value) === String(value));
+      });
+    }
+
     function mountDesktopDrawBar() {
-      // PC想定：幅が広いときだけ。必要なら閾値は調整OK
-      if (window.matchMedia && window.matchMedia("(max-width: 820px)").matches) return;
-
-      // すでにあるなら二重生成しない
-      if (document.getElementById("desktopDrawBar")) return;
-
-      // 既存のボタンが存在して「表示されている」なら何もしない
-      const btn = document.getElementById("btnDraw");
-      if (btn) {
-        const cs = window.getComputedStyle(btn);
-        if (cs && cs.display !== "none" && cs.visibility !== "hidden" && cs.opacity !== "0") {
-          return;
-        }
+      // モバイルでは出さない
+      if (window.matchMedia && window.matchMedia("(max-width: 820px)").matches) {
+        const old = document.getElementById("desktopDrawBar");
+        if (old) old.remove();
+        return;
       }
+
+      // すでにあるなら何もしない
+      if (document.getElementById("desktopDrawBar")) return;
 
       const bar = document.createElement("div");
       bar.id = "desktopDrawBar";
@@ -2959,31 +2966,41 @@ font:12px/1.2 ui-sans-serif;">
       const left = document.createElement("div");
       left.style.cssText = `display:flex; gap:8px; align-items:center; flex-wrap:wrap;`;
 
-      // 1枚/3枚（既存 name="drawMode" と同じにして連動）
+      // 現在選ばれている drawMode を拾う（無ければ1）
+      const current = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+
       left.innerHTML = `
         <label class="chip" style="margin:0;">
-          <input type="radio" name="drawMode" value="1" checked />
+          <input type="radio" name="desktopDrawMode" value="1" ${String(current) === "1" ? "checked" : ""} />
           <div><strong>1枚</strong><br><span>ワンオラクル</span></div>
         </label>
         <label class="chip" style="margin:0;">
-          <input type="radio" name="drawMode" value="3" />
-          <div><strong>3枚</strong><br><span>過去/現在/未来</span></div>
+          <input type="radio" name="desktopDrawMode" value="3" ${String(current) === "3" ? "checked" : ""} />
+          <div><strong>3枚</strong><br><span>過去 / 現在 / 未来</span></div>
         </label>
       `;
+
+      // 固定バーの選択 → 既存 drawMode 群へ同期
+      left.querySelectorAll('input[name="desktopDrawMode"]').forEach(r => {
+        r.addEventListener("change", () => {
+          if (r.checked) syncDrawMode(r.value);
+        });
+      });
 
       const right = document.createElement("button");
       right.textContent = "カードを引く";
       right.className = "drawBtn";
       right.style.minWidth = "220px";
-
       right.addEventListener("click", () => {
-        // 既存の onDraw を直接呼ぶ
         try { onDraw(); } catch (e) { console.error("onDraw failed:", e); }
       });
 
       bar.appendChild(left);
       bar.appendChild(right);
       document.body.appendChild(bar);
+
+      // 生成直後に同期しておく
+      syncDrawMode(current);
     }
 
     function getYesNo(cardName, isReversed) {
@@ -3014,17 +3031,7 @@ font:12px/1.2 ui-sans-serif;">
     });
 
     window.addEventListener("resize", () => {
-      // 既存ボタンが見える状態になったら固定バーを消す
-      const bar = document.getElementById("desktopDrawBar");
-      const btn = document.getElementById("btnDraw");
-      if (!bar) { mountDesktopDrawBar(); return; }
-      if (btn) {
-        const cs = window.getComputedStyle(btn);
-        const visible = cs.display !== "none" && cs.visibility !== "hidden" && cs.opacity !== "0";
-        const isMobile = window.matchMedia && window.matchMedia("(max-width: 820px)").matches;
-        if (visible || isMobile) bar.remove();
-      }
-      if (!document.getElementById("desktopDrawBar")) mountDesktopDrawBar();
+      mountDesktopDrawBar();
     });
 
     function scrollToResultSmooth() {
