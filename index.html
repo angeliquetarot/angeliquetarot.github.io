@@ -3726,7 +3726,7 @@ font:12px/1.2 ui-sans-serif;">
   ${globalSummaryHTML}
   <div class="${gridClass}">
     ${picked.map((p, i) =>
-        renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "ワンオラクル")
+        renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
       ).join("")}
   </div>
 `;
@@ -3994,3 +3994,4 @@ font:12px/1.2 ui-sans-serif;">
 
 
 </html>
+
