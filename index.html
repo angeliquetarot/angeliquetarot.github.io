@@ -2729,6 +2729,13 @@
         max-width: 100% !important;
       }
     }
+
+    /* Draw mode active highlight */
+    .drawModeInline input[name="drawMode"]:checked+div {
+      border: 1px solid rgba(214, 178, 94, 0.8) !important;
+      background: rgba(214, 178, 94, 0.15) !important;
+      box-shadow: 0 0 12px rgba(214, 178, 94, 0.4);
+    }
   </style>
 </head>
 
@@ -2867,7 +2874,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.14";
+    const VERSION = "2026.02.27.15";
 
     const THEME_STORAGE_KEY = "angelique_theme_selected_v1";
     const THEME_OPTIONS = ["全体運", "恋愛", "仕事", "金運", "人間関係"];
@@ -2945,8 +2952,8 @@ font:12px/1.2 ui-sans-serif;">
       const hint = ensureDrawHint();
       if (hint) {
         hint.textContent = (String(v) === "3")
-          ? "①『3枚（過去/現在/未来）』を選ぶ → ②『カードを引く（3枚）』を押す"
-          : "①『1枚（ワンオラクル）』を選ぶ → ②『カードを引く（1枚）』を押す";
+          ? "いまは【3枚（過去/現在/未来）】が選ばれています → 下のボタンで引きます"
+          : "いまは【1枚】が選ばれています → 下のボタンで引きます";
       }
     }
 
@@ -2958,7 +2965,7 @@ font:12px/1.2 ui-sans-serif;">
       });
     }
 
-    function mountThemeSelector() {
+    function getYesNo(cardName, isReversed) {
       const neutralCards = [
         "節制", "月", "吊るされた男", "隠者"
       ];
