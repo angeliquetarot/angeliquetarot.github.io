@@ -3710,17 +3710,7 @@ font:12px/1.2 ui-sans-serif;">
     `;
       }
 
-      let headerBlock = "";
-      try {
-        const primary = picked?.[0]?.card;
-        const primaryRev = !!picked?.[0]?.isReversed;
-
-        const themeLabel = deriveThemeLabel(primary, !!document.getElementById("partnerBirthdate")?.value);
-
-        const cardNameForYesNo = (primary?.name_ja || primary?.name_en || primary?.name || primary?.id || "").toString();
-        const yesNo = getYesNo(cardNameForYesNo, primaryRev);
-
-      
+     
 
       elResult.innerHTML = `
   ${globalSummaryHTML}
@@ -3994,4 +3984,5 @@ font:12px/1.2 ui-sans-serif;">
 
 
 </html>
+
 
