@@ -2759,6 +2759,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+    const VERSION = "2026.02.27.1";
     const STORAGE_KEY = "angelique_tarot_csv_rows_v2";
     let cards = [];
     const IS_CREATOR = location.hostname === "localhost" || location.hostname === "127.0.0.1";
@@ -3463,8 +3464,24 @@ font:12px/1.2 ui-sans-serif;">
           reasonText = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
         }
 
+        const SUPP_RE = /(数秘|九星|宿曜|干支|星座|ラッキー|開運|方位|風水|カラー|色|アイテム)/;
+        const lines = reasonText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const suppLines = [];
+        const mainLines = [];
+
+        lines.forEach(line => {
+          if (SUPP_RE.test(line)) {
+            suppLines.push(line);
+          } else {
+            mainLines.push(line);
+          }
+        });
+
+        const limitedSupp = suppLines.slice(0, 2);
+        const mainText = mainLines.join('\n');
+
         const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
-        const summaryReason = `【理由】${reasonText}`;
+        const summaryReason = `【理由】${mainText}`;
         const summaryAction = `【一歩】${actionSub} あなたはもう十分、やってきた。`;
 
         let safeEnergy = "";
@@ -3472,10 +3489,15 @@ font:12px/1.2 ui-sans-serif;">
           safeEnergy = `<div class="summaryText" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">${escapeHtml(energyText).replace(/\n/g, "<br>")}</div>`;
         }
 
+        let mainReasonHTML = escapeHtml(summaryReason).replace(/\n/g, "<br>");
+        if (limitedSupp.length > 0) {
+          mainReasonHTML += `<br><br>【補足】<br>` + escapeHtml(limitedSupp.join('\n')).replace(/\n/g, "<br>");
+        }
+
         globalSummaryHTML = `
       <div class="summaryCard line">
         <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
-        <div class="summaryText">${escapeHtml(summaryReason).replace(/\n/g, "<br>")}</div>
+        <div class="summaryText">${mainReasonHTML}</div>
         <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
         ${safeEnergy}
       </div>
