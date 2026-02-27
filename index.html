@@ -3278,6 +3278,43 @@ font:12px/1.2 ui-sans-serif;">
           return kws.some(k => hay.includes(k));
         }
 
+        /* =========================================
+           🧩 Readability helpers
+           - remove jargon like "LP"
+           - format reason text into readable blocks
+           ========================================= */
+
+        function formatNumerologyLabel(nStr) {
+          // nStr: "1" など
+          const n = (nStr || "").toString().trim();
+          if (!n) return "";
+          // "LP" など略語は出さずに、初心者向けラベルで表示
+          return `あなたの本質（数秘${n}）`;
+        }
+
+        function formatKyuseiLabel(kStr) {
+          const k = (kStr || "").toString().trim();
+          if (!k) return "";
+          // 九星は押しつけず、やさしい文＋括弧
+          return `気質の傾向（${k}）`;
+        }
+
+        /**
+         * reasonText を「結論 / 理由 / 今日は」に整形する
+         * - basePoetic: 詩的な結論1〜2文
+         * - baseExplain: 具体化（つまり〜）
+         * - closing: 今日は〜 の行
+         * - optionalMetaLines: 追加の補足（数秘/九星など）※短く
+         */
+        function buildReadableReason({ basePoetic, baseExplain, closing, optionalMetaLines = [] }) {
+          const meta = (optionalMetaLines || []).filter(Boolean).join("\n");
+          return [
+            `【結論】${(basePoetic || "").trim()}`,
+            `【理由】つまり、${(baseExplain || "").trim()}${meta ? "\n" + meta : ""}`,
+            `【今日は】${(closing || "").trim()}`
+          ].join("\n");
+        }
+
         /**
          * basePoetic: 詩的1文
          * baseExplain: 具体化（つまり）
@@ -3300,13 +3337,15 @@ font:12px/1.2 ui-sans-serif;">
             ? `今日は${action} 整えるほど、静かに守られる。`
             : `今日は${action} 小さく動くほど、流れが味方する。`;
 
-          return `
-${basePoetic}
-
-つまり、${baseExplain}
-
-${closing}
-`.trim();
+          return buildReadableReason({
+            basePoetic,
+            baseExplain,
+            closing,
+            optionalMetaLines: [
+              // 恋愛では数秘/九星は出しすぎると重いので「必要なら」だけ
+              // ここは空にしてもOK。残す場合も短く。
+            ]
+          });
         }
 
         function buildMoneyReasonTextStable({ basePoetic, baseExplain, isReversed, cardKey, ymdKey }) {
@@ -3323,13 +3362,15 @@ ${closing}
             ? `今日は${action} 整えるほど、静かに守られる。`
             : `今日は${action} 小さく動くほど、流れが味方する。`;
 
-          return `
-${basePoetic}
-
-つまり、${baseExplain}
-
-${closing}
-`.trim();
+          return buildReadableReason({
+            basePoetic,
+            baseExplain,
+            closing,
+            optionalMetaLines: [
+              // 金運は “なぜ金運?” を防ぐために一行だけ添える（押しつけない）
+              "このカードは“価値・循環・物質”に触れているため、金運の助言として読めます。"
+            ]
+          });
         }
 
         /**
@@ -3353,13 +3394,12 @@ ${closing}
             ? `今日は${action} 整えるほど、静かに守られる。`
             : `今日は${action} 小さく動くほど、流れが味方する。`;
 
-          return `
-${basePoetic}
-
-つまり、${baseExplain}
-
-${closing}
-`.trim();
+          return buildReadableReason({
+            basePoetic,
+            baseExplain,
+            closing,
+            optionalMetaLines: []
+          });
         }
 
         if (typeof calculateLifePath === "function" && typeof getHonmeiStar === "function") {
@@ -3376,7 +3416,7 @@ ${closing}
             const lpDesc = NUMEROLOGY_DATA[lp] ? NUMEROLOGY_DATA[lp].lp : "軸を整える";
 
             const basePoetic = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
-            const baseExplain = `数秘LP${lp}は“${lpDesc}”。九星${honmeiName}は“${honmeiTheme}”。`;
+            const baseExplain = `${formatNumerologyLabel(lp)}は“${lpDesc}”。${formatKyuseiLabel(honmeiName)}は“${honmeiTheme}”。`;
 
             // 恋愛（相手の日付あり）か、テーマによる仕事/金運の推測
 
@@ -3435,7 +3475,7 @@ ${closing}
         globalSummaryHTML = `
       <div class="summaryCard line">
         <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
-        <div class="summaryText">${escapeHtml(summaryReason)}</div>
+        <div class="summaryText">${escapeHtml(summaryReason).replace(/\n/g, "<br>")}</div>
         <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
         ${safeEnergy}
       </div>
