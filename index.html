@@ -2876,55 +2876,8 @@ font:12px/1.2 ui-sans-serif;">
   <script>
     const VERSION = "2026.02.27.17";
 
-    const THEME_STORAGE_KEY = "angelique_theme_selected_v1";
-    const THEME_OPTIONS = ["全体運", "恋愛", "仕事", "金運", "人間関係"];
 
-    function getSelectedTheme() {
-      return (localStorage.getItem(THEME_STORAGE_KEY) || "").trim();
-    }
-    function setSelectedTheme(t) {
-      localStorage.setItem(THEME_STORAGE_KEY, t);
-    }
-
-    function mountThemeSelector() {
-      const host = document.querySelector(".drawBar");
-      if (!host) return;
-
-      // 既にあるなら二重生成しない
-      if (document.getElementById("themeSelector")) return;
-
-      const wrap = document.createElement("div");
-      wrap.id = "themeSelector";
-      wrap.style.cssText = "display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:10px;";
-
-      const label = document.createElement("div");
-      label.textContent = "③ テーマを選ぶ（任意）";
-      label.style.cssText = "font-weight:800;font-size:13px;opacity:.9;";
-      wrap.appendChild(label);
-
-      const row = document.createElement("div");
-      row.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;justify-content:center;";
-
-      const current = getSelectedTheme() || "全体運";
-
-      THEME_OPTIONS.forEach(t => {
-        const lab = document.createElement("label");
-        lab.className = "chip";
-        lab.style.cursor = "pointer";
-        lab.innerHTML = `
-          <input type="radio" name="themeMode" value="${escapeHtml(t)}" ${t === current ? "checked" : ""} />
-          <div><strong>${escapeHtml(t)}</strong><br><span>読みの焦点</span></div>
-        `;
-        lab.addEventListener("change", () => {
-          const v = lab.querySelector('input[name="themeMode"]')?.value || "全体運";
-          setSelectedTheme(v);
-        });
-        row.appendChild(lab);
-      });
-
-      wrap.appendChild(row);
-      host.appendChild(wrap);
-    }
+ 
 
     function getCurrentDrawModeValue() {
       return document.querySelector('input[name="drawMode"]:checked')?.value || "1";
@@ -3767,28 +3720,9 @@ font:12px/1.2 ui-sans-serif;">
         const cardNameForYesNo = (primary?.name_ja || primary?.name_en || primary?.name || primary?.id || "").toString();
         const yesNo = getYesNo(cardNameForYesNo, primaryRev);
 
-        headerBlock = `
-          <div style="
-            margin-bottom:14px;
-            padding:10px 14px;
-            border:1px solid rgba(214,178,94,.35);
-            border-radius:14px;
-            background:linear-gradient(to right, rgba(214,178,94,.10), rgba(255,255,255,0));
-            font-size:14px;
-            letter-spacing:.5px;
-          ">
-            ✨ 今回のテーマ：${escapeHtml(themeLabel)}<br>
-            <span style="font-size:18px;font-weight:650;color:#d6b25e;">
-              答え：${escapeHtml(yesNo)}
-            </span>
-          </div>
-        `;
-      } catch (e) {
-        console.warn("headerBlock failed but continuing draw:", e);
-        headerBlock = "";
-      }
+      
 
-      elResult.innerHTML = headerBlock + `
+      elResult.innerHTML = `
   ${globalSummaryHTML}
   <div class="${gridClass}">
     ${picked.map((p, i) =>
@@ -4057,5 +3991,6 @@ font:12px/1.2 ui-sans-serif;">
   <!-- <script src="numerology_logic_pure.js"></script> -->
   <script src="assets/js/energy/energy_logic_clean.js"></script>
 </body>
+
 
 </html>
