@@ -2850,7 +2850,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.6";
+    const VERSION = "2026.02.27.7";
 
     function getYesNo(cardName, isReversed) {
       const neutralCards = [
@@ -2859,6 +2859,17 @@ font:12px/1.2 ui-sans-serif;">
 
       if (neutralCards.includes(cardName)) return "保留";
       return isReversed ? "NO" : "YES";
+    }
+
+    function deriveThemeLabel(primaryCard, hasPartnerDate) {
+      if (hasPartnerDate) return "恋愛";
+      // 既存の isMoneyTheme を使う（存在する前提。無ければ金運判定はスキップ）
+      try {
+        if (typeof isMoneyTheme === "function" && isMoneyTheme(primaryCard?.themes, primaryCard?.name_ja || primaryCard?.name)) {
+          return "金運";
+        }
+      } catch (_) { }
+      return "仕事";
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -3656,29 +3667,36 @@ font:12px/1.2 ui-sans-serif;">
     `;
       }
 
-      const yesNo = getYesNo(primaryCard.name_ja, primaryCard.isReversed);
-      const themeLabel = mainTheme || "";
+      let headerBlock = "";
+      try {
+        const primary = picked?.[0]?.card;
+        const primaryRev = !!picked?.[0]?.isReversed;
 
-      const headerBlock = `
-        <div style="
-          margin-bottom:14px;
-          padding:10px 14px;
-          border:1px solid rgba(214,178,94,.35);
-          border-radius:14px;
-          background:linear-gradient(
-            to right,
-            rgba(214,178,94,.08),
-            rgba(255,255,255,0)
-          );
-          font-size:14px;
-          letter-spacing:.5px;
-        ">
-          ✨ 今回のテーマ：${themeLabel}<br>
-          <span style="font-size:18px;font-weight:600;color:#d6b25e;">
-            答え：${yesNo}
-          </span>
-        </div>
-      `;
+        const themeLabel = deriveThemeLabel(primary, !!document.getElementById("partnerBirthdate")?.value);
+
+        const cardNameForYesNo = (primary?.name_ja || primary?.name_en || primary?.name || primary?.id || "").toString();
+        const yesNo = getYesNo(cardNameForYesNo, primaryRev);
+
+        headerBlock = `
+          <div style="
+            margin-bottom:14px;
+            padding:10px 14px;
+            border:1px solid rgba(214,178,94,.35);
+            border-radius:14px;
+            background:linear-gradient(to right, rgba(214,178,94,.10), rgba(255,255,255,0));
+            font-size:14px;
+            letter-spacing:.5px;
+          ">
+            ✨ 今回のテーマ：${escapeHtml(themeLabel)}<br>
+            <span style="font-size:18px;font-weight:650;color:#d6b25e;">
+              答え：${escapeHtml(yesNo)}
+            </span>
+          </div>
+        `;
+      } catch (e) {
+        console.warn("headerBlock failed but continuing draw:", e);
+        headerBlock = "";
+      }
 
       elResult.innerHTML = headerBlock + `
   ${globalSummaryHTML}
