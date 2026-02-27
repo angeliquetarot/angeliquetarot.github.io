@@ -3256,6 +3256,28 @@ font:12px/1.2 ui-sans-serif;">
             .replace("決めましょう。", "決める。");
         }
 
+        function normalizeThemes(themes) {
+          let s = "";
+          if (Array.isArray(themes)) s = themes.join(" ");
+          else if (typeof themes === "string") s = themes;
+          else s = "";
+          s = s.trim();
+          try { s = s.normalize("NFKC"); } catch (_) { }
+          return s;
+        }
+
+        function isMoneyTheme(themes, cardName) {
+          const t = normalizeThemes(themes);
+          const n = (cardName || "");
+          const hay = `${t} ${n}`;
+          const kws = [
+            "金", "財", "富", "豊", "銭", "稼", "収", "入", "給", "報", "利", "益", "売", "商",
+            "貯", "貯金", "節", "節約", "投", "投資", "資", "資産", "運用", "財布", "口座",
+            "ペンタ", "ペンタクル", "コイン", "pentacle", "coin", "money", "wealth"
+          ];
+          return kws.some(k => hay.includes(k));
+        }
+
         /**
          * basePoetic: 詩的1文
          * baseExplain: 具体化（つまり）
@@ -3357,7 +3379,6 @@ ${closing}
             const baseExplain = `数秘LP${lp}は“${lpDesc}”。九星${honmeiName}は“${honmeiTheme}”。`;
 
             // 恋愛（相手の日付あり）か、テーマによる仕事/金運の推測
-            const isMoneyTheme = themes.includes("金") || themes.includes("豊") || themes.includes("財");
 
             if (pDate) {
               reasonText = buildLoveReasonTextStable({
@@ -3366,7 +3387,7 @@ ${closing}
                 isReversed,
                 cardKey: primaryCard.id || primaryCard.name_ja
               });
-            } else if (isMoneyTheme) {
+            } else if (!pDate && isMoneyTheme(primaryCard.themes, primaryCard.name_ja || primaryCard.name)) {
               reasonText = buildMoneyReasonTextStable({
                 basePoetic,
                 baseExplain,
