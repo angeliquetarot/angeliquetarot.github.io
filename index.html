@@ -2759,7 +2759,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.1";
+    const VERSION = "2026.02.27.2";
     const STORAGE_KEY = "angelique_tarot_csv_rows_v2";
     let cards = [];
     const IS_CREATOR = location.hostname === "localhost" || location.hostname === "127.0.0.1";
@@ -3464,21 +3464,31 @@ font:12px/1.2 ui-sans-serif;">
           reasonText = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
         }
 
-        const SUPP_RE = /(数秘|九星|宿曜|干支|星座|ラッキー|開運|方位|風水|カラー|色|アイテム)/;
-        const lines = reasonText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const SUPP_RE = /(数秘|九星|宿曜|干支|星座|ラッキー|開運|方位|風水|ラッキーカラー|ラッキーアイテム|カラー|アイテム)/;
+
+        const normalized = String(reasonText ?? "")
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+
+        const lines = normalized
+          .split("\n")
+          .map(l => l.replace(/<\/?[^>]+>/g, "").trim())
+          .filter(l => l.length > 0);
+
         const suppLines = [];
         const mainLines = [];
+        for (const line of lines) {
+          if (SUPP_RE.test(line)) suppLines.push(line);
+          else mainLines.push(line);
+        }
 
-        lines.forEach(line => {
-          if (SUPP_RE.test(line)) {
-            suppLines.push(line);
-          } else {
-            mainLines.push(line);
-          }
-        });
+        const limitedSupp = suppLines
+          .map(s => s.trim())
+          .filter(s => s.length > 0)
+          .slice(0, 2);
 
-        const limitedSupp = suppLines.slice(0, 2);
-        const mainText = mainLines.join('\n');
+        const mainText = mainLines.join("\n");
 
         const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
         const summaryReason = `【理由】${mainText}`;
