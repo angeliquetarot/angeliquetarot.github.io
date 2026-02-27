@@ -2759,7 +2759,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.2";
+    const VERSION = "2026.02.27.3";
 
     document.addEventListener("DOMContentLoaded", () => {
       const badge = document.getElementById("versionBadge");
@@ -3494,6 +3494,17 @@ font:12px/1.2 ui-sans-serif;">
           .filter(s => s.length > 0)
           .slice(0, 2);
 
+        const cleanSupp = (limitedSupp || [])
+          .map(s => String(s || "")
+            .replace(/^【(結論|理由|今日は|補足)】/g, "")
+            .replace(/^(理由|今日は|結論)[）\):：]\s*/g, "")
+            .trim()
+          )
+          .filter(s => s.length > 0 && !/^[・\-\s]+$/.test(s))
+          .slice(0, 2);
+
+        const suppInline = cleanSupp.join(" / ");
+
         const mainText = mainLines.join("\n");
 
         const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
@@ -3506,8 +3517,8 @@ font:12px/1.2 ui-sans-serif;">
         }
 
         let mainReasonHTML = escapeHtml(summaryReason).replace(/\n/g, "<br>");
-        if (limitedSupp.length > 0) {
-          mainReasonHTML += `<br><br>【補足】<br>` + escapeHtml(limitedSupp.join('\n')).replace(/\n/g, "<br>");
+        if (suppInline) {
+          mainReasonHTML += `<br><span style="opacity:.85;">【補足】${escapeHtml(suppInline)}</span>`;
         }
 
         globalSummaryHTML = `
