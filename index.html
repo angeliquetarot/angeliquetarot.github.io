@@ -2667,6 +2667,46 @@
         line-height: 2.08 !important;
       }
     }
+
+    /* =========================================
+       ✨ Animations & Glows (Luxury Polish)
+       ========================================= */
+    .result-animate {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .45s ease, transform .45s ease;
+    }
+
+    .result-animate.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .result-animate {
+        transition: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .tcard {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tcard::before {
+      content: "";
+      position: absolute;
+      inset: -20px;
+      border-radius: 20px;
+      background: radial-gradient(circle at center,
+          rgba(255, 215, 120, .18),
+          rgba(255, 215, 120, 0) 70%);
+      filter: blur(18px);
+      z-index: -1;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -2805,7 +2845,7 @@ font:12px/1.2 ui-sans-serif;">
 
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.27.4";
+    const VERSION = "2026.02.27.5";
 
     document.addEventListener("DOMContentLoaded", () => {
       const badge = document.getElementById("versionBadge");
@@ -3584,6 +3624,10 @@ font:12px/1.2 ui-sans-serif;">
         }
 
         let mainReasonHTML = escapeHtml(summaryReason).replace(/\n/g, "<br>");
+        mainReasonHTML = mainReasonHTML.replace(
+          /【今日は】([^<]*)/g,
+          '【今日は】<span style="color:#fff; font-weight:600;">$1</span>'
+        );
         if (suppInline) {
           mainReasonHTML += `<br><span style="opacity:.85;">【補足】${escapeHtml(suppInline)}</span>`;
         }
@@ -3609,6 +3653,13 @@ font:12px/1.2 ui-sans-serif;">
 
       setStatus(`結果表示：${count}枚引き。`);
       scrollToResultSmooth();
+
+      elResult.classList.remove("result-animate");
+      void elResult.offsetWidth; // reflow
+      elResult.classList.add("result-animate");
+      requestAnimationFrame(() => {
+        elResult.classList.add("show");
+      });
     }
 
     // --- キーワード：| 区切りで最大10個 ---
