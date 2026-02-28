@@ -2978,6 +2978,38 @@ h1,h2,.shareTitle,.summaryTitle{
       color: #fff;
       border-color: rgba(255, 255, 255, .4);
     }
+    /* ===== HOTFIX: draw controls must be visible ===== */
+.drawBar{ 
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:12px !important;
+  margin:14px 0 10px !important;
+  position:relative !important;
+  z-index:50 !important;
+}
+
+.drawModeInline{
+  display:flex !important;
+  gap:10px !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+}
+
+#btnDraw{
+  display:inline-flex !important;
+  pointer-events:auto !important;
+  z-index:60 !important;
+}
+
+/* もしどこかで button を消していた場合の保険 */
+button, .drawBtn, .btnGhost, .btnDrawAgain{
+  visibility:visible !important;
+  opacity:1 !important;
+}
   </style>
 </head>
 
@@ -3044,8 +3076,43 @@ font:12px/1.2 ui-sans-serif;">
       <div class="fly"></div>
     </div>
 
+    <!-- ✅ ボタン＋引き方（シャッフルと結果の間） -->
+<div class="drawBar">
+  <button id="btnDraw" class="drawBtn">カードを引く</button>
+
+  <div class="drawModeInline" aria-label="引き方">
+    <label class="chip">
+      <input type="radio" name="drawMode" value="1" checked />
+      <div><strong>ワンオラクル（1枚）</strong><br><span>ワンオラクル</span></div>
+    </label>
+
+    <label class="chip">
+      <input type="radio" name="drawMode" value="3" />
+      <div><strong>3枚引き（過去/現在/未来）</strong><br><span>過去 / 現在 / 未来</span></div>
+    </label>
+  </div>
+
+  <div class="drawModeInline" style="margin-top:10px;">
+    <label class="chip" style="cursor:text;">
+      <div>
+        <strong>あなたの生年月日</strong><br />
+        <input type="date" id="userBirthdate"
+          style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
+      </div>
+    </label>
+
+    <label class="chip" style="cursor:text;">
+      <div>
+        <strong>お相手の生年月日</strong><br />
+        <input type="date" id="partnerBirthdate"
+          style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
+      </div>
+    </label>
+  </div>
+</div>
+
     <div class="drawBar
-    
+
     <!-- ✅ 結果表示 -->
     <div id="result" class="antigravity" style="margin-top:14px;">
       <div class="empty">
@@ -3084,6 +3151,14 @@ font:12px/1.2 ui-sans-serif;">
         });
       }, duration);
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("btnDraw");
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", onDraw);
+  }
+});
 
     function isProbablyMobile() {
   // なるべく安全に「スマホっぽさ」判定
