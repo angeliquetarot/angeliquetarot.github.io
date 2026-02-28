@@ -4611,13 +4611,27 @@ font:12px/1.2 ui-sans-serif;">
   }
 
   try {
-    const dataUrl = canvas.toDataURL("image/png");
-    // ★ document.write ではなく location を使う（白画面対策）
-    popup.location.href = dataUrl;
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        fallbackCopyText(getResultPlainText());
+        showToast("画像生成に失敗しました。テキストをコピーしました。", 4000);
+        popup.close();
+        return;
+      }
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      // ★ dataURLではなく blob URL に遷移
+      popup.location.replace(blobUrl);
+
+      // メモリ解放
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    }, "image/png");
+
   } catch (err) {
-    console.error("Canvas toDataURL failed:", err);
+    console.error("Blob fallback failed:", err);
     fallbackCopyText(getResultPlainText());
-    showToast("画像を生成できませんでした。テキストをコピーしました。", 4000);
+    showToast("画像を表示できませんでした。テキストをコピーしました。", 4000);
     try { popup.close(); } catch {}
   }
 }
