@@ -4188,46 +4188,46 @@ font:12px/1.2 ui-sans-serif;">
       }
 
       // --- HTML返却 ---
-      return `
-    <div class="tcard">
-      <div class="tcardHeader">
-        <div class="tcardTitle">
-          <div class="pos">${escapeHtml(positionLabel)}</div>
-          <div class="name">${escapeHtml(card.name_ja)} <span class="sub">(${escapeHtml(card.name_en)})</span></div>
-          <div class="sub">${escapeHtml(meta)}</div>
-          ${themes ? `<div class="sub">テーマ：${escapeHtml(themes)}</div>` : ``}
-        </div>
-        <div class="badge ${isReversed ? "rev" : "up"}">${isReversed ? "逆位置" : "正位置"}</div>
+return `
+  <div class="tcard ${isReversed ? "reversed" : ""}">
+    <div class="tcardHeader">
+      <div class="tcardTitle">
+        <div class="pos">${escapeHtml(positionLabel)}</div>
+        <div class="name">${escapeHtml(card.name_ja)} <span class="sub">(${escapeHtml(card.name_en)})</span></div>
+        <div class="sub">${escapeHtml(meta)}</div>
+        ${themes ? `<div class="sub">テーマ：${escapeHtml(themes)}</div>` : ``}
       </div>
-
-      <div class="tcardVisual">
-        <img class="cardImg ${isReversed ? "reversed" : ""}"
-          src="${cardImageUrl(card.image)}"
-          alt="${escapeHtml(card.name_ja)}"
-          onerror="handleCardImgError(this)"
-        />
-      </div>
-
-      ${yn ? `
-        <div class="ynRow">
-          <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${escapeHtml(yn)}</div>
-        </div>` : ``}
-
-      <div class="tcardBody">
-        <div class="line">
-          <span class="k">キーワード（${isReversed ? "逆" : "正"}）：</span>
-         <div class="kwWrap">
-  ${kw.length
-          ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${escapeHtml(w)}</span>`).join("")
-          : `<span class="small">（なし）</span>`
-        }
-</div>
-
-        </div>
-        ${mainMessageHTML}
-      </div>
+      <div class="badge ${isReversed ? "rev" : "up"}">${isReversed ? "逆位置" : "正位置"}</div>
     </div>
-  `;
+
+    <div class="tcardVisual">
+      <img class="cardImg ${isReversed ? "reversed" : ""}"
+        src="${cardImageUrl(card.image)}"
+        alt="${escapeHtml(card.name_ja)}"
+        onerror="handleCardImgError(this)"
+      />
+    </div>
+
+    ${yn ? `
+      <div class="ynRow">
+        <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${escapeHtml(yn)}</div>
+      </div>` : ``}
+
+    <div class="tcardBody">
+      <div class="line">
+        <span class="k">キーワード（${isReversed ? "逆" : "正"}）：</span>
+        <div class="kwWrap">
+          ${kw.length
+            ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${escapeHtml(w)}</span>`).join("")
+            : `<span class="small">（なし）</span>`
+          }
+        </div>
+      </div>
+
+      ${mainMessageHTML}
+    </div>
+  </div>
+`;
     }
 
     function cardImageUrl(image) {
@@ -4556,36 +4556,7 @@ canvas.toBlob(async (blob) => {
   modal.addEventListener("click", onBg);
 }
 
-  canvas.toBlob((blob) => {
-    if (!blob) {
-      fallbackCopyText(getResultPlainText());
-      showToast("画像生成に失敗しました。テキストをコピーしました。", 4000);
-      return;
-    }
-
-    const url = URL.createObjectURL(blob);
-    imgEl.src = url;
-    dl.href = url;
-
-    // 表示
-    modal.style.display = "block";
-
-    // 閉じる
-    const close = () => {
-      modal.style.display = "none";
-      try { URL.revokeObjectURL(url); } catch {}
-      closeBtn.removeEventListener("click", close);
-      modal.removeEventListener("click", onBg);
-    };
-
-    const onBg = (e) => {
-      if (e.target === modal) close();
-    };
-
-    closeBtn.addEventListener("click", close);
-    modal.addEventListener("click", onBg);
-
-  }, "image/png");
+ 
 }
 
  
