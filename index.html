@@ -3022,52 +3022,7 @@ font:12px/1.2 ui-sans-serif;">
       </div>
     </div>
 
-    <div>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="font-weight:800; font-size:14px;">② 引き方を選ぶ</div>
-
-        <div class="drawMode">
-          <label class="chip">
-            <input type="radio" name="drawMode" value="1" checked />
-            <div>
-              <strong>1枚（ワンオラクル）</strong><br />
-              <span>いまのメッセージ</span>
-            </div>
-          </label>
-
-          <label class="chip">
-            <input type="radio" name="drawMode" value="3" />
-            <div>
-              <strong>3枚（深掘り）</strong><br />
-              <span>過去 / 現在 / 未来</span>
-            </div>
-          </label>
-          <label class="chip" style="cursor:text;">
-            <div>
-              <strong>あなたの生年月日</strong><br />
-              <input type="date" id="userBirthdate"
-                style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
-            </div>
-          </label>
-          <label class="chip" style="cursor:text;">
-            <div>
-              <strong>お相手の生年月日</strong><br />
-              <input type="date" id="partnerBirthdate"
-                style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
-            </div>
-          </label>
-        </div>
-
-        <div class="btnRow">
-
-        </div>
-
-        <div class="small">
-
-        </div>
-      </div>
-    </div>
-  </div>
+    
 
 
 
@@ -3108,6 +3063,28 @@ font:12px/1.2 ui-sans-serif;">
         </label>
       </div>
     </div>
+
+    <div class="drawModeInline" aria-label="引き方">
+  ...（既存の1枚/3枚）...
+</div>
+
+<div class="drawModeInline" style="margin-top:10px;">
+  <label class="chip" style="cursor:text;">
+    <div>
+      <strong>あなたの生年月日</strong><br />
+      <input type="date" id="userBirthdate"
+        style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
+    </div>
+  </label>
+
+  <label class="chip" style="cursor:text;">
+    <div>
+      <strong>お相手の生年月日</strong><br />
+      <input type="date" id="partnerBirthdate"
+        style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
+    </div>
+  </label>
+</div>
 
     <!-- ✅ 結果表示 -->
     <div id="result" class="antigravity" style="margin-top:14px;">
@@ -4484,36 +4461,7 @@ font:12px/1.2 ui-sans-serif;">
     // --- Share Image (Canvas) ---
     async function shareResultImage() {
 
-  // ★ ユーザー操作の瞬間にpopupを開く（ブロック回避）
-  const popup = window.open("", "_blank"); // ← まずこれで確実に参照できるようにする
-
-  if (!popup) {
-    showToast("ポップアップがブロックされました。テキストをコピーします。", 3000);
-    fallbackCopyText(getResultPlainText());
-    return;
-  }
-
-  // popupに「生成中」表示（空白回避）
- try {
-  popup.document.open();
-  popup.document.write(`
-    <!doctype html><html><head><meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Generating...</title></head>
-    <body style="margin:0;background:#11111d;color:#fff;font-family:system-ui;padding:30px;">
-      画像を生成中です… 少しお待ちください。
-    </body></html>
-  `);
-  popup.document.close();
-} catch (e) {
-  console.error("popup write failed:", e);
-}
-
-  const canvas = document.getElementById("shareCanvas");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-
-      showToast("画像を生成中...", 2000);
+ 
 
       // 1. 背景描画 (暗いトーン)
       ctx.fillStyle = "#11111d";
@@ -4642,69 +4590,62 @@ font:12px/1.2 ui-sans-serif;">
           } catch (err) {
             console.error("Image Share failed or cancelled:", err);
             // キャンセルまたは失敗時は新規タブで開くフォールバックへ
-            openImageFallback(canvas, popup);
+            openImageFallback(canvas);
           }
         } else {
           // 非対応なら新規タブで画像表示
-          openImageFallback(canvas, popup);
+          openImageFallback(canvas);
         }
       }, "image/png");
     }
 
-    function openImageFallback(canvas, popup) {
-  showToast("画像を開きました。保存して共有してください", 4000);
+    function openImageFallback(canvas) {
+  showToast("画像を表示しました。保存して共有してください", 3000);
 
-  if (!popup) {
+  const modal = document.getElementById("shareModal");
+  const imgEl = document.getElementById("shareModalImg");
+  const dl = document.getElementById("shareModalDownload");
+  const closeBtn = document.getElementById("shareModalClose");
+
+  if (!modal || !imgEl || !dl || !closeBtn) {
     fallbackCopyText(getResultPlainText());
-    showToast("画像を表示できませんでした。テキストをコピーしました。", 4000);
+    showToast("画像表示UIが見つかりません。テキストをコピーしました。", 4000);
     return;
   }
 
-  try {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        fallbackCopyText(getResultPlainText());
-        showToast("画像生成に失敗しました。テキストをコピーしました。", 4000);
-        try { popup.close(); } catch {}
-        return;
-      }
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      fallbackCopyText(getResultPlainText());
+      showToast("画像生成に失敗しました。テキストをコピーしました。", 4000);
+      return;
+    }
 
-      const blobUrl = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    imgEl.src = url;
+    dl.href = url;
 
-      // ★iPhone Safari対策：遷移ではなく、popup内にHTMLとして表示
-      try {
-        popup.document.open();
-        popup.document.write(`
-          <!doctype html><html><head><meta charset="utf-8">
-          <meta name="viewport" content="width=device-width,initial-scale=1">
-          <title>Angelique Tarot | Share Image</title></head>
-          <body style="margin:0;background:#11111d;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;">
-            <img src="${blobUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-            <div style="color:rgba(255,255,255,0.75);font-family:system-ui;padding:14px;text-align:center;">
-              画像を保存して、LINE等で添付してください
-            </div>
-          </body></html>
-        `);
-        popup.document.close();
-      } catch (e) {
-        // もし document.write が失敗しても最後の手段で遷移
-        popup.location.replace(blobUrl);
-      }
+    // 表示
+    modal.style.display = "block";
 
-      // メモリ解放
-      setTimeout(() => {
-        try { URL.revokeObjectURL(blobUrl); } catch {}
-      }, 60000);
+    // 閉じる
+    const close = () => {
+      modal.style.display = "none";
+      try { URL.revokeObjectURL(url); } catch {}
+      closeBtn.removeEventListener("click", close);
+      modal.removeEventListener("click", onBg);
+    };
 
-    }, "image/png");
+    const onBg = (e) => {
+      if (e.target === modal) close();
+    };
 
-  } catch (err) {
-    console.error("Blob fallback failed:", err);
-    fallbackCopyText(getResultPlainText());
-    showToast("画像を表示できませんでした。テキストをコピーしました。", 4000);
-    try { popup.close(); } catch {}
-  }
+    closeBtn.addEventListener("click", close);
+    modal.addEventListener("click", onBg);
+
+  }, "image/png");
 }
+
+ 
 
     function drawCardOnCanvas(ctx, item, x, y, w, h) {
       if (!item || !item.img) return;
@@ -4729,6 +4670,30 @@ font:12px/1.2 ui-sans-serif;">
   </script>
   <!-- <script src="numerology_logic_pure.js"></script> -->
   <script src="assets/js/energy/energy_logic_clean.js"></script>
+
+  <!-- Share Image Modal (iPhone安定版) -->
+<div id="shareModal" style="display:none; position:fixed; inset:0; z-index:99999;
+  background:rgba(0,0,0,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  padding:18px;">
+  <div style="max-width:520px; margin:0 auto; background:rgba(17,17,29,.92);
+    border:1px solid rgba(249,224,138,.22); border-radius:18px; padding:14px;
+    box-shadow:0 18px 60px rgba(0,0,0,.55);">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+      <div style="color:rgba(249,224,138,.92); font-weight:700;">Share Image</div>
+      <button class="btnGhost" id="shareModalClose" style="padding:8px 12px;">閉じる</button>
+    </div>
+
+    <img id="shareModalImg" alt="share" style="width:100%; height:auto; display:block; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.45);" />
+
+    <div style="margin-top:10px; color:rgba(255,255,255,.75); font-size:13px; line-height:1.6;">
+      iPhoneは画像を <b>長押し→“写真に追加”</b> してから、LINEなどで共有してください。
+    </div>
+
+    <a id="shareModalDownload" class="btnGhost" style="display:block; text-align:center; margin-top:10px; padding:10px 12px;"
+      download="reading.png">ダウンロード</a>
+  </div>
+</div>
 </body>
 
 
