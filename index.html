@@ -3044,30 +3044,8 @@ font:12px/1.2 ui-sans-serif;">
       <div class="fly"></div>
     </div>
 
-    <!-- ✅ ボタン＋引き方（シャッフルと結果の間） -->
-    <div class="drawBar">
-      <button id="btnDraw" class="drawBtn">カードを引く</button>
-
-      
-
-<div class="drawModeInline" style="margin-top:10px;">
-  <label class="chip" style="cursor:text;">
-    <div>
-      <strong>あなたの生年月日</strong><br />
-      <input type="date" id="userBirthdate"
-        style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
-    </div>
-  </label>
-
-  <label class="chip" style="cursor:text;">
-    <div>
-      <strong>お相手の生年月日</strong><br />
-      <input type="date" id="partnerBirthdate"
-        style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
-    </div>
-  </label>
-</div>
-
+    <div class="drawBar
+    
     <!-- ✅ 結果表示 -->
     <div id="result" class="antigravity" style="margin-top:14px;">
       <div class="empty">
@@ -3106,6 +3084,14 @@ font:12px/1.2 ui-sans-serif;">
         });
       }, duration);
     }
+
+    function isProbablyMobile() {
+  // なるべく安全に「スマホっぽさ」判定
+  const ua = navigator.userAgent || "";
+  const touch = navigator.maxTouchPoints > 1;
+  const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  return /iPhone|Android|iPad|Mobile/i.test(ua) || (touch && coarse);
+}
 
 
 
@@ -4543,34 +4529,40 @@ font:12px/1.2 ui-sans-serif;">
   ctx.fillText("Search 'Angelique Tarot' to pull your own cards.", 540, 980);
 
   // 6. 出力
-  canvas.toBlob(async (blob) => {
-    if (!blob) {
-      showToast("画像の生成に失敗しました");
-      fallbackCopyText(getResultPlainText());
-      return;
-    }
+  // 6. 出力
+canvas.toBlob(async (blob) => {
+  if (!blob) {
+    showToast("画像の生成に失敗しました");
+    fallbackCopyText(getResultPlainText());
+    return;
+  }
 
-    const file = new File([blob], "reading.png", { type: "image/png" });
+  const file = new File([blob], "reading.png", { type: "image/png" });
 
-    // Share API
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: "Angelique Tarot Reading",
-          text: "私のタロットリーディング結果です #AngeliqueTarot"
-        });
-        showToast("画像をシェアしました！");
-      } catch (err) {
-        console.error("Image Share failed or cancelled:", err);
-        // フォールバック：モーダル表示へ
-        openImageFallback(canvas);
-      }
-    } else {
-      openImageFallback(canvas);
+  // ✅ PCは「共有シート」を使わない（直感的じゃないので）
+  if (!isProbablyMobile()) {
+    openImageFallbackFromBlob(blob);
+    return;
+  }
+
+  // ✅ スマホは Share API が使えるなら使う
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "Angelique Tarot Reading",
+        text: "私のタロットリーディング結果です #AngeliqueTarot"
+      });
+      showToast("画像をシェアしました！");
+    } catch (err) {
+      console.error("Image Share failed or cancelled:", err);
+      // キャンセル時はモーダルへ
+      openImageFallbackFromBlob(blob);
     }
-  }, "image/png");
-}
+  } else {
+    openImageFallbackFromBlob(blob);
+  }
+}, "image/png");
 
     function openImageFallback(canvas) {
   showToast("画像を表示しました。保存して共有してください", 3000);
@@ -4585,6 +4577,44 @@ font:12px/1.2 ui-sans-serif;">
     showToast("画像表示UIが見つかりません。テキストをコピーしました。", 4000);
     return;
   }
+
+  function openImageFallbackFromBlob(blob) {
+  showToast("画像を表示しました。右クリック/長押しで保存できます", 3500);
+
+  const modal = document.getElementById("shareModal");
+  const imgEl = document.getElementById("shareModalImg");
+  const dl = document.getElementById("shareModalDownload");
+  const openBtn = document.getElementById("shareModalOpen");
+  const closeBtn = document.getElementById("shareModalClose");
+
+  if (!modal || !imgEl || !dl || !closeBtn || !openBtn) {
+    fallbackCopyText(getResultPlainText());
+    showToast("画像表示UIが見つかりません。テキストをコピーしました。", 4000);
+    return;
+  }
+
+  const url = URL.createObjectURL(blob);
+  imgEl.src = url;
+  dl.href = url;
+  openBtn.href = url;
+
+  // 表示
+  modal.style.display = "block";
+
+  const close = () => {
+    modal.style.display = "none";
+    try { URL.revokeObjectURL(url); } catch {}
+    closeBtn.removeEventListener("click", close);
+    modal.removeEventListener("click", onBg);
+  };
+
+  const onBg = (e) => {
+    if (e.target === modal) close();
+  };
+
+  closeBtn.addEventListener("click", close);
+  modal.addEventListener("click", onBg);
+}
 
   canvas.toBlob((blob) => {
     if (!blob) {
@@ -4663,8 +4693,15 @@ font:12px/1.2 ui-sans-serif;">
       iPhoneは画像を <b>長押し→“写真に追加”</b> してから、LINEなどで共有してください。
     </div>
 
-    <a id="shareModalDownload" class="btnGhost" style="display:block; text-align:center; margin-top:10px; padding:10px 12px;"
-      download="reading.png">ダウンロード</a>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+  <a id="shareModalOpen" class="btnGhost"
+     style="flex:1; display:block; text-align:center; padding:10px 12px;"
+     target="_blank" rel="noopener">画像を開く</a>
+
+  <a id="shareModalDownload" class="btnGhost"
+     style="flex:1; display:block; text-align:center; padding:10px 12px;"
+     download="reading.png">ダウンロード</a>
+</div>
   </div>
 </div>
 </body>
