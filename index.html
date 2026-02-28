@@ -5,7 +5,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Angelique Tarot (CSV版)</title>
-  <link rel="icon" href="./favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Noto+Serif+JP:wght@400;600;900&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg: #666132;
@@ -32,15 +36,23 @@
 
     body {
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-
+      font-family: 'Noto Serif JP', ui-sans-serif, system-ui, -apple-system, sans-serif;
       background:
-        linear-gradient(rgba(14, 11, 22, .62), rgba(14, 11, 22, .62)),
-        url("public/bg/angel_bg1.webp") center / cover no-repeat,
-        var(--bg);
-
+        radial-gradient(120% 100% at 50% 0%, rgba(245, 230, 179, .08), rgba(0, 0, 0, 0) 60%),
+        radial-gradient(80% 70% at 90% 20%, rgba(214, 178, 94, .06), rgba(0, 0, 0, 0) 60%),
+        linear-gradient(to bottom, #11111d 0%, #15152b 60%, #0c0c18 100%);
+      background-attachment: fixed;
       color: var(--text);
       min-height: 100vh;
+    }
+
+    h1,
+    h2,
+    h3,
+    .title,
+    .heading {
+      font-family: 'Cinzel', 'Noto Serif JP', serif;
+      letter-spacing: .04em;
     }
 
 
@@ -2679,13 +2691,17 @@
        ========================================= */
     .result-animate {
       opacity: 0;
-      transform: translateY(8px);
-      transition: opacity .45s ease, transform .45s ease;
+      transform: translateY(12px);
+      filter: blur(4px);
+      transition: opacity .6s cubic-bezier(0.22, 1, 0.36, 1),
+        transform .6s cubic-bezier(0.22, 1, 0.36, 1),
+        filter .6s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .result-animate.show {
       opacity: 1;
       transform: translateY(0);
+      filter: blur(0);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -2693,6 +2709,7 @@
         transition: none;
         opacity: 1;
         transform: none;
+        filter: none;
       }
     }
 
@@ -2768,6 +2785,135 @@
         animation: none;
       }
     }
+
+    /* =========================================
+       ✨ Toast & Share UI
+       ========================================= */
+    #toastContainer {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: rgba(20, 16, 30, .85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .25);
+      color: rgba(255, 255, 255, .95);
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast {
+        transition: none;
+      }
+    }
+
+    /* Result Actions (Share Block, Draw Again) */
+    .resultActions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+    }
+
+    .result-animate.show .resultActions {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .shareTitle {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .shareRow {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btnGhost {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .15);
+      color: rgba(255, 255, 255, .85);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btnGhost:hover {
+      background: rgba(255, 255, 255, .1);
+      border-color: rgba(255, 255, 255, .3);
+      color: white;
+    }
+
+    .btnDrawAgain {
+      background: linear-gradient(135deg, rgba(214, 178, 94, .15), rgba(214, 178, 94, .05));
+      border: 1px solid rgba(214, 178, 94, .3);
+      color: #efd39a;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .btnDrawAgain:hover {
+      background: linear-gradient(135deg, rgba(214, 178, 94, .25), rgba(214, 178, 94, .1));
+      border-color: rgba(214, 178, 94, .5);
+      color: #fff;
+    }
+
+    .numerologyLink {
+      display: inline-block;
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, .15);
+      padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+
+    .numerologyLink:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, .4);
+    }
   </style>
 </head>
 
@@ -2777,6 +2923,9 @@ background:#000a;border:1px solid #fff3;color:#fff;padding:8px 10px;border-radiu
 font:12px/1.2 ui-sans-serif;">
     VERSION:
   </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
 
   <div class="app">
     <header>
@@ -2904,12 +3053,36 @@ font:12px/1.2 ui-sans-serif;">
 
 
 
+  <!-- 描画用見えないCanvas -->
+  <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
+
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const VERSION = "2026.02.28.1";
+    const VERSION = "2026.03.01.1";
+
+    // --- Toast functions ---
+    function showToast(message, duration = 3000) {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+      const el = document.createElement("div");
+      el.className = "toast";
+      el.textContent = message;
+      container.appendChild(el);
+
+      // reflow
+      void el.offsetWidth;
+      el.classList.add("show");
+
+      setTimeout(() => {
+        el.classList.remove("show");
+        el.addEventListener("transitionend", () => {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+      }, duration);
+    }
 
 
- 
+
 
     function getCurrentDrawModeValue() {
       return document.querySelector('input[name="drawMode"]:checked')?.value || "1";
@@ -3350,6 +3523,88 @@ font:12px/1.2 ui-sans-serif;">
         let reasonText = "";
         let energyText = "";
 
+        const cardId = normalizeKey(primaryCard.id) || normalizeKey(primaryCard.name_ja);
+        const ymdKey = new Date().toISOString().slice(0, 10);
+        const seedStr = `${ymdKey}|${cardId}|${isReversed ? "R" : "U"}`;
+
+        // ======= DEEP READING DATA ========
+        const cardDB = {
+          "0": {
+            light: "無限の可能性と純粋な好奇心。",
+            meaning: "いまのあなたには、常識や過去の失敗にとらわれない身軽さがあります。\nふと浮かんだアイデアや衝動を、どうか打ち消さないでください。",
+            actions: ["いつもと違う道を歩いてみる", "理由のない「やりたい」を一つ叶える"],
+            prayer: "自由な風が、あなたの背中を押しますように。"
+          },
+          "1": {
+            light: "すべてを創り出す、意思の力。",
+            meaning: "すでに必要な道具や才能は、あなたの中に揃っています。\nあとは「始める」と決めるだけ。どんな小さな一歩でも、それは大きな魔法の始まりです。",
+            actions: ["頭の中にあるアイデアを一つ書き出す", "「試しに」で何かを始めてみる"],
+            prayer: "あなたの意思が、新しい世界を形作りますように。"
+          },
+          "2": {
+            light: "静寂の中で磨かれる直感。",
+            meaning: "今は外側の意見よりも、内なる声に耳を傾ける時です。\n答えを急がず、白黒つけない「曖昧な時間」を許すことで、真の理解が深まります。",
+            actions: ["1日5分、完全に静かな時間を作る", "直感的に惹かれたものを選ぶ"],
+            prayer: "静かな瞳が、真実を見抜きますように。"
+          },
+          "3": {
+            light: "豊かさと、無条件の愛。",
+            meaning: "あなたの人生に、豊かな実りや愛が流れ込もうとしています。\nまずは自分自身を慈しみ、心地よいと感じる時間や場所をたっぷりと味わってください。",
+            actions: ["五感が喜ぶこと（美味しいもの、良い香り）をする", "自分を褒める言葉を一日一つ見つける"],
+            prayer: "豊かな実りが、あなたの心を満たしますように。"
+          },
+          "4": {
+            light: "揺るぎない基盤と、守る力。",
+            meaning: "今は情熱だけでなく、現実的なルールや秩序を重んじることで物事が安定します。\n焦らず、足元を固め、長期的な視点で計画を立ててみましょう。",
+            actions: ["部屋や机の上を整理整頓する", "未来の目標に向けた小さなルールを作る"],
+            prayer: "確かな足取りが、あなたを望む場所へ導きますように。"
+          },
+          "5": {
+            light: "精神的な教えと、導き。",
+            meaning: "一時的な感情や利益ではなく、あなたの「本質的な価値観」に従う時です。\n尊敬できる人の言葉をヒントにしたり、古い智恵の中にある普遍的な答えを探してみてください。",
+            actions: ["心惹かれる本から一行の言葉を探す", "迷った時は「自分の美学に反しないか」で決める"],
+            prayer: "見えない導きが、あなたの道を照らしますように。"
+          },
+          "6": {
+            light: "純粋な選択と、心の調和。",
+            meaning: "損得ではなく「心が惹かれるかどうか」で選ぶ時です。\n直感的に惹かれ合う人や物事との出会いが、あなたに美しい調和をもたらしてくれるでしょう。",
+            actions: ["本当に着たい服や使いたいものを選ぶ", "誰かに小さな感謝を伝える"],
+            prayer: "心の響き合う選択が、あなたを幸せへ導きますように。"
+          },
+          "7": {
+            light: "前進する力と、勝利の予感。",
+            meaning: "迷いや葛藤を乗り越え、自分の手で手綱を握る時です。\n多少の困難があっても、今のあなたにはそれをコントロールして進むだけの勢いと強さがあります。",
+            actions: ["今日やり遂げる小さな目標を一つ宣言する", "背筋を伸ばし、少し早足で歩いてみる"],
+            prayer: "力強い前進が、あなたを勝利へと導きますように。"
+          },
+          "8": {
+            light: "優しさと、静かな忍耐。",
+            meaning: "力で押さえつけるのではなく、受け入れながらコントロールする勇気が必要です。\nあなたの中にある「許し」や「しなやかさ」こそが、今の状況を乗り越える最強の力となります。",
+            actions: ["イラッとしたら、3回深呼吸して待つ", "自分の中の弱さを一つ認めてあげる"],
+            prayer: "しなやかな強さが、あなたを守りますように。"
+          },
+          "9": {
+            light: "内省と、魂の探求。",
+            meaning: "ひとつのサイクルが終わりへと向かい、静かに自分と向き合う時期です。\n外の世界の喧騒から少し離れ、あなたが本当に歩みたい道を見直すための時間を取りましょう。",
+            actions: ["夜、少しだけスマホを見ない時間を作る", "日記をつけて、今の気持ちを言語化する"],
+            prayer: "あなたの灯す光が、真実の道を照らしますように。"
+          },
+          "10": {
+            light: "運命の転換と、抗えない流れ。",
+            meaning: "あなたを取り巻く状況が、次のステージへと動き出しています。\n思い通りにならないことがあっても、それは大きな流れの一部。変化を恐れず、流れに乗る勇気を持ってください。",
+            actions: ["普段選ばない選択肢をあえて選んでみる", "「なるようになる」と宇宙に委ねてみる"],
+            prayer: "運命の輪が、あなたを最善の場所へ運びますように。"
+          },
+          "default": {
+            light: "カードが導く、小さな気づき。",
+            meaning: "このカードは、今のあなたに必要なメッセージを送っています。\n直感的に感じた「第一印象」や、キーワードの中で一番心に響いた言葉を大切にしてください。",
+            actions: ["ふと気になった言葉をメモしておく", "まずはゆっくりと深呼吸を一つ"],
+            prayer: "この出会いが、あなたの心を軽くしますように。"
+          }
+        };
+
+        const dbEntry = cardDB[cardId] || cardDB[primaryCard.number] || cardDB["default"];
+
         /* =========================================
            💗 Love Action Integrated Reason Builder
            - One paste complete version
@@ -3732,17 +3987,52 @@ font:12px/1.2 ui-sans-serif;">
           mainReasonHTML += `<br><span style="opacity:.85;">【補足】${escapeHtml(suppInline)}</span>`;
         }
 
+        const readingHTML = `
+          <div style="margin-top:20px; text-align:left;">
+            <div style="font-weight:900; color:var(--accent); font-size:14px; margin-bottom:8px;">【光の要約】<br><span style="color:#fff;font-weight:600;">${dbEntry.light}</span></div>
+            <div style="font-size:13px; color:rgba(255,255,255,.9); line-height:1.8; margin-bottom:12px;">【あなたへの意味】<br>${dbEntry.meaning.replace(/\n/g, '<br>')}</div>
+            <div style="font-size:13px; color:rgba(255,255,255,.9); line-height:1.8; margin-bottom:12px;">【小さな行動】<br>・${dbEntry.actions[0]}<br>・${dbEntry.actions[1]}</div>
+            <div style="font-size:13px; color:var(--accent2); font-style:italic;">【祈り】<br>${dbEntry.prayer}</div>
+          </div>
+        `;
+
         globalSummaryHTML = `
       <div class="summaryCard line">
         <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
         <div class="summaryText">${mainReasonHTML}</div>
         <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
         ${safeEnergy}
+        ${readingHTML}
       </div>
     `;
       }
 
-     
+
+
+      let wrapUpHTML = "";
+      if (count === 3) {
+        wrapUpHTML = `
+          <div class="summaryCard line" style="margin-top:16px;">
+            <div style="font-size:14px; font-weight:800; color:var(--accent); margin-bottom:6px;">【3枚の結び】</div>
+            <div style="font-size:13px; line-height:1.7; color:rgba(255,255,255,.9);">
+              過去から導かれたあなたの軌跡は、現在の気づきを通して、確実に新しい未来へと繋がっています。焦らず、今の自分を信じて歩みを進めてください。
+            </div>
+          </div>
+        `;
+      }
+
+      const actionsHTML = `
+        <div class="resultActions">
+          <div class="shareTitle">Share This Reading</div>
+          <div class="shareRow">
+            <button class="btnGhost" onclick="shareResultText()">Share</button>
+            <button class="btnGhost" onclick="copyResultText()">Copy</button>
+            <button class="btnGhost" onclick="shareResultImage()">Share Image</button>
+          </div>
+          <button class="btnDrawAgain" onclick="onDraw()">もう一度ひく</button>
+          <a class="numerologyLink" href="./numbers.html" target="_blank">数字の意味を詳しく知りたい方はこちら</a>
+        </div>
+      `;
 
       elResult.innerHTML = `
   ${globalSummaryHTML}
@@ -3751,6 +4041,8 @@ font:12px/1.2 ui-sans-serif;">
         renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
       ).join("")}
   </div>
+  ${wrapUpHTML}
+  ${actionsHTML}
 `;
 
       setStatus(`結果表示：${count}枚引き。`);
@@ -4009,6 +4301,243 @@ font:12px/1.2 ui-sans-serif;">
         .replaceAll("'", "&#039;");
     }
 
+    /* =========================================
+       ✨ Share & Copy Logic
+       ========================================= */
+    function getResultPlainText() {
+      // 画面上のテキストを一括取得して整形
+      const res = document.getElementById("result");
+      if (!res || !res.innerText) return "";
+
+      let text = res.innerText;
+      // 不要なボタンのテキストを除去
+      text = text.replace(/Share This Reading\nShare\nCopy\nShare Image\nもう一度ひく\n数字の意味を詳しく知りたい方はこちら/g, "");
+      return text.trim() + "\n\n#AngeliqueTarot\nhttps://angeliquetarot.github.io/";
+    }
+
+    function copyResultText() {
+      const text = getResultPlainText();
+      if (!text) return;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("コピーしました");
+        }).catch(err => {
+          console.error("Copy failed", err);
+          fallbackCopyText(text);
+        });
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      // 表示領域外に
+      textArea.style.position = "fixed";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) showToast("コピーしました");
+        else showToast("コピーに失敗しました");
+      } catch (err) {
+        console.error('Fallback copy fail', err);
+        showToast("コピーに失敗しました");
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function shareResultText() {
+      const text = getResultPlainText();
+      if (!text) return;
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'Angelique Tarot Reading',
+          text: text
+        }).then(() => {
+          console.log('Thanks for sharing!');
+        }).catch(console.error);
+      } else {
+        // フォールバック: コピー
+        copyResultText();
+        showToast("シェア機能が非対応のためコピーしました");
+      }
+    }
+
+    // --- Share Image (Canvas) ---
+    async function shareResultImage() {
+      const canvas = document.getElementById("shareCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      showToast("画像を生成中...", 2000);
+
+      // 1. 背景描画 (暗いトーン)
+      ctx.fillStyle = "#11111d";
+      ctx.fillRect(0, 0, 1080, 1080);
+
+      // 上部のグラデーション
+      let grad = ctx.createLinearGradient(0, 0, 0, 400);
+      grad.addColorStop(0, "rgba(245, 230, 179, 0.15)");
+      grad.addColorStop(1, "rgba(17, 17, 29, 0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1080);
+
+      // 2. 金色の枠線
+      ctx.strokeStyle = "rgba(214, 178, 94, 0.4)";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(40, 40, 1000, 1000);
+      ctx.strokeStyle = "rgba(214, 178, 94, 0.15)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(50, 50, 980, 980);
+
+      // 3. タイトル
+      ctx.fillStyle = "#f5e6b3"; // pale gold
+      ctx.font = "40px 'Cinzel', serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText("Angelique Tarot", 540, 80);
+
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+      ctx.font = "24px 'Cinzel', serif";
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.fillText(dateStr, 540, 130);
+
+      // 4. 画像の描画 (現在表示されているカード画像を集める)
+      const imgs = document.querySelectorAll("#result .cardImg");
+      if (imgs.length === 0) {
+        showToast("カード画像がありません");
+        return;
+      }
+
+      const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+      const count = (String(drawMode) === "3") ? 3 : 1;
+
+      // 何枚引きかでレイアウト変更
+      // カード比率 約 1 : 1.6
+      const cardW = count === 1 ? 300 : 240;
+      const cardH = count === 1 ? 480 : 384;
+      const startY = 220;
+
+      // 画像をロードして描画するPromiseを作成
+      const loadImg = (src, isReversed) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "Anonymous"; // 重要: CORS回避
+          img.onload = () => resolve({ img, isReversed, ok: true });
+          img.onerror = () => resolve({ img: null, isReversed, ok: false });
+          img.src = src;
+        });
+      };
+
+      const promises = [];
+      // DOM側のカード状態を取得 (正逆含む)
+      const cardElements = document.querySelectorAll("#result .tcard");
+      cardElements.forEach(cel => {
+        const imgEl = cel.querySelector("img");
+        // tcardVisual > img
+        if (imgEl) {
+          const isReversed = cel.querySelector(".badge")?.classList.contains("rev") || imgEl.classList.contains("reversed");
+          promises.push(loadImg(imgEl.src, isReversed));
+        } else {
+          // 読み込み失敗時の保険
+          const reversedFallback = cel.querySelector("img.reversed");
+          if (reversedFallback) promises.push(loadImg(reversedFallback.src, true));
+        }
+      });
+
+      const loadedImgs = await Promise.all(promises);
+      const validImgs = loadedImgs.filter(item => item.ok);
+
+      if (validImgs.length === 1) {
+        // 1枚引き
+        drawCardOnCanvas(ctx, validImgs[0], 540 - cardW / 2, startY, cardW, cardH);
+      } else if (validImgs.length === 3) {
+        // 3枚引き
+        const gap = 40;
+        const totalW = cardW * 3 + gap * 2; // 720 + 80 = 800
+        const startX = 540 - totalW / 2;
+        drawCardOnCanvas(ctx, validImgs[0], startX, startY, cardW, cardH);
+        drawCardOnCanvas(ctx, validImgs[1], startX + cardW + gap, startY, cardW, cardH);
+        drawCardOnCanvas(ctx, validImgs[2], startX + (cardW + gap) * 2, startY, cardW, cardH);
+      }
+
+      // 5. 結論テキスト
+      // .summaryTitle のテキストを取得
+      const summaryTitleEl = document.querySelector("#result .summaryTitle");
+      if (summaryTitleEl) {
+        ctx.font = "bold 28px 'Noto Serif JP', serif";
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
+      }
+
+      // Footer text
+      ctx.font = "20px 'Noto Serif JP', serif";
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillText("Search 'Angelique Tarot' to pull your own cards.", 540, 980);
+
+      // 6. 出力
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          showToast("画像の生成に失敗しました");
+          return;
+        }
+
+        const file = new File([blob], "reading.png", { type: "image/png" });
+
+        // Share API 対応チェック
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: 'Angelique Tarot Reading',
+            text: '私のタロットリーディング結果です #AngeliqueTarot'
+          }).then(() => {
+            console.log('Image shared successfully');
+          }).catch((err) => {
+            console.error("Share failed:", err);
+            // キャンセルされた場合などもここに来るのでエラー表示は控えめに
+          });
+        } else {
+          // 非対応なら新規タブで画像表示
+          showToast("表示された画像を長押し（右クリック）で保存してください", 4000);
+          const dataUrl = canvas.toDataURL("image/png");
+          const newWin = window.open();
+          if (newWin) {
+            newWin.document.write(`<img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">`);
+          } else {
+            fallbackCopyText(getResultPlainText());
+            showToast("画像を開けませんでした。テキストをコピーしました。");
+          }
+        }
+      }, "image/png");
+    }
+
+    function drawCardOnCanvas(ctx, item, x, y, w, h) {
+      if (!item || !item.img) return;
+      ctx.save();
+
+      // 影
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetY = 10;
+
+      if (item.isReversed) {
+        // 逆位置なら回転
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(Math.PI);
+        ctx.drawImage(item.img, -w / 2, -h / 2, w, h);
+      } else {
+        ctx.drawImage(item.img, x, y, w, h);
+      }
+      ctx.restore();
+    }
+
   </script>
   <!-- <script src="numerology_logic_pure.js"></script> -->
   <script src="assets/js/energy/energy_logic_clean.js"></script>
@@ -4016,6 +4545,3 @@ font:12px/1.2 ui-sans-serif;">
 
 
 </html>
-
-
-

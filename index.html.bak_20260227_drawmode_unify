@@ -1,0 +1,4082 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Angelique Tarot (CSV版)</title>
+  <style>
+    :root {
+      --bg: #666132;
+      --text: #ffffff;
+      /* 文字は白系に */
+      --muted: rgba(231, 206, 233, 0.72);
+      /* 補助文字 */
+      --line: rgba(133, 45, 45, 0.14);
+
+      --accent: #f0abfc;
+      /* 天使ピンク */
+      --accent2: #a5b4fc;
+      /* ラベンダー */
+
+      --good: #86efac;
+      --warn: #fde68a;
+      --bad: #fda4af;
+    }
+
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+
+      background:
+        linear-gradient(rgba(14, 11, 22, .62), rgba(14, 11, 22, .62)),
+        url("public/bg/angel_bg1.webp") center / cover no-repeat,
+        var(--bg);
+
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+
+
+
+    .app {
+      width: min(1100px, 100%)
+    }
+
+    header {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: .04em;
+    }
+
+    .title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1.4;
+    }
+
+    .panel {
+      background: rgba(20, 16, 30, .62);
+      /* 半透明の闇 */
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 18px;
+      padding: 14px;
+
+      box-shadow:
+        0 14px 40px rgba(0, 0, 0, .45),
+        inset 0 0 0 1px rgba(255, 255, 255, .12);
+    }
+
+
+    .topGrid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .cardsGrid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .cardsGrid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .cardsGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .cardImg {
+        width: 160px;
+      }
+    }
+
+
+    .drawMode {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s ease, background .12s ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, .08)
+    }
+
+    .chip input {
+      accent-color: var(--accent);
+      margin: 0
+    }
+
+    .chip strong {
+      font-size: 13px
+    }
+
+    .chip span {
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .btnRow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: var(--text);
+      background: linear-gradient(135deg, rgba(167, 139, 250, .9), rgba(96, 165, 250, .9));
+      font-weight: 700;
+      letter-spacing: .02em;
+      box-shadow: 0 10px 25px rgba(96, 165, 250, .14);
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.05)
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg,
+          rgba(240, 171, 252, .95),
+          rgba(165, 180, 252, .95));
+      box-shadow:
+        0 10px 30px rgba(165, 180, 252, .25),
+        inset 0 0 0 1px rgba(255, 255, 255, .25);
+    }
+
+    button.secondary:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, .09)
+    }
+
+    .status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stage {
+      margin-top: 12px;
+      padding: 14px;
+    }
+
+    .stageTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .stageTitle {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stageTitle h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .stageTitle p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .shuffleArea {
+      position: relative;
+      height: 140px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, .25), rgba(0, 0, 0, .15));
+      border: 1px solid rgba(255, 255, 255, .10);
+      overflow: hidden;
+    }
+
+    .deck {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 200px;
+      height: 200px;
+      transform: translate(-50%, -50%);
+      border-radius: 30px;
+      overflow: hidden;
+
+      /* ★裏面画像を表示 */
+      background: url("public/cards/back.png") center / cover no-repeat;
+
+      border: 1px solid rgba(255, 255, 255, .18);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+    }
+
+    /* 文字ロゴは消したいならこのまま削除してOK */
+    .deck::after {
+      content: "";
+    }
+
+    /* 飛ぶカード（裏面） */
+    .fly {
+      position: absolute;
+      width: 130px;
+      height: 185px;
+      border-radius: 20px;
+      overflow: hidden;
+
+      /* ★裏面画像を表示 */
+      background: url("public/cards/back.png") center / cover no-repeat;
+
+      border: 1px solid rgba(255, 255, 255, .15);
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      box-shadow: 0 16px 30px rgba(0, 0, 0, .35);
+    }
+
+    .shuffling .deck {
+      animation: deckBreath 1.8s ease-in-out infinite;
+    }
+
+    @keyframes deckBreath {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, .45),
+          0 0 22px rgba(200, 160, 255, .35);
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.05) rotate(2deg);
+        box-shadow: 0 22px 60px rgba(0, 0, 0, .55),
+          0 0 38px rgba(160, 200, 255, .55);
+      }
+    }
+
+
+
+    .cardsGrid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .cardsGrid.single {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+
+    .cardsGrid.three {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      /* 余白少なめ */
+      align-items: start;
+      justify-items: center;
+    }
+
+    /* 真ん中だけ少し強調（好みで） */
+    .cardsGrid.three .tcard:nth-child(2).cardImg {
+      width: 280px;
+      /* ← 基本サイズ */
+      max-width: 90%;
+    }
+
+
+    @media (max-width: 520px) {
+      .cardImg {
+        width: 170px;
+      }
+
+      .cardsGrid.three .tcard:nth-child(2) .cardImg {
+        width: 261 0px;
+      }
+    }
+
+    /* === 文字の可読性を上げる魔法 === */
+    body,
+    .panel,
+    .tcard,
+    .stage,
+    header,
+    .status,
+    .small,
+    .empty {
+      text-shadow:
+        0 1px 2px rgba(0, 0, 0, .55),
+        0 0 6px rgba(0, 0, 0, .35);
+    }
+
+    .tcard {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .04));
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow:
+        0 12px 34px rgba(0, 0, 0, .35),
+        0 0 0 1px rgba(255, 255, 255, .12),
+        0 0 28px rgba(240, 171, 252, .15);
+      /* 光 */
+    }
+
+    .tcardHeader {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, .10);
+      background: rgba(0, 0, 0, .18);
+    }
+
+    .tcardTitle {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .tcardTitle .pos {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .78);
+      letter-spacing: .06em;
+    }
+
+    .tcardTitle .name {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .tcardTitle .sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .badge {
+      align-self: flex-start;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      background: rgba(255, 255, 255, .06);
+      color: rgba(255, 255, 255, .85);
+      white-space: nowrap;
+    }
+
+    .badge.up {
+      border-color: rgba(34, 197, 94, .35);
+      background: rgba(34, 197, 94, .12)
+    }
+
+    .badge.rev {
+      border-color: rgba(245, 158, 11, .35);
+      background: rgba(245, 158, 11, .12)
+    }
+
+    .tcardVisual {
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* 結果カード（tcard）内の画像 */
+    /* 結果カード（tcard）内の画像 */
+    /* === ②-1 結果カード画像を大きく === */
+    /* ===== cardImg はここで一括管理（最後に置く） ===== */
+    .cardImg {
+      width: 340px;
+      /* 3枚すべて大きく */
+      max-width: 92%;
+      height: auto;
+      display: block;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      box-shadow: 0 22px 46px rgba(0, 0, 0, .45);
+    }
+
+    .cardImg.reversed {
+      transform: rotate(180deg);
+    }
+
+    /* 3枚引きレイアウト */
+    .cardsGrid.three {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      justify-items: center;
+      align-items: start;
+    }
+
+    /* 真ん中だけ“さらに”強調（任意。要らなければ消してOK） */
+    .cardsGrid.three .tcard:nth-child(2) .cardImg {
+      width: 360px;
+    }
+
+    /* 1枚引き */
+    .cardsGrid.single {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+
+    /* スマホ調整 */
+    @media (max-width: 480px) {
+      .cardsGrid.three {
+        gap: 10px;
+      }
+
+      .cardImg {
+        width: 20vw;
+      }
+
+      /* 3枚横で収まる */
+      .cardsGrid.three .tcard:nth-child(2) .cardImg {
+        width: 34vw;
+      }
+    }
+
+
+
+    .face {
+      width: 128px;
+      height: 188px;
+      border-radius: 18px;
+      background:
+        radial-gradient(120px 90px at 30% 20%, rgba(167, 139, 250, .30), transparent 60%),
+        radial-gradient(140px 110px at 70% 80%, rgba(96, 165, 250, .22), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .05));
+      border: 1px solid rgba(255, 255, 255, .18);
+      box-shadow: 0 16px 30px rgba(0, 0, 0, .40);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s ease;
+    }
+
+    .face .mono {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .7);
+      letter-spacing: .1em;
+    }
+
+    .face .big {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: rgba(255, 255, 255, .86);
+      text-align: center;
+      padding: 0 12px;
+      line-height: 1.25;
+    }
+
+    .face.reversed {
+      transform: rotate(180deg);
+    }
+
+    .tcardBody {
+      padding: 0 12px 12px;
+      color: rgba(255, 255, 255, .90);
+      font-size: 13px;
+      line-height: 1.62;
+    }
+
+    .line {
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .line:first-child {
+      border-top: 0
+    }
+
+    .k {
+      color: rgba(255, 255, 255, .90);
+      font-weight: 900;
+      margin-right: 6px;
+    }
+
+    /* Keyword chips */
+    .kwWrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .kw {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .06);
+      color: rgba(255, 255, 255, .88);
+      white-space: nowrap;
+    }
+
+    .kw.rev {
+      border-color: rgba(245, 158, 11, .25);
+      background: rgba(245, 158, 11, .10)
+    }
+
+    .kw.up {
+      border-color: rgba(96, 165, 250, .25);
+      background: rgba(96, 165, 250, .10)
+    }
+
+    details {
+      margin-top: 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(0, 0, 0, .14);
+      overflow: hidden;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      color: rgba(255, 255, 255, .88);
+      font-weight: 800;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .detailsBody {
+      padding: 0 12px 12px;
+      color: rgba(255, 255, 255, .86);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    .note {
+      margin-top: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(245, 158, 11, .25);
+      background: rgba(245, 158, 11, .10);
+      color: rgba(255, 255, 255, .88);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .empty {
+      padding: 14px;
+      border: 1px dashed rgba(255, 255, 255, .18);
+      border-radius: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      background: rgba(0, 0, 0, .12);
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ===== Yes / No 表示を大きくする ===== */
+    .ynRow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .yn {
+      font-size: 16px;
+      /* ← 大きさ（ここを18や20にしてもOK） */
+      font-weight: 900;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, .4);
+      background: rgba(255, 255, 255, .15);
+    }
+
+    .yn.up {
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, .25);
+    }
+
+    .yn.rev {
+      border-color: #facc15;
+      background: rgba(250, 204, 21, .25);
+    }
+
+    .cardWrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    /* 1枚引きの表示（上の1枚だけ出るカード） */
+    .cardWrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    .cardFrame {
+      width: min(360px, 78vw);
+      /* 中央で大きめ */
+    }
+
+    #tarotCard.tarotCard {
+      width: 100%;
+      height: auto;
+      display: block;
+      aspect-ratio: 2 / 3;
+      /* 崩れ防止 */
+      object-fit: cover;
+      border-radius: 18px;
+      box-shadow: 0 16px 30px rgba(0, 0, 0, .40);
+      border: 1px solid rgba(255, 255, 255, .18);
+    }
+
+    /* 逆位置：回転だけでOK（translateは不要） */
+    #tarotCard.tarotCard.reversed {
+      transform: rotate(180deg);
+    }
+
+    /* === 強制テキスト可視化（応急） === */
+    /* 応急の強制は最小限に */
+    body {
+      color: var(--text);
+    }
+
+
+    /* ===== 表示レイアウト（最終決定版） ===== */
+    .cardsGrid {
+      margin-top: 14px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .cardsGrid.single {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+
+    .cardsGrid.three {
+      grid-template-columns: repeat(3, 1fr);
+      justify-items: center;
+      align-items: start;
+    }
+
+    /* 画像サイズ（全体） */
+    .cardImg {
+      width: min(360px, 28vw);
+      /* 3枚とも大きい */
+      max-width: 92%;
+      height: auto;
+      display: block;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      box-shadow:
+        0 18px 44px rgba(0, 0, 0, .45),
+        0 0 36px rgba(240, 171, 252, .12);
+    }
+
+    .cardImg.reversed {
+      transform: rotate(180deg);
+    }
+
+    /* 真ん中だけほんの少し強調（不要なら削除OK） */
+    .cardsGrid.three .tcard:nth-child(2) .cardImg {
+      width: min(400px, 32vw);
+    }
+
+    /* モバイル */
+    @media (max-width: 480px) {
+      .cardsGrid.three {
+        gap: 10px;
+      }
+
+      .cardImg {
+        width: 30vw;
+      }
+
+      .cardsGrid.three .tcard:nth-child(2) .cardImg {
+        width: 34vw;
+      }
+    }
+
+    /* === シャッフル：光のオーラ === */
+    .shuffleArea::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 50% 50%,
+          rgba(200, 160, 255, .35),
+          rgba(160, 200, 255, .18),
+          transparent 60%);
+      opacity: .6;
+      animation: auraPulse 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes auraPulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: .45
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: .75
+      }
+    }
+
+    /* === 飛ぶカードの動きを優雅にする === */
+    .shuffling .fly {
+      animation-timing-function: cubic-bezier(.22, .61, .36, 1);
+    }
+
+    /* ===== サイズ調整（ここだけ触ればOK）===== */
+    :root {
+      --deck-size: 240px;
+      /* シャッフル中央の束（大きく） */
+      --fly-w: 160px;
+      /* 飛ぶカード幅（大きく） */
+      --fly-h: 230px;
+      /* 飛ぶカード高さ（大きく） */
+
+      --result-w-1: min(300px, 78vw);
+      /* 1枚引きの結果（少し小さく） */
+      --result-w-3: min(240px, 26vw);
+      /* 3枚引きの結果（小さく） */
+      --result-w-3-mid: min(260px, 28vw);
+      /* 真ん中だけ少し強調 */
+    }
+
+    /* シャッフルエリア高さも少し上げる（大きくした分の余裕） */
+    .shuffleArea {
+      height: 220px;
+    }
+
+    /* 中央デッキ（束） */
+    .deck {
+      width: var(--deck-size) !important;
+      height: var(--deck-size) !important;
+      border-radius: 28px;
+    }
+
+    /* 飛ぶカード */
+    .fly {
+      width: var(--fly-w) !important;
+      height: var(--fly-h) !important;
+      border-radius: 22px;
+    }
+
+    /* 結果：3枚引き（いま cardImg が大きすぎるので下げる） */
+    .cardsGrid.three .cardImg {
+      width: var(--result-w-3) !important;
+      max-width: 100%;
+    }
+
+    /* 結果：真ん中だけ少し強調（任意） */
+    .cardsGrid.three .tcard:nth-child(2) .cardImg {
+      width: var(--result-w-3-mid) !important;
+    }
+
+    /* 結果：1枚引き（#tarotCard は今使ってないけど保険で） */
+    .cardsGrid.single .cardImg {
+      width: var(--result-w-1) !important;
+      max-width: 100%;
+    }
+
+    /* スマホ：3枚横並びの崩れ防止 */
+    @media (max-width: 480px) {
+      .shuffleArea {
+        height: 200px;
+      }
+
+      :root {
+        --result-w-3: 28vw;
+        --result-w-3-mid: 32vw;
+      }
+    }
+
+    /* ===== シャッフル表示エリア：デッキサイズに合わせて自動で広げる ===== */
+    :root {
+      /* すでに入れてるならここは合わせるだけでOK */
+      --deck-size: 240px;
+    }
+
+    /* deck が大きくなっても切れない高さにする */
+    .shuffleArea {
+      height: calc(var(--deck-size) + 80px) !important;
+      /* ← 余白ぶん増やす */
+      min-height: 220px;
+      overflow: hidden;
+      /* 演出を枠内に収めたいなら hidden のままでOK */
+    }
+
+    /* スマホは少し控えめに */
+    @media (max-width: 520px) {
+      .shuffleArea {
+        height: calc(var(--deck-size) + 60px) !important;
+        min-height: 200px;
+      }
+    }
+
+    /* クリックが吸われるのを防ぐ（超重要） */
+    .shuffleArea,
+    .shuffleArea * {
+      pointer-events: none;
+    }
+
+    /* ボタンは必ず押せるようにする */
+    #btnDraw {
+      pointer-events: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    :root {
+      --deck-w: 220px;
+      /* シャッフル束：幅 */
+      --deck-h: 320px;
+      /* シャッフル束：高さ（カード比率に） */
+      --deck-radius: 22px;
+      /* 角丸 */
+    }
+
+    /* シャッフルの箱を「カード高さ + 余白」に */
+    .shuffleArea {
+      height: calc(var(--deck-h) + 80px) !important;
+      min-height: calc(var(--deck-h) + 80px) !important;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: var(--deck-w) !important;
+      height: var(--deck-h) !important;
+      border-radius: var(--deck-radius) !important;
+      background: url("public/cards/back.png") center / cover no-repeat;
+    }
+
+    .fly {
+      width: calc(var(--deck-w) * 0.72) !important;
+      height: calc(var(--deck-h) * 0.72) !important;
+      border-radius: calc(var(--deck-radius) * 0.95) !important;
+      background: url("public/cards/back.png") center / cover no-repeat;
+    }
+
+    /* ===== シャッフル束を「カード比率(2:3)」で固定して、いびつを解消 ===== */
+    :root {
+      --shuffle-w: 220px;
+      /* シャッフルカードの幅（大きさはここ） */
+      --shuffle-r: 22px;
+      /* 角丸 */
+    }
+
+    /* 箱もカード高さに合わせて確保（切れ防止） */
+    .shuffleArea {
+      height: calc(var(--shuffle-w) * 1.5 + 90px) !important;
+      /* 1.5 = 3/2 */
+      min-height: calc(var(--shuffle-w) * 1.5 + 90px) !important;
+      overflow: hidden;
+    }
+
+    /* 中央の束（deck） */
+    .deck {
+      width: var(--shuffle-w) !important;
+      height: auto !important;
+      aspect-ratio: 2 / 3 !important;
+      /* ←これが決定打 */
+      border-radius: var(--shuffle-r) !important;
+      background: url("public/cards/back.png") center / cover no-repeat !important;
+    }
+
+    /* 飛ぶカード（fly）も同じ比率で統一 */
+    .fly {
+      width: calc(var(--shuffle-w) * 0.78) !important;
+      height: auto !important;
+      aspect-ratio: 2 / 3 !important;
+      border-radius: calc(var(--shuffle-r) * 0.95) !important;
+      background: url("public/cards/back.png") center / cover no-repeat !important;
+    }
+
+    .deck,
+    .fly {
+      background-size: contain !important;
+      /* ←切れない */
+      background-color: rgba(0, 0, 0, .18);
+      /* 余白が出た時も綺麗 */
+    }
+
+    /* ================================
+   📱 Mobile最適化：シャッフル＆3枚引き
+   ================================ */
+
+    /* まずはPC/共通の基準（触るのはここだけでもOK） */
+    :root {
+      --shuffle-w: 220px;
+      /* PCのシャッフル幅 */
+    }
+
+    /* 3枚引き：重なりの原因は「カードが大きすぎ」or「tcardが伸びてる」なので、
+   グリッドの各列を“必ず均等”にして、画像幅をvwで固定 */
+    .cardsGrid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+    }
+
+    .cardsGrid.three .tcard {
+      width: 100%;
+      min-width: 0;
+      /* ← これがないと中身で横に広がって重なることがある */
+    }
+
+    .cardsGrid.three .cardImg {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto;
+    }
+
+    /* ---- モバイル本番調整 ---- */
+    @media (max-width: 520px) {
+
+      /* シャッフルカードが大きすぎる問題 */
+      :root {
+        --shuffle-w: 150px;
+        /* ←携帯は小さめに */
+      }
+
+      /* シャッフル箱も連動して縮める */
+      .shuffleArea {
+        height: calc(var(--shuffle-w) * 1.5 + 60px) !important;
+        min-height: calc(var(--shuffle-w) * 1.5 + 60px) !important;
+      }
+
+      /* シャッフル束＆飛ぶカード：比率は維持したまま縮小 */
+      .deck {
+        width: var(--shuffle-w) !important;
+        aspect-ratio: 2 / 3 !important;
+      }
+
+      .fly {
+        width: calc(var(--shuffle-w) * 0.78) !important;
+        aspect-ratio: 2 / 3 !important;
+      }
+
+      /* 3枚引き：絶対に重ならないサイズ設計（3枚=各1/3幅） */
+      .cardsGrid.three {
+        gap: 8px !important;
+      }
+
+      /* 画像をvw基準で固定（画面幅に対して常に収まる） */
+      .cardsGrid.three .cardImg {
+        width: 28vw !important;
+        /* ← ここを 26〜30 で調整 */
+        max-width: 28vw !important;
+      }
+
+      /* 真ん中だけ少し強調したい場合（任意。不要なら削除OK） */
+      .cardsGrid.three .tcard:nth-child(2) .cardImg {
+        width: 30vw !important;
+        max-width: 30vw !important;
+      }
+
+      /* カード枠（tcard）自体が横に広がらないように保険 */
+      .cardsGrid.three .tcard {
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+    }
+
+    /* =====================================
+   📱 Mobileでも3枚横並びを守る（重なり解消）
+   ===================================== */
+    @media (max-width: 520px) {
+
+      /* 3列を維持しつつ“はみ出し禁止”の土台 */
+      .cardsGrid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        align-items: start;
+      }
+
+      /* これが超重要：中身が原因で列幅より広がるのを止める */
+      .tcard,
+      .tcardHeader,
+      .tcardTitle,
+      .tcardBody {
+        min-width: 0 !important;
+      }
+
+      .tcard {
+        width: 100% !important;
+        overflow: hidden !important;
+        /* 隣に乗り上げるのを物理的に防ぐ */
+      }
+
+      /* 画像は列幅に100%フィット（=重なりの起点を消す） */
+      .cardsGrid.three .cardImg {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+      }
+
+      /* ヘッダーは“縦積み”にして横の突き抜けを防ぐ（横並び表示は維持） */
+      .tcardHeader {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        padding: 10px 10px 8px !important;
+      }
+
+      /* バッジも折り返し可に */
+      .badge {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
+        max-width: 100% !important;
+        white-space: normal !important;
+      }
+
+      /* YES/NO ピルが主犯：小さく＆折り返し＆列から出ない */
+      .ynRow {
+        margin-top: 8px !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+      }
+
+      .yn {
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+        line-height: 1.2 !important;
+        max-width: 100% !important;
+        white-space: normal !important;
+        /* ←折り返す */
+        overflow-wrap: anywhere !important;
+        /* ←保留/日本語でも突き抜けない */
+      }
+
+      /* 文字量も少し締めて“3枚横”の品を保つ */
+      .tcardBody {
+        padding: 0 10px 10px !important;
+        font-size: 12px !important;
+        line-height: 1.55 !important;
+      }
+
+      .tcardTitle .name {
+        font-size: 13px !important;
+      }
+
+      .tcardTitle .sub {
+        font-size: 11px !important;
+      }
+
+      /* キーワードチップが横に長いと押し出すので少し小さく */
+      .kw {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
+        max-width: 100% !important;
+      }
+    }
+
+    .coreText {
+      margin-top: 6px;
+      font-size: 14px;
+      line-height: 1.7;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .95);
+    }
+
+    /* =========================
+   ✨ カードを引くボタン 強化
+   ========================= */
+    #btnDraw {
+      font-size: 17px;
+      /* 文字を少し大きく */
+      padding: 16px 26px;
+      /* 押しやすく */
+      border-radius: 999px;
+      /* 天使的な丸み */
+      letter-spacing: .08em;
+      font-weight: 800;
+
+      background: linear-gradient(135deg,
+          rgba(240, 171, 252, .95),
+          rgba(165, 180, 252, .95));
+
+      box-shadow:
+        0 14px 30px rgba(165, 180, 252, .35),
+        0 0 0 1px rgba(255, 255, 255, .35),
+        inset 0 0 18px rgba(255, 255, 255, .25);
+
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 光がふわっと流れる */
+    #btnDraw::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, .45),
+          transparent 60%);
+      opacity: .6;
+      animation: drawGlow 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* ホバー：少し持ち上がる */
+    #btnDraw:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+
+    /* 押した瞬間：沈む */
+    #btnDraw:active {
+      transform: translateY(0);
+      box-shadow:
+        0 8px 18px rgba(165, 180, 252, .35),
+        inset 0 0 12px rgba(255, 255, 255, .25);
+    }
+
+    /* 光の呼吸 */
+    @keyframes drawGlow {
+
+      0%,
+      100% {
+        opacity: .35;
+      }
+
+      50% {
+        opacity: .7;
+      }
+    }
+
+    /* ===== 強制適用：カードを引くボタン ===== */
+    #btnDraw {
+      font-size: 18px !important;
+      padding: 18px 28px !important;
+      border-radius: 999px !important;
+      letter-spacing: .08em !important;
+      font-weight: 900 !important;
+
+      background: linear-gradient(135deg,
+          rgba(240, 171, 252, .95),
+          rgba(165, 180, 252, .95)) !important;
+
+      box-shadow:
+        0 14px 30px rgba(165, 180, 252, .35),
+        0 0 0 1px rgba(255, 255, 255, .35),
+        inset 0 0 18px rgba(255, 255, 255, .25) !important;
+
+      position: relative !important;
+      overflow: hidden !important;
+      transform: translateY(0) !important;
+      cursor: pointer !important;
+    }
+
+    /* 光が流れる */
+    #btnDraw::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: -40% !important;
+      background: radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, .55),
+          transparent 60%) !important;
+      opacity: .6 !important;
+      animation: drawGlow 3s ease-in-out infinite !important;
+      pointer-events: none !important;
+    }
+
+    #btnDraw:hover {
+      transform: translateY(-2px) !important;
+      filter: brightness(1.05) !important;
+    }
+
+    #btnDraw:active {
+      transform: translateY(0) !important;
+    }
+
+    button {
+      border: 1px solid rgba(214, 178, 94, .4);
+    }
+
+    button:hover {
+      box-shadow: 0 0 18px rgba(214, 178, 94, .25);
+    }
+
+    @keyframes drawGlow {
+
+      0%,
+      100% {
+        opacity: .35;
+      }
+
+      50% {
+        opacity: .75;
+      }
+    }
+
+    /* ================================
+   ✨ Angel Button: gold + glow + wing-ish
+   ================================ */
+    #btnDraw {
+      position: relative;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-width: 280px !important;
+      padding: 18px 34px !important;
+      font-size: 18px !important;
+      font-weight: 900;
+      letter-spacing: .06em;
+
+      color: rgba(40, 28, 10, .92);
+      border: 1px solid rgba(255, 255, 255, .35) !important;
+
+      /* ベージュ系ゴールド（上品） */
+      background: linear-gradient(135deg,
+          #f6e7c6 0%,
+          #efd39a 28%,
+          #d7b36a 55%,
+          #f3e0b8 100%) !important;
+
+      border-radius: 999px !important;
+      /* 天使っぽい柔らかさ */
+      box-shadow:
+        0 14px 30px rgba(0, 0, 0, .28),
+        0 0 0 1px rgba(255, 255, 255, .18) inset,
+        0 10px 26px rgba(220, 180, 90, .22);
+
+      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+      overflow: visible;
+    }
+
+    /* ふわっと光るオーラ（常時） */
+    #btnDraw::before {
+      content: "";
+      position: absolute;
+      inset: -18px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 35%, rgba(255, 245, 214, .65), transparent 55%),
+        radial-gradient(circle at 70% 65%, rgba(255, 214, 140, .38), transparent 60%);
+      filter: blur(10px);
+      opacity: .55;
+      animation: angelPulse 2.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* “羽感”の左右フレア（画像なしで羽っぽく） */
+    #btnDraw::after {
+      content: "";
+      position: absolute;
+      left: -26px;
+      right: -26px;
+      top: 50%;
+      height: 34px;
+      transform: translateY(-50%);
+      background:
+        radial-gradient(26px 18px at 0% 50%, rgba(255, 255, 255, .55), transparent 70%),
+        radial-gradient(26px 18px at 100% 50%, rgba(255, 255, 255, .55), transparent 70%),
+        linear-gradient(90deg, transparent, rgba(255, 255, 255, .22), transparent);
+      filter: blur(1px);
+      opacity: .55;
+      pointer-events: none;
+    }
+
+    /* ホバーで上品に浮く */
+    #btnDraw:hover {
+      transform: translateY(-1px) scale(1.01);
+      filter: saturate(1.03);
+      box-shadow:
+        0 18px 38px rgba(0, 0, 0, .32),
+        0 0 0 1px rgba(255, 255, 255, .22) inset,
+        0 0 26px rgba(255, 220, 150, .35);
+    }
+
+    /* 押した瞬間に“キラッ” */
+    #btnDraw:active {
+      transform: translateY(0px) scale(.99);
+      box-shadow:
+        0 12px 24px rgba(0, 0, 0, .28),
+        0 0 0 1px rgba(255, 255, 255, .20) inset,
+        0 0 34px rgba(255, 245, 210, .55);
+    }
+
+    /* キーボード操作でも光る */
+    #btnDraw:focus-visible {
+      outline: none;
+      box-shadow:
+        0 18px 38px rgba(0, 0, 0, .32),
+        0 0 0 3px rgba(255, 245, 214, .55),
+        0 0 40px rgba(255, 220, 150, .35);
+    }
+
+    @keyframes angelPulse {
+
+      0%,
+      100% {
+        opacity: .45;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: .78;
+        transform: scale(1.02);
+      }
+    }
+
+    /* 公開用：上の操作パネルを全消し */
+    .topGrid {
+      display: none !important;
+    }
+
+    /* シャッフルと結果の間に置く操作バー */
+    .drawBar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 10px;
+    }
+
+    /* 引き方を横並び中央に */
+    .drawModeInline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 「カードを引く」ボタン：中央固定＆上品に */
+    .drawBtn {
+      min-width: min(520px, 92vw);
+      padding: 16px 22px;
+      border-radius: 999px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, .35);
+      color: rgba(40, 28, 10, .95);
+
+      /* ベージュ系ゴールド */
+      background: linear-gradient(135deg,
+          #f7e7c2 0%,
+          #e6c37a 35%,
+          #f6e4b6 60%,
+          #cfa24f 100%);
+
+      box-shadow:
+        0 14px 34px rgba(0, 0, 0, .35),
+        0 0 26px rgba(255, 224, 160, .28);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ふわっと光る */
+    .drawBtn::before {
+      content: "";
+      position: absolute;
+      inset: -60%;
+      background: radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, .75),
+          rgba(255, 255, 255, .15),
+          transparent 60%);
+      transform: rotate(12deg);
+      animation: drawShine 2.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes drawShine {
+      0% {
+        transform: translateX(-14%) rotate(12deg);
+        opacity: .35;
+      }
+
+      50% {
+        transform: translateX(12%) rotate(12deg);
+        opacity: .75;
+      }
+
+      100% {
+        transform: translateX(-14%) rotate(12deg);
+        opacity: .35;
+      }
+    }
+
+    .drawBtn:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.05);
+    }
+
+    .drawBtn:active {
+      transform: translateY(0px) scale(.99);
+    }
+
+    /* =========================================
+       ✨ Cinematic UI CSS Port 
+       ========================================= */
+    :root {
+      --bg: #666132;
+      --text: #ffffff;
+      /* 文字は白系に */
+      --muted: rgba(231, 206, 233, 0.72);
+      /* 補助文字 */
+      --line: rgba(133, 45, 45, 0.14);
+      --accent: #f0abfc;
+      /* 天使ピンク */
+      --accent2: #a5b4fc;
+      /* ラベンダー */
+      --good: #86efac;
+      --warn: #fde68a;
+      --bad: #fda4af;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background:
+        linear-gradient(rgba(14, 11, 22, .62), rgba(14, 11, 22, .62)),
+        url("public/bg/angel_bg1.webp") center / cover no-repeat,
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .panel {
+      background: rgba(20, 16, 30, .62);
+      /* 半透明の闇 */
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, .25);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow:
+        0 14px 40px rgba(0, 0, 0, .45),
+        inset 0 0 0 1px rgba(255, 255, 255, .12);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .12);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s ease, background .12s ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .chip input {
+      accent-color: var(--accent);
+      margin: 0;
+    }
+
+    .chip strong {
+      font-size: 13px;
+    }
+
+    .chip span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    body,
+    .panel,
+    .tcard,
+    .stage,
+    header,
+    .status,
+    .small,
+    .empty {
+      text-shadow:
+        0 1px 2px rgba(0, 0, 0, .55),
+        0 0 6px rgba(0, 0, 0, .35);
+    }
+
+    /* Summary Block Text Only (Card style is overridden in Depth Polish) */
+    .summaryTitle {
+      font-weight: bold;
+      color: var(--accent, #f0abfc);
+      margin-bottom: 4px;
+    }
+
+    .summaryText {
+      font-size: 13px;
+      color: rgba(255, 255, 255, .85);
+      margin-bottom: 4px;
+    }
+
+    /* =========================================
+       ✨ Depth + Reverse lock (Cinematic, stable)
+       - Fix reversed-card spinning on hover/scroll
+       - Enhance depth without heavy blur
+       ========================================= */
+
+    :root {
+      --glass: rgba(18, 14, 28, .62);
+      --edge: rgba(255, 255, 255, .16);
+      --edgeHi: rgba(240, 171, 252, .22);
+      --glow: rgba(170, 190, 255, .12);
+      --shadowDeep: rgba(0, 0, 0, .58);
+      --shadowMid: rgba(0, 0, 0, .34);
+      --lift: -2px;
+    }
+
+    /* Panels: deeper, more premium */
+    .panel,
+    .stage,
+    .summaryCard {
+      background: var(--glass);
+      border: 1px solid rgba(255, 255, 255, .18);
+      box-shadow:
+        0 22px 64px var(--shadowDeep),
+        0 2px 14px var(--glow),
+        inset 0 1px 0 rgba(255, 255, 255, .12),
+        inset 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+
+    .summaryCard {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .14);
+    }
+
+    /* =========================
+       Card stability core
+       - Do NOT overwrite transform per-state.
+       - Compose rotation + lift via CSS variables.
+       ========================= */
+
+    .tcard {
+      /* default (upright) */
+      --rot: 0deg;
+      --ty: 0px;
+
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .02);
+      box-shadow:
+        0 18px 52px rgba(0, 0, 0, .46),
+        0 1px 0 rgba(255, 255, 255, .06),
+        inset 0 1px 0 rgba(255, 255, 255, .10);
+
+      /* IMPORTANT: always keep rotate in transform */
+      transform: translateY(var(--ty)) rotate(var(--rot)) translateZ(0);
+      transform-origin: center center;
+
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        border-color .18s ease,
+        filter .18s ease;
+      will-change: transform;
+    }
+
+    /* Premium rim highlight (lightweight) */
+    .tcard::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg,
+          rgba(240, 171, 252, .26),
+          rgba(165, 180, 252, .16),
+          rgba(255, 255, 255, .06));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: .72;
+    }
+
+    /* Optional subtle sheen */
+    .tcard::after {
+      content: "";
+      position: absolute;
+      left: 10%;
+      top: 6%;
+      width: 65%;
+      height: 40%;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, .10),
+          rgba(255, 255, 255, 0) 70%);
+      pointer-events: none;
+      opacity: .55;
+    }
+
+    /* Reversed state lock:
+       - match your existing reversed selector(s) by including multiple possibilities
+       - keeps rotation stable on hover/scroll
+    */
+    .tcard.isReversed,
+    .tcard.reversed,
+    .tcard[data-reversed="true"],
+    .tcard[aria-label*="逆"],
+    .tcard[aria-label*="reversed"] {
+      --rot: 180deg;
+    }
+
+    /* Hover lift: change only --ty, never replace transform */
+    .tcard:hover {
+      --ty: var(--lift);
+      border-color: rgba(255, 255, 255, .18);
+      box-shadow:
+        0 26px 74px rgba(0, 0, 0, .56),
+        0 6px 18px rgba(160, 200, 255, .10),
+        inset 0 1px 0 rgba(255, 255, 255, .12);
+    }
+
+    /* Image depth: follow the same lift (no rotation), avoid “spin” */
+    .cardImg {
+      transform: translateY(var(--ty)) translateZ(0);
+      filter: drop-shadow(0 16px 40px rgba(0, 0, 0, .58));
+      transition: transform .18s ease, filter .18s ease;
+      will-change: transform;
+    }
+
+    .tcard:hover .cardImg {
+      filter: drop-shadow(0 26px 60px rgba(0, 0, 0, .68));
+    }
+
+    /* Buttons: premium depth without flash */
+    button {
+      box-shadow:
+        0 14px 38px rgba(0, 0, 0, .28),
+        inset 0 1px 0 rgba(255, 255, 255, .22);
+      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.04) contrast(1.02);
+      box-shadow:
+        0 18px 46px rgba(0, 0, 0, .32),
+        inset 0 1px 0 rgba(255, 255, 255, .24);
+    }
+
+    /* Chips: tiny lift only */
+    .chip {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .14);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .10),
+        0 8px 22px rgba(0, 0, 0, .18);
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, .08);
+      border-color: rgba(255, 255, 255, .16);
+    }
+
+    /* Accessibility / motion safety */
+    @media (prefers-reduced-motion: reduce) {
+
+      .tcard,
+      .cardImg,
+      button,
+      .chip {
+        transition: none !important;
+      }
+
+      .tcard:hover {
+        --ty: 0px;
+      }
+
+      button:hover {
+        transform: none;
+      }
+
+      .chip:hover {
+        transform: none;
+      }
+    }
+
+    /* =========================================
+   💎 Premium micro-polish (no extra motion)
+   - Lift perceived luxury via edges + tone
+   - Keep reversed lock stable
+   ========================================= */
+
+    /* Panels: add subtle inner vignette + sharper edge */
+    .panel,
+    .stage,
+    .summaryCard {
+      background:
+        radial-gradient(120% 140% at 10% 0%,
+          rgba(255, 255, 255, .06),
+          rgba(255, 255, 255, 0) 55%),
+        radial-gradient(120% 140% at 90% 100%,
+          rgba(0, 0, 0, .25),
+          rgba(0, 0, 0, 0) 60%),
+        var(--glass);
+      border-color: rgba(255, 255, 255, .16);
+    }
+
+    /* Cards: refine depth stacking (more “cinema lens” feel) */
+    .tcard {
+      box-shadow:
+        0 22px 70px rgba(0, 0, 0, .52),
+        /* deep */
+        0 6px 18px rgba(0, 0, 0, .22),
+        /* mid */
+        inset 0 1px 0 rgba(255, 255, 255, .10);
+      border-color: rgba(255, 255, 255, .12);
+    }
+
+    /* Rim highlight: slightly more premium, less “neon” */
+    .tcard::before {
+      opacity: .62;
+      background: linear-gradient(135deg,
+          rgba(240, 171, 252, .22),
+          rgba(165, 180, 252, .14),
+          rgba(255, 255, 255, .05));
+    }
+
+    /* Sheen: narrower and softer (feels like coated paper) */
+    .tcard::after {
+      left: 12%;
+      top: 7%;
+      width: 58%;
+      height: 34%;
+      opacity: .45;
+    }
+
+    /* Hover: keep motion same, only enrich shadow tone */
+    .tcard:hover {
+      box-shadow:
+        0 30px 86px rgba(0, 0, 0, .60),
+        0 10px 22px rgba(160, 200, 255, .08),
+        inset 0 1px 0 rgba(255, 255, 255, .12);
+    }
+
+    /* Card image: richer “presence” without scaling more */
+    .cardImg {
+      filter:
+        drop-shadow(0 18px 44px rgba(0, 0, 0, .62)) drop-shadow(0 2px 8px rgba(160, 200, 255, .08));
+    }
+
+    .tcard:hover .cardImg {
+      filter:
+        drop-shadow(0 30px 70px rgba(0, 0, 0, .70)) drop-shadow(0 3px 10px rgba(160, 200, 255, .10));
+    }
+
+    /* Buttons: edge definition + quieter glow */
+    button {
+      border: 1px solid rgba(255, 255, 255, .14);
+      box-shadow:
+        0 16px 44px rgba(0, 0, 0, .30),
+        0 2px 10px rgba(160, 200, 255, .08),
+        inset 0 1px 0 rgba(255, 255, 255, .20);
+    }
+
+    button:hover {
+      box-shadow:
+        0 20px 54px rgba(0, 0, 0, .34),
+        0 3px 12px rgba(160, 200, 255, .10),
+        inset 0 1px 0 rgba(255, 255, 255, .22);
+    }
+
+    /* Chips: make them feel “enamel” */
+    .chip {
+      border-color: rgba(255, 255, 255, .12);
+      background: linear-gradient(to bottom,
+          rgba(255, 255, 255, .08),
+          rgba(255, 255, 255, .04));
+    }
+
+    .chip:hover {
+      background: linear-gradient(to bottom,
+          rgba(255, 255, 255, .10),
+          rgba(255, 255, 255, .05));
+    }
+
+    /* =========================================
+   🌙 Depth boost (Visible, still restrained)
+   - Stronger contact shadow + double edge
+   - No extra motion, no heavy blur
+   ========================================= */
+
+    :root {
+      --contact: rgba(0, 0, 0, .72);
+      --rimOuter: rgba(255, 255, 255, .14);
+      --rimInner: rgba(255, 255, 255, .06);
+      --glint: rgba(240, 171, 252, .18);
+      --cool: rgba(165, 180, 252, .12);
+    }
+
+    /* Panels: add subtle inner frame (luxury “case” feel) */
+    .panel,
+    .stage,
+    .summaryCard {
+      position: relative;
+      box-shadow:
+        0 26px 80px rgba(0, 0, 0, .62),
+        0 2px 14px rgba(160, 200, 255, .10),
+        inset 0 1px 0 rgba(255, 255, 255, .12),
+        inset 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+
+    /* Cards: contact shadow (the biggest “I can see it” upgrade) */
+    .tcard {
+      background:
+        linear-gradient(to bottom,
+          rgba(255, 255, 255, .035),
+          rgba(255, 255, 255, .012));
+      border-color: var(--rimOuter);
+      box-shadow:
+        0 10px 22px rgba(0, 0, 0, .26),
+        /* ambient */
+        0 28px 72px rgba(0, 0, 0, .58),
+        /* deep */
+        0 2px 0 rgba(255, 255, 255, .05),
+        /* top crisp */
+        inset 0 1px 0 rgba(255, 255, 255, .10);
+    }
+
+    /* Inner edge line: makes it feel “machined / framed” */
+    .tcard {
+      outline: 1px solid rgba(255, 255, 255, .04);
+      outline-offset: -6px;
+    }
+
+    /* Rim gradient slightly clearer (still not neon) */
+    .tcard::before {
+      opacity: .70;
+      background: linear-gradient(135deg,
+          var(--glint),
+          var(--cool),
+          rgba(255, 255, 255, .05));
+    }
+
+    /* Add a soft base shadow that reads as “seated” even without hover */
+    .tcard::after {
+      /* keep your sheen, but add base depth using multiple backgrounds */
+      background:
+        radial-gradient(circle at 30% 30%,
+          rgba(255, 255, 255, .10),
+          rgba(255, 255, 255, 0) 70%),
+        radial-gradient(90% 120% at 50% 120%,
+          rgba(0, 0, 0, .36),
+          rgba(0, 0, 0, 0) 60%);
+      opacity: .55;
+    }
+
+    /* Hover: same lift, but stronger “separation” */
+    .tcard:hover {
+      box-shadow:
+        0 12px 26px rgba(0, 0, 0, .28),
+        0 38px 98px rgba(0, 0, 0, .66),
+        0 8px 22px rgba(160, 200, 255, .10),
+        inset 0 1px 0 rgba(255, 255, 255, .12);
+    }
+
+    /* Image: give a tighter contact shadow + a halo */
+    .cardImg {
+      filter:
+        drop-shadow(0 10px 18px var(--contact)) drop-shadow(0 26px 62px rgba(0, 0, 0, .62)) drop-shadow(0 2px 10px rgba(160, 200, 255, .10));
+    }
+
+    /* Buttons: add subtle bevel feel */
+    button {
+      border-color: rgba(255, 255, 255, .16);
+      background:
+        linear-gradient(to bottom,
+          rgba(255, 255, 255, .10),
+          rgba(255, 255, 255, .04));
+      box-shadow:
+        0 18px 54px rgba(0, 0, 0, .34),
+        inset 0 1px 0 rgba(255, 255, 255, .22),
+        inset 0 -1px 0 rgba(0, 0, 0, .25);
+    }
+
+    button:active {
+      transform: translateY(0px);
+      filter: saturate(1.02) contrast(1.01);
+      box-shadow:
+        0 10px 34px rgba(0, 0, 0, .28),
+        inset 0 1px 0 rgba(255, 255, 255, .18),
+        inset 0 -1px 0 rgba(0, 0, 0, .30);
+    }
+
+    /* Chips: more depth via crisp edge + tiny outer shadow */
+    .chip {
+      box-shadow:
+        0 10px 24px rgba(0, 0, 0, .22),
+        inset 0 1px 0 rgba(255, 255, 255, .12);
+    }
+
+    /* =========================================
+   ✨ Typography + Detail polish (Luxury, calm)
+   - Improve readability and “grade”
+   - No extra motion, no blur
+   ========================================= */
+
+    :root {
+      --textA: rgba(255, 255, 255, .92);
+      --textB: rgba(255, 255, 255, .78);
+      --textC: rgba(255, 255, 255, .62);
+    }
+
+    /* Global text tuning: subtle contrast and spacing */
+    body {
+      color: var(--textA);
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Panels: give inner padding feel via subtle highlight line */
+    .panel,
+    .stage,
+    .summaryCard {
+      border-color: rgba(255, 255, 255, .15);
+    }
+
+    /* Make important headings feel “premium” */
+    h1,
+    h2,
+    h3,
+    .title,
+    .heading {
+      letter-spacing: .04em;
+    }
+
+    /* If your app uses these blocks, it will instantly improve hierarchy */
+    .summaryCard,
+    .panel {
+      color: var(--textB);
+    }
+
+    .summaryCard strong,
+    .panel strong,
+    .summaryCard b,
+    .panel b {
+      color: var(--textA);
+    }
+
+    /* Chips: cleaner labels */
+    .chip {
+      color: var(--textB);
+      letter-spacing: .04em;
+    }
+
+    /* Buttons: text clarity */
+    button {
+      letter-spacing: .04em;
+      color: var(--textA);
+    }
+
+    /* Cards: make text around cards more readable */
+    .tcard {
+      color: var(--textA);
+    }
+
+    /* Optional: if you have captions/labels under cards */
+    .caption,
+    .label,
+    .meta,
+    .subtext {
+      color: var(--textC);
+      letter-spacing: .03em;
+    }
+
+    /* Reduce “busy” feeling by tightening focus styles */
+    :focus-visible {
+      outline: 2px solid rgba(240, 171, 252, .35);
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+
+    /* =========================================
+   ✨ Text block finisher (Readability = Luxury)
+   - No motion, no blur
+   ========================================= */
+
+    /* Long-form text: calm, cinematic readability */
+    .panel p,
+    .stage p,
+    .summaryCard p,
+    .panel .reasonText,
+    .panel .energyText,
+    .stage .reasonText,
+    .stage .energyText {
+      line-height: 1.85;
+      letter-spacing: .02em;
+      color: rgba(255, 255, 255, .82);
+    }
+
+    /* If your reason/energy blocks are dense, add breathing room */
+    .panel .reasonText,
+    .panel .energyText,
+    .stage .reasonText,
+    .stage .energyText {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    /* Make emphasized parts feel intentional (not shouty) */
+    .panel strong,
+    .stage strong,
+    .summaryCard strong,
+    .panel b,
+    .stage b,
+    .summaryCard b {
+      color: rgba(255, 255, 255, .93);
+      font-weight: 600;
+    }
+
+    /* Reduce “flat wall of text” feeling */
+    .panel,
+    .stage,
+    .summaryCard {
+      max-width: 980px;
+      /* if container allows, it looks premium */
+    }
+
+    /* =========================================
+   🌐 Responsive center layout (PC + Mobile)
+   ========================================= */
+
+    /* Outer spacing */
+    body {
+      padding-inline: 16px;
+    }
+
+    /* Main containers */
+    .panel,
+    .stage,
+    .summaryCard {
+      width: 100%;
+      max-width: 980px;
+      margin-inline: auto;
+    }
+
+    /* Give breathing space on large screens */
+    @media (min-width: 1200px) {
+      body {
+        padding-inline: 32px;
+      }
+
+      .panel,
+      .stage,
+      .summaryCard {
+        max-width: 1100px;
+      }
+    }
+
+    /* Mobile tuning */
+    @media (max-width: 640px) {
+      body {
+        padding-inline: 14px;
+      }
+
+      .panel,
+      .stage,
+      .summaryCard {
+        max-width: 100%;
+      }
+    }
+
+    /* =========================================
+   ✨ Final tuning (Luxury + Stability)
+   - Reversed clarity without motion
+   - Disable hover on touch devices
+   ========================================= */
+
+    /* =========================================
+       🌟 Reversed marker (safe, visible, premium)
+       - Uses ::before only (keeps ::after sheen intact)
+       ========================================= */
+
+    /* Add a tiny corner glint INSIDE the rim gradient for reversed cards */
+    .tcard.isReversed::before,
+    .tcard.reversed::before,
+    .tcard[data-reversed="true"]::before,
+    .tcard[aria-label*="逆"]::before,
+    .tcard[aria-label*="reversed"]::before {
+      background:
+        /* corner glint (top-right) */
+        radial-gradient(14px 14px at 92% 10%,
+          rgba(255, 255, 255, .22),
+          rgba(255, 255, 255, 0) 70%),
+        /* keep existing rim look */
+        linear-gradient(135deg,
+          rgba(165, 180, 252, .22),
+          rgba(160, 200, 255, .14),
+          rgba(255, 255, 255, .05));
+      opacity: .74;
+      filter: none;
+      /* prevent hue-rotate from muddying the glint */
+    }
+
+    /* Keep border color cue (quiet, clear) */
+    .tcard.isReversed,
+    .tcard.reversed,
+    .tcard[data-reversed="true"],
+    .tcard[aria-label*="逆"],
+    .tcard[aria-label*="reversed"] {
+      border-color: rgba(165, 180, 252, .26);
+    }
+
+    /* 2) Hover effects only for devices that actually hover (PC/mouse) */
+    @media (hover: hover) and (pointer: fine) {
+      .tcard:hover {
+        --ty: var(--lift);
+      }
+
+      .chip:hover {
+        transform: translateY(-1px);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+    }
+
+    /* Touch devices: kill hover transforms to prevent “stuck hover” */
+    @media (hover: none) and (pointer: coarse) {
+      .tcard:hover {
+        --ty: 0px;
+      }
+
+      .chip:hover {
+        transform: none;
+      }
+
+      button:hover {
+        transform: none;
+      }
+    }
+
+    /* =========================================
+   🎬 Background lighting (shadow visibility fix)
+   ========================================= */
+
+    :root {
+      --bg0: #070914;
+      --bg1: #0b0f1c;
+
+      --textA: rgba(255, 255, 255, .92);
+      --textB: rgba(255, 255, 255, .78);
+      --textC: rgba(255, 255, 255, .62);
+
+      --surface: rgba(18, 14, 28, .62);
+    }
+
+    /* Cinematic background lighting */
+    body {
+      background:
+        radial-gradient(120% 100% at 50% 0%,
+          rgba(245, 230, 179, .08),
+          rgba(0, 0, 0, 0) 60%),
+        radial-gradient(80% 70% at 90% 20%,
+          rgba(214, 178, 94, .06),
+          rgba(0, 0, 0, 0) 60%),
+        linear-gradient(to bottom,
+          #11111d 0%,
+          #15152b 60%,
+          #0c0c18 100%);
+      background-attachment: fixed;
+      color: #f2f2f2;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      /* うっすら粒子（CSSだけで擬似ノイズ） */
+      background:
+        repeating-linear-gradient(0deg,
+          rgba(255, 255, 255, .03) 0px,
+          rgba(255, 255, 255, .03) 1px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(0, 0, 0, 0) 4px);
+      opacity: .06;
+      mix-blend-mode: overlay;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      /* 上品なビネット（中心に視線が集まる） */
+      background: radial-gradient(120% 120% at 50% 50%,
+          rgba(0, 0, 0, 0) 45%,
+          rgba(0, 0, 0, .38) 100%);
+      opacity: .55;
+      z-index: 0;
+    }
+
+    /* 既存UIが上に来るように（安全） */
+    .app,
+    .panel,
+    .stage,
+    .summaryCard {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Panels: slightly brighter than background */
+    .panel,
+    .stage,
+    .summaryCard {
+      background:
+        linear-gradient(to bottom,
+          rgba(255, 255, 255, .05),
+          rgba(255, 255, 255, .018)),
+        var(--surface);
+      border-color: rgba(255, 255, 255, .14);
+    }
+
+    /* Cards: make them read as objects (clear separation) */
+    .tcard {
+      background:
+        radial-gradient(120% 80% at 50% 0%,
+          rgba(255, 255, 255, .06),
+          rgba(255, 255, 255, 0) 55%),
+        linear-gradient(to bottom,
+          rgba(255, 255, 255, .032),
+          rgba(255, 255, 255, .012));
+    }
+
+    /* =========================================
+   ✨ Readability scale adjustment
+   ========================================= */
+
+    /* Base size slightly larger */
+    html {
+      font-size: 17px;
+      /* default 16 → 17 */
+    }
+
+    /* Long text blocks */
+    .panel p,
+    .stage p,
+    .summaryCard p,
+    .reasonText,
+    .energyText {
+      font-size: 1.05rem;
+      line-height: 1.9;
+    }
+
+    /* Headings slightly stronger hierarchy */
+    h1 {
+      font-size: 1.6rem;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+    }
+
+    /* Mobile tuning */
+    @media (max-width: 640px) {
+      html {
+        font-size: 16.5px;
+      }
+
+      .panel p,
+      .stage p,
+      .summaryCard p,
+      .reasonText,
+      .energyText {
+        font-size: 1.08rem;
+        line-height: 1.95;
+      }
+    }
+
+    /* =========================================
+   🔎 Real readability upgrade (visible change)
+   ========================================= */
+
+    /* Stronger base scale */
+    html {
+      font-size: 18.5px;
+    }
+
+    /* Long-form reading text */
+    .panel p,
+    .stage p,
+    .summaryCard p,
+    .reasonText,
+    .energyText {
+      font-size: 1.08rem;
+      line-height: 1.95;
+      letter-spacing: .015em;
+    }
+
+    /* Improve contrast (very important) */
+    .panel,
+    .stage,
+    .summaryCard {
+      color: rgba(255, 255, 255, .92);
+    }
+
+    .caption,
+    .label,
+    .meta,
+    .subtext {
+      color: rgba(255, 255, 255, .70);
+    }
+
+    /* Mobile: keep strong readability */
+    @media (max-width: 640px) {
+      html {
+        font-size: 17.5px;
+      }
+
+      .panel p,
+      .stage p,
+      .summaryCard p,
+      .reasonText,
+      .energyText {
+        font-size: 1.1rem;
+        line-height: 2;
+      }
+    }
+
+    /* =========================================
+   🔎 Readability MAX (Long-text only, not UI)
+   - Make reading text clearly larger
+   - Keep buttons/chips from ballooning
+   ========================================= */
+
+    /* Keep current base (do not increase html further) */
+    /* html{ font-size: 18.5px; }  ← ここは既存のままでOK */
+
+    /* Long-form reading text = the main upgrade */
+    .panel p,
+    .stage p,
+    .summaryCard p,
+    .reasonText,
+    .energyText {
+      font-size: clamp(1.16rem, 1.05rem + 0.6vw, 1.28rem);
+      line-height: 2.05;
+      letter-spacing: .012em;
+    }
+
+    /* Headings also slightly up so hierarchy stays elegant */
+    h1 {
+      font-size: clamp(1.75rem, 1.55rem + 0.8vw, 2.05rem);
+    }
+
+    h2 {
+      font-size: clamp(1.35rem, 1.22rem + 0.5vw, 1.55rem);
+    }
+
+    h3 {
+      font-size: clamp(1.18rem, 1.10rem + 0.35vw, 1.32rem);
+    }
+
+    /* Small UI text (chips/buttons) stays controlled */
+    button,
+    .chip {
+      font-size: 0.98rem;
+      line-height: 1.25;
+    }
+
+    /* Mobile: slightly stronger for readability */
+    @media (max-width: 640px) {
+
+      .panel p,
+      .stage p,
+      .summaryCard p,
+      .reasonText,
+      .energyText {
+        font-size: 1.22rem;
+        /* ~22px class */
+        line-height: 2.10;
+      }
+    }
+
+    /* =========================================
+   🎯 Text targeting fix (Make body bigger, keep steps small)
+   ========================================= */
+
+    /* 1) Step/Process texts should NOT be huge (keep them refined) */
+    .chip,
+    button,
+    .stage .chip,
+    .panel .chip,
+    .summaryCard .chip,
+    .step,
+    .steps,
+    .hint,
+    .help,
+    .helper,
+    .instructions,
+    .instruction,
+    .process,
+    .status,
+    .small,
+    .muted,
+    [role="status"],
+    [aria-live] {
+      font-size: 0.98rem !important;
+      line-height: 1.35 !important;
+      letter-spacing: .04em;
+    }
+
+    /* 2) Main reading text: make it clearly larger
+   - target both <p> and "div-based" text blocks (br rendering) */
+    .reasonText,
+    .energyText,
+    .resultText,
+    .readingText,
+    .panel .reasonText,
+    .panel .energyText,
+    .stage .reasonText,
+    .stage .energyText,
+    .summaryCard .reasonText,
+    .summaryCard .energyText {
+      font-size: clamp(1.20rem, 1.08rem + 0.7vw, 1.34rem) !important;
+      line-height: 2.05 !important;
+      letter-spacing: .012em;
+    }
+
+    /* 3) Fallback: if long text is inside generic containers, catch it safely */
+    .panel :where(p, li, dd, td),
+    .stage :where(p, li, dd, td),
+    .summaryCard :where(p, li, dd, td) {
+      font-size: clamp(1.16rem, 1.05rem + 0.6vw, 1.30rem) !important;
+      line-height: 2.00 !important;
+    }
+
+    /* 4) But never inflate headings */
+    .panel :where(h1, h2, h3),
+    .stage :where(h1, h2, h3),
+    .summaryCard :where(h1, h2, h3) {
+      line-height: 1.25;
+    }
+
+    /* 5) Mobile: stronger readability */
+    @media (max-width: 640px) {
+
+      .reasonText,
+      .energyText,
+      .resultText,
+      .readingText {
+        font-size: 1.26rem !important;
+        /* ~22px級 */
+        line-height: 2.10 !important;
+      }
+
+      .chip,
+      button,
+      .instructions,
+      .process {
+        font-size: 1.00rem !important;
+      }
+    }
+
+    /* =========================================
+   🧪 Font debug + Force readable body text
+   - Prove selector hit (debug highlight)
+   - Make main reading text bigger for sure
+   ========================================= */
+
+    /* A) Debug: if you don't see this highlight on the main reading text,
+      your selectors are missing the real nodes. */
+    .reasonText,
+    .energyText,
+    .resultText,
+    .readingText {
+      background: rgba(255, 230, 140, .10) !important;
+      /* debug */
+      outline: 1px dashed rgba(255, 230, 140, .25) !important;
+      /* debug */
+    }
+
+    /* B) Force: enlarge reading text broadly but avoid UI controls */
+    :where(.panel, .stage, .summaryCard, #app, .app, main, body) :where(p, div, span, li, dd, td) {
+      font-size: clamp(1.20rem, 1.06rem + 0.85vw, 1.38rem) !important;
+      line-height: 2.05 !important;
+      letter-spacing: .012em;
+    }
+
+    /* C) Do NOT enlarge typical UI bits */
+    :where(button, .chip, input, textarea, select, option, label, small,
+      .step, .steps, .hint, .help, .helper, .instructions, .instruction,
+      .process, .status, .caption, .label, .meta, .subtext,
+      [role="status"], [aria-live]) {
+      font-size: 1.00rem !important;
+      line-height: 1.35 !important;
+    }
+
+    /* D) If some container is forcing px sizes, neutralize it */
+    :where(.panel, .stage, .summaryCard, #app, .app, main, body) {
+      font-size: inherit !important;
+    }
+
+    /* E) Mobile: push reading size to clearly “big” */
+    @media (max-width: 640px) {
+      :where(.panel, .stage, .summaryCard, #app, .app, main, body) :where(p, div, span, li, dd, td) {
+        font-size: 1.28rem !important;
+        /* ~22–23px級 */
+        line-height: 2.10 !important;
+      }
+    }
+
+    /* =========================================
+   ✅ Font scope fix (Body-only bigger, UI/icons normal)
+   - Neutralize the global force rules
+   ========================================= */
+
+    /* 1) Reset global forced enlargement (stop affecting everything) */
+    :where(#app, .app, main, body) :where(p, div, span, li, dd, td) {
+      font-size: inherit !important;
+      line-height: inherit !important;
+      letter-spacing: inherit !important;
+      background: transparent !important;
+      /* remove debug yellow */
+      outline: none !important;
+      /* remove debug outline */
+    }
+
+    /* 2) Keep UI elements at normal size */
+    :where(button, .chip, input, textarea, select, option, label, small,
+      .step, .steps, .hint, .help, .helper, .instructions, .instruction,
+      .process, .status, .caption, .label, .meta, .subtext,
+      [role="status"], [aria-live]) {
+      font-size: 1rem !important;
+      line-height: 1.35 !important;
+    }
+
+    /* 3) Icons: prevent icon fonts from scaling up */
+    :where(.icon, .icons, .material-icons, .material-symbols-outlined,
+      .fa, .fas, .far, .fab, .bi) {
+      font-size: 1em !important;
+      line-height: 1 !important;
+    }
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+
+    /* 4) Make ONLY reading text bigger (safe scope: panels/stage/summary) */
+    :where(.panel, .stage, .summaryCard) :where(.reasonText, .energyText, .resultText, .readingText) {
+      font-size: clamp(1.20rem, 1.08rem + 0.7vw, 1.34rem) !important;
+      line-height: 2.05 !important;
+      letter-spacing: .012em;
+    }
+
+    /* 5) Fallback: if main text is plain <p> in those containers */
+    :where(.panel, .stage, .summaryCard) p {
+      font-size: clamp(1.16rem, 1.05rem + 0.6vw, 1.30rem) !important;
+      line-height: 2.00 !important;
+    }
+
+    /* 6) Mobile: strong readability only for reading text */
+    @media (max-width: 640px) {
+      :where(.panel, .stage, .summaryCard) :where(.reasonText, .energyText, .resultText, .readingText) {
+        font-size: 1.26rem !important;
+        /* ~22px級 */
+        line-height: 2.10 !important;
+      }
+
+      :where(.panel, .stage, .summaryCard) p {
+        font-size: 1.22rem !important;
+        line-height: 2.08 !important;
+      }
+    }
+
+    /* =========================================
+       ✨ Animations & Glows (Luxury Polish)
+       ========================================= */
+    .result-animate {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .45s ease, transform .45s ease;
+    }
+
+    .result-animate.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .result-animate {
+        transition: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .tcard {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tcard::before {
+      content: "";
+      position: absolute;
+      inset: -20px;
+      border-radius: 20px;
+      background: radial-gradient(circle at center,
+          rgba(255, 215, 120, .18),
+          rgba(255, 215, 120, 0) 70%);
+      filter: blur(18px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    @media (max-width: 520px) {
+      .cardsGrid.three .kwWrap {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+      }
+
+      .cardsGrid.three .kw {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="versionBadge" style="position:fixed;bottom:12px;right:12px;z-index:9999;
+background:#000a;border:1px solid #fff3;color:#fff;padding:8px 10px;border-radius:10px;
+font:12px/1.2 ui-sans-serif;">
+    VERSION:
+  </div>
+
+  <div class="app">
+    <header>
+      <div class="title">
+        <h1>Angelique Tarot</h1>
+        <p>キーワード10個 / （コア・注釈・天使）/ Yes・No（正逆）を表示。</p>
+      </div>
+    </header>
+
+    <div class="panel topGrid">
+      <div>
+        <div id="creatorOnly"></div>
+        <div class="fileBox" id="csvArea">
+
+          <div>
+            <input id="csvFile" type="file" accept=".csv,text/csv" />
+            <div class="hint">
+
+            </div>
+          </div>
+          <div style="margin-left:auto; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="secondary" id="btnUseSaved">保存済みCSVを使う</button>
+            <button class="secondary" id="btnClearSaved">保存を消す</button>
+          </div>
+        </div>
+        <div class="status" id="status"> Angelique Tarot はすぐに使えます ✨</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="font-weight:800; font-size:14px;">② 引き方を選ぶ</div>
+
+        <div class="drawMode">
+          <label class="chip">
+            <input type="radio" name="drawMode" value="1" checked />
+            <div>
+              <strong>1枚（ワンオラクル）</strong><br />
+              <span>いまのメッセージ</span>
+            </div>
+          </label>
+
+          <label class="chip">
+            <input type="radio" name="drawMode" value="3" />
+            <div>
+              <strong>3枚（深掘り）</strong><br />
+              <span>過去 / 現在 / 未来</span>
+            </div>
+          </label>
+          <label class="chip" style="cursor:text;">
+            <div>
+              <strong>あなたの生年月日</strong><br />
+              <input type="date" id="userBirthdate"
+                style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
+            </div>
+          </label>
+          <label class="chip" style="cursor:text;">
+            <div>
+              <strong>お相手の生年月日</strong><br />
+              <input type="date" id="partnerBirthdate"
+                style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
+            </div>
+          </label>
+        </div>
+
+        <div class="btnRow">
+
+        </div>
+
+        <div class="small">
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <div class="panel stage">
+    <div class="stageTop">
+      <div class="stageTitle">
+        <h2>シャッフル</h2>
+        <p>演出 → 引いた結果を表示</p>
+      </div>
+      <div class="small" id="deckInfo">デッキ：未読み込み</div>
+    </div>
+
+    <!-- ✅ シャッフル表示 -->
+    <div class="shuffleArea" id="shuffleArea">
+      <div class="deck"></div>
+      <div class="fly"></div>
+      <div class="fly"></div>
+      <div class="fly"></div>
+      <div class="fly"></div>
+      <div class="fly"></div>
+      <div class="fly"></div>
+    </div>
+
+    <!-- ✅ ボタン＋引き方（シャッフルと結果の間） -->
+    <div class="drawBar">
+      <button id="btnDraw" class="drawBtn">カードを引く</button>
+
+      <div class="drawModeInline" aria-label="引き方">
+        <label class="chip">
+          <input type="radio" name="drawMode" value="1" checked />
+          <div><strong>1枚</strong><br><span>ワンオラクル</span></div>
+        </label>
+
+        <label class="chip">
+          <input type="radio" name="drawMode" value="3" />
+          <div><strong>3枚</strong><br><span>過去 / 現在 / 未来</span></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- ✅ 結果表示 -->
+    <div id="result" style="margin-top:14px;">
+      <div class="empty">
+        ここに結果が出ます。<br>
+        「カードを引く」を押してください。
+      </div>
+    </div>
+  </div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    const VERSION = "2026.02.27.13";
+
+    const THEME_STORAGE_KEY = "angelique_theme_selected_v1";
+    const THEME_OPTIONS = ["全体運", "恋愛", "仕事", "金運", "人間関係"];
+
+    function getSelectedTheme() {
+      return (localStorage.getItem(THEME_STORAGE_KEY) || "").trim();
+    }
+    function setSelectedTheme(t) {
+      localStorage.setItem(THEME_STORAGE_KEY, t);
+    }
+
+    function mountThemeSelector() {
+      const host = document.querySelector(".drawBar");
+      if (!host) return;
+
+      // 既にあるなら二重生成しない
+      if (document.getElementById("themeSelector")) return;
+
+      const wrap = document.createElement("div");
+      wrap.id = "themeSelector";
+      wrap.style.cssText = "display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:10px;";
+
+      const label = document.createElement("div");
+      label.textContent = "③ テーマを選ぶ（任意）";
+      label.style.cssText = "font-weight:800;font-size:13px;opacity:.9;";
+      wrap.appendChild(label);
+
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;justify-content:center;";
+
+      const current = getSelectedTheme() || "全体運";
+
+      THEME_OPTIONS.forEach(t => {
+        const lab = document.createElement("label");
+        lab.className = "chip";
+        lab.style.cursor = "pointer";
+        lab.innerHTML = `
+          <input type="radio" name="themeMode" value="${escapeHtml(t)}" ${t === current ? "checked" : ""} />
+          <div><strong>${escapeHtml(t)}</strong><br><span>読みの焦点</span></div>
+        `;
+        lab.addEventListener("change", () => {
+          const v = lab.querySelector('input[name="themeMode"]')?.value || "全体運";
+          setSelectedTheme(v);
+        });
+        row.appendChild(lab);
+      });
+
+      wrap.appendChild(row);
+      host.appendChild(wrap);
+    }
+
+    function getCurrentDrawModeValue() {
+      return document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+    }
+
+    function ensureDrawHint() {
+      const host = document.querySelector(".drawBar");
+      if (!host) return null;
+      let el = document.getElementById("drawHintText");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "drawHintText";
+        el.style.cssText = "margin-top:6px;font-size:12px;opacity:.86;letter-spacing:.03em;text-align:center;";
+        host.appendChild(el);
+      }
+      return el;
+    }
+
+    function updateDrawButtonLabels() {
+      const v = getCurrentDrawModeValue();
+      const label = (String(v) === "3") ? "カードを引く（3枚）" : "カードを引く（1枚）";
+      const btn = document.getElementById("btnDraw");
+      if (btn) btn.textContent = label;
+
+      const hint = ensureDrawHint();
+      if (hint) {
+        hint.textContent = (String(v) === "3")
+          ? "①『3枚（過去/現在/未来）』を選ぶ → ②『カードを引く（3枚）』を押す"
+          : "①『1枚（ワンオラクル）』を選ぶ → ②『カードを引く（1枚）』を押す";
+      }
+    }
+
+    function bindDrawModeLabelSync() {
+      document.querySelectorAll('input[name="drawMode"]').forEach(r => {
+        r.addEventListener("change", () => {
+          if (r.checked) updateDrawButtonLabels();
+        });
+      });
+    }
+
+    function mountThemeSelector() {
+      const neutralCards = [
+        "節制", "月", "吊るされた男", "隠者"
+      ];
+
+      if (neutralCards.includes(cardName)) return "保留";
+      return isReversed ? "NO" : "YES";
+    }
+
+    function deriveThemeLabel(primaryCard, hasPartnerDate) {
+      const pickedTheme = getSelectedTheme();
+      if (pickedTheme) return pickedTheme;
+      if (hasPartnerDate) return "恋愛";
+      // 既存の isMoneyTheme を使う（存在する前提。無ければ金運判定はスキップ）
+      try {
+        if (typeof isMoneyTheme === "function" && isMoneyTheme(primaryCard?.themes, primaryCard?.name_ja || primaryCard?.name)) {
+          return "金運";
+        }
+      } catch (_) { }
+      return "仕事";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const badge = document.getElementById("versionBadge");
+      if (badge) badge.textContent = "VERSION: " + VERSION;
+    });
+
+    function scrollToResultSmooth() {
+      const target = document.getElementById("result");
+      if (!target) return;
+
+      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const behavior = reduce ? "auto" : "smooth";
+
+      // 描画が完了してからスクロール（2フレーム待つ）
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          try {
+            target.scrollIntoView({ behavior, block: "start" });
+          } catch (_) {
+            // 古い環境フォールバック
+            const top = target.getBoundingClientRect().top + window.pageYOffset - 8;
+            window.scrollTo({ top, behavior });
+          }
+        });
+      });
+    }
+
+    const STORAGE_KEY = "angelique_tarot_csv_rows_v2";
+    let cards = [];
+    const IS_CREATOR = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+
+
+    function applyCreatorMode() {
+      const creator = document.getElementById("creatorOnly");
+      const csvArea = document.getElementById("csvArea");
+
+      if (!IS_CREATOR) {
+        if (creator) creator.style.display = "none";
+        if (csvArea) csvArea.style.display = "none"; // ★ CSV UI全体を隠す
+      }
+    }
+
+
+
+
+    const elFile = document.getElementById("csvFile");
+    const elStatus = document.getElementById("status");
+    const elDeckInfo = document.getElementById("deckInfo");
+    const elShuffleArea = document.getElementById("shuffleArea");
+    const elResult = document.getElementById("result");
+
+    document.getElementById("btnDraw").addEventListener("click", onDraw);
+    const btnUseSaved = document.getElementById("btnUseSaved");
+    if (btnUseSaved) btnUseSaved.addEventListener("click", useSaved);
+
+    const btnClearSaved = document.getElementById("btnClearSaved");
+    if (btnClearSaved) btnClearSaved.addEventListener("click", clearSaved);
+
+    if (elFile) elFile.addEventListener("change", onPickFile);
+
+    const CSV_PATH = "public/data/deck.csv";
+
+    function guessDelimiterFromText(text) {
+      const firstLine = (text || "").split(/\r?\n/)[0] || "";
+      const tabCount = (firstLine.match(/\t/g) || []).length;
+      const commaCount = (firstLine.match(/,/g) || []).length;
+      // タブの方が多ければTSV、それ以外はCSV
+      return tabCount > commaCount ? "\t" : ",";
+    }
+
+    async function loadBundledCsv() {
+      console.log("loadBundledCsv called");
+      setStatus("同梱CSVを読み込み中...");
+      console.log("CSV_PATH =", CSV_PATH);
+
+      try {
+        const res = await fetch(CSV_PATH, { cache: "no-store" });
+        if (!res.ok) throw new Error(`fetch failed: ${res.status} ${res.statusText}`);
+        const text = await res.text();
+
+        const delim = guessDelimiterFromText(text);
+        console.log("guessed delimiter =", JSON.stringify(delim));
+
+        const results = Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true,
+          delimiter: delim
+        });
+
+
+        // ===== Column1〜 行を自動スキップする =====
+        if (results.meta?.fields?.[0]?.toLowerCase() === "column1") {
+          console.log("Dummy header detected. Re-parsing CSV...");
+          results.data.shift();              // ダミー行を捨てる
+        }
+        // ========================================
+
+        console.log("Papa meta.fields:", results.meta?.fields);
+        console.log("First row sample:", results.data?.[0]);
+
+        const rows = (results.data || [])
+          .map(normalizeRow)
+          .filter(r => r && r.id);
+
+
+        console.log("normalized rows:", rows.length, rows[0]);
+
+        if (!rows.length) {
+          setStatus("同梱CSVの読み込みはできたが、id が取れません（ヘッダー名/区切りの可能性）。");
+          return;
+        }
+
+        if (!validateCards(rows)) {
+          setStatus("同梱CSVの必須列（id,name_ja,name_en,image）が不足しています。");
+          return;
+        }
+
+        cards = rows;
+        setDeckInfo();
+        setStatus(`同梱CSV 読み込み完了：${cards.length}枚。引けます。`);
+        showReady();
+      } catch (e) {
+        console.error(e);
+        setStatus("同梱CSVの読み込みに失敗しました（Console参照）。");
+      }
+    }
+
+
+    function boot() {
+      applyCreatorMode();
+      loadBundledCsv();
+      mountThemeSelector();
+      bindDrawModeLabelSync();
+      updateDrawButtonLabels();
+    }
+    boot();
+
+
+
+    function setStatus(msg) { elStatus.textContent = msg; }
+    function setDeckInfo() {
+      elDeckInfo.textContent = cards.length ? `デッキ：${cards.length}枚 読み込み済み` : "デッキ：未読み込み";
+    }
+
+
+    function pick(row, key) {
+      // 完全一致
+      if (row[key] != null) return row[key];
+
+      // trim/BOMを無視して一致させる
+      const want = normalizeKey(key);
+      const hit = Object.keys(row).find(k => normalizeKey(k) === want);
+      return hit ? row[hit] : "";
+    }
+
+    function normalizeKey(s) {
+      return (s ?? "")
+        .toString()
+        .replace(/^\uFEFF/, "")
+        .trim()
+        .toLowerCase();
+    }
+
+
+
+
+
+    function pickAny(row, candidates) {
+      for (const c of candidates) {
+        const v = pick(row, c);
+        if (v != null && String(v).trim() !== "") return String(v).trim();
+      }
+      return "";
+    }
+
+
+
+    function normalizeImagePath(s) {
+      return (s ?? "")
+        .toString()
+        .replace(/^\uFEFF/, "")
+        .trim()
+        .replace(/^\/+/, "")
+        .replace(/\\/g, "/");   // Windowsの \ を / に
+    }
+
+    function normalizeRow(row) {
+      // キー正規化（BOM/空白/大小）
+      const norm = (s) => (s ?? "").toString().replace(/^\uFEFF/, "").trim().toLowerCase();
+
+      // row から key を大小/BOM無視で取る
+      const get = (key) => {
+        const want = norm(key);
+        const hit = Object.keys(row).find(k => norm(k) === want);
+        return hit ? String(row[hit] ?? "").trim() : "";
+      };
+
+      // 1) 通常ヘッダー（id, arcana, ... image）で来た場合
+      const idNormal = get("id");
+      if (idNormal) {
+        // ヘッダー行が混じる保険
+        if (idNormal.toLowerCase() === "id") return null;
+
+        return {
+          id: idNormal,
+          arcana: get("arcana"),
+          suit: get("suit"),
+          number: get("number"),
+          name_ja: get("name_ja"),
+          name_en: get("name_en"),
+          element: get("element"),
+          polarity: get("polarity"),
+          yes_no_upright: get("yes_no_upright"),
+          yes_no_reversed: get("yes_no_reversed"),
+          timing: get("timing"),
+          themes: get("themes"),
+          keywords_upright: get("keywords_upright"),
+          keywords_reversed: get("keywords_reversed"),
+          core_upright: get("core_upright"),
+          interpretation_upright: get("interpretation_upright"),
+          angel_upright: get("angel_upright"),
+          action_upright: get("action_upright"),
+          core_reversed: get("core_reversed"),
+          interpretation_reversed: get("interpretation_reversed"),
+          angel_reversed: get("angel_reversed"),
+          action_reversed: get("action_reversed"),
+          image: normalizeImagePath(get("image")),
+        };
+      }
+
+      // Column形式は使わない
+      return null;
+    } // ← これが必要
+
+
+    function validateCards(list) {
+      // id さえあればOK（imageは無くても動く）
+      const bad = list.find(r => !r.id);
+      return !bad;
+    }
+
+
+
+    function onPickFile() {
+      const file = elFile.files?.[0];
+      if (!file) return;
+
+      setStatus("CSVを読み込み中...");
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const text = reader.result?.toString() || "";
+          const delim = guessDelimiterFromText(text);
+          console.log("file guessed delimiter =", JSON.stringify(delim));
+
+          const results = Papa.parse(text, {
+            header: true,
+            skipEmptyLines: true,
+            delimiter: delim
+          });
+
+
+
+          // ===== Column1〜 行を自動スキップする =====
+          if (results.meta?.fields?.[0]?.toLowerCase() === "column1") {
+            console.log("Dummy header detected. Re-parsing CSV...");
+            results.data.shift();
+          }
+          // ========================================
+
+
+
+
+          const rows = (results.data || [])
+            .map(normalizeRow)
+            .filter(r => r && r.id);
+
+
+          if (!rows.length) {
+            setStatus("CSVにデータがありません（区切り/ヘッダーを確認）。");
+            return;
+          }
+          if (!validateCards(rows)) {
+            setStatus("必須列（id,name_ja,name_en,image）が不足しています。");
+            return;
+          }
+
+          cards = rows;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+          setDeckInfo();
+          setStatus(`読み込み完了：${cards.length}枚。引けます。`);
+          showReady();
+        } catch (e) {
+          console.error(e);
+          setStatus("読み込みでエラー。CSV形式を確認してください。");
+        }
+      };
+      reader.onerror = () => {
+        setStatus("ファイルの読み込みに失敗しました。");
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function useSaved() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        setStatus("保存済みCSVがありません。まずCSVを読み込んでください。");
+        return;
+      }
+      try {
+        const rows = JSON.parse(saved);
+        if (!Array.isArray(rows) || !rows.length) {
+          setStatus("保存済みCSVが壊れています。いったん消して読み込み直してください。");
+          return;
+        }
+        cards = rows;
+        setDeckInfo();
+        setStatus(`保存済みCSVを読み込みました：${cards.length}枚。`);
+        showReady();
+      } catch (e) {
+        setStatus("保存済みCSVの読み込みに失敗。消して読み込み直してください。");
+      }
+    }
+
+    function clearSaved() {
+      localStorage.removeItem(STORAGE_KEY);
+      cards = [];
+      setDeckInfo();
+      setStatus("保存を削除しました。CSVを読み込んでください。");
+      elResult.innerHTML = `<div class="empty">
+    ここに結果が出ます。<br>
+    ① CSVを読み込む → ② 1枚/3枚を選ぶ → ③「カードを引く」
+  </div>`;
+    }
+
+
+    function getDrawCount() {
+      const el = document.querySelector('input[name="drawMode"]:checked');
+      return el ? parseInt(el.value, 10) : 1;
+    }
+
+    function showReady() {
+      elResult.innerHTML = `<div class="empty">
+        準備OK。<br>
+        ② 1枚/3枚を選ぶ → ③「カードを引く」
+      </div>`;
+    }
+
+    function startShuffle() { elShuffleArea.classList.add("shuffling"); }
+    function stopShuffle() { elShuffleArea.classList.remove("shuffling"); }
+    function randInt(n) { return Math.floor(Math.random() * n); }
+
+    function drawUnique(count) {
+      const used = new Set();
+      const picked = [];
+      while (picked.length < count) {
+        const idx = randInt(cards.length);
+        if (used.has(idx)) continue;
+        used.add(idx);
+        const card = cards[idx];
+        const isReversed = Math.random() < 0.5;
+        picked.push({ card, isReversed });
+      }
+      return picked;
+    }
+
+
+    async function onDraw() {
+      if (!cards.length) {
+        setStatus("先にCSVを読み込んでください。");
+        return;
+      }
+      const count = getDrawCount();
+      setStatus(`シャッフル中…（${count}枚引き）`);
+      startShuffle();
+      await new Promise(r => setTimeout(r, 1400));
+      stopShuffle();
+
+      const picked = drawUnique(count);
+      console.log("picked[0] raw =", picked[0]);
+      console.log("picked[0] json =", JSON.stringify(picked[0], null, 2));
+      console.log("picked[0].card json =", JSON.stringify(picked[0]?.card, null, 2));
+
+
+
+
+      const labels3 = ["過去", "現在", "未来"];
+      const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
+
+      // --- Global Summary & Energy Block (Spread-level) ---
+      let globalSummaryHTML = "";
+      if (picked.length > 0) {
+        const primaryCard = picked[0].card;
+        const isReversed = picked[0].isReversed;
+        const themes = (primaryCard.themes ?? "").toString().trim();
+        const action = (isReversed ? primaryCard.action_reversed : primaryCard.action_upright) || "";
+
+        const themeList = themes ? themes.split("|").flatMap(x => x.split(",")).map(t => t.trim()).filter(Boolean) : [];
+        let mainTheme = themeList.length > 0 ? themeList[0] : (primaryCard.name_ja || "未知");
+
+        const mood = isReversed ? "静かに" : "確かに";
+        const actionSub = action ? action.substring(0, 20) + "…" : "今できることを";
+
+        let reasonText = "";
+        let energyText = "";
+
+        /* =========================================
+           💗 Love Action Integrated Reason Builder
+           - One paste complete version
+           ========================================= */
+
+        /* --- Love action dictionaries --- */
+
+        const loveActionsUpright = [
+          "短い一言だけでも、自分から連絡してみましょう。",
+          "返信を迷わず、素直な言葉で返してみましょう。",
+          "「ありがとう」を1回多く伝えてみましょう。",
+          "ひとつだけ本音を混ぜてみましょう。",
+          "曖昧なままのことを一つ確認してみましょう。",
+          "次に会う約束の話題を出してみましょう。",
+          "期待を優先して選択してみましょう。",
+          "笑顔の時間を意識して増やしてみましょう。",
+          "目を見て話してみましょう。",
+          "勇気を出して一つ質問してみましょう。"
+        ];
+
+        const loveActionsReversed = [
+          "返信を急がず、自分の気持ちを整えましょう。",
+          "相手の言葉を深読みしすぎないと決めましょう。",
+          "SNSを15分だけ見ない時間を作りましょう。",
+          "嫌だったことを紙に書き出してみましょう。",
+          "自分のペースを守る選択をしましょう。",
+          "無理に優しくしないと決めましょう。",
+          "既読スルーを恐れない練習をしましょう。",
+          "今日は早めに寝て心を回復させましょう。",
+          "今は待つと自分に許可を出しましょう。",
+          "相手より自分の機嫌を優先しましょう。"
+        ];
+
+        /* =========================================
+           💼 Work Action Builder (Stable + Short)
+           - Deterministic pick per card/date
+           ========================================= */
+
+        /* Work action dictionaries */
+        const workActionsUpright = [
+          "今日の最優先を1つ決める。",
+          "15分だけタスクを前に進める。",
+          "先に結論を1行で書く。",
+          "迷っている案件をA/Bで決める。",
+          "最初の一手だけ着手する。",
+          "返信が必要なものを1件片付ける。",
+          "期限と次アクションを明文化する。",
+          "相手の期待値を確認する。",
+          "資料の冒頭だけ整える。",
+          "自分の強みを1つ使う。"
+        ];
+
+        const workActionsReversed = [
+          "無理な予定を1つ減らす。",
+          "曖昧な依頼を確認してから動く。",
+          "今日は結論を急がない。",
+          "やらないことを1つ決める。",
+          "作業環境を10分整える。",
+          "詰め込みをやめて余白を作る。",
+          "先延ばしの原因を1行で書く。",
+          "相談する相手を1人決める。",
+          "休憩を先に確保する。",
+          "境界線を引く（断る/後回し）。"
+        ];
+
+        /* =========================================
+           💰 Money Action Builder (Stable + Short)
+           - Deterministic pick per card/date
+           ========================================= */
+
+        const moneyActionsUpright = [
+          "小さな臨時収入の芽を1つ探す。",
+          "支出を1件だけ最適化する。",
+          "固定費の明細を1つ確認する。",
+          "買い物は“必要”だけに絞る。",
+          "未来のために少額を積み立てる。",
+          "得する選択を1つだけする。",
+          "不要なサブスクを1つ見直す。",
+          "お金が入る導線を1つ整える。",
+          "価値のある学びに15分使う。",
+          "財布（または口座）を整える。"
+        ];
+
+        const moneyActionsReversed = [
+          "衝動買いを今日はしないと決める。",
+          "見栄の出費を1つ手放す。",
+          "支出の原因を1行で書く。",
+          "高い買い物は24時間待つ。",
+          "予算の上限を先に決める。",
+          "今月の“使いすぎ項目”を1つ特定する。",
+          "レシートを3枚だけ整理する。",
+          "損失を広げない選択をする。",
+          "無理な投資や賭けを避ける。",
+          "まず生活の安心を優先する。"
+        ];
+
+        /* --- Utility --- */
+
+        function stableIndex(seedStr, mod) {
+          // simple deterministic hash
+          let h = 2166136261;
+          for (let i = 0; i < seedStr.length; i++) {
+            h ^= seedStr.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+          }
+          return Math.abs(h) % mod;
+        }
+
+        function pickStable(arr, seedStr) {
+          return arr[stableIndex(seedStr, arr.length)];
+        }
+
+        function toShortAction(action) {
+          // optional: shorten overly long endings
+          return action
+            .replace("してみましょう。", "する。")
+            .replace("しましょう。", "する。")
+            .replace("決めましょう。", "決める。");
+        }
+
+        function normalizeThemes(themes) {
+          let s = "";
+          if (Array.isArray(themes)) s = themes.join(" ");
+          else if (typeof themes === "string") s = themes;
+          else s = "";
+          s = s.trim();
+          try { s = s.normalize("NFKC"); } catch (_) { }
+          return s;
+        }
+
+        function isMoneyTheme(themes, cardName) {
+          const t = normalizeThemes(themes);
+          const n = (cardName || "");
+          const hay = `${t} ${n}`;
+          const kws = [
+            "金", "財", "富", "豊", "銭", "稼", "収", "入", "給", "報", "利", "益", "売", "商",
+            "貯", "貯金", "節", "節約", "投", "投資", "資", "資産", "運用", "財布", "口座",
+            "ペンタ", "ペンタクル", "コイン", "pentacle", "coin", "money", "wealth"
+          ];
+          return kws.some(k => hay.includes(k));
+        }
+
+        /* =========================================
+           🧩 Readability helpers
+           - remove jargon like "LP"
+           - format reason text into readable blocks
+           ========================================= */
+
+        function formatNumerologyLabel(nStr) {
+          // nStr: "1" など
+          const n = (nStr || "").toString().trim();
+          if (!n) return "";
+          // "LP" など略語は出さずに、初心者向けラベルで表示
+          return `あなたの本質（数秘${n}）`;
+        }
+
+        function formatKyuseiLabel(kStr) {
+          const k = (kStr || "").toString().trim();
+          if (!k) return "";
+          // 九星は押しつけず、やさしい文＋括弧
+          return `気質の傾向（${k}）`;
+        }
+
+        /**
+         * reasonText を「結論 / 理由 / 今日は」に整形する
+         * - basePoetic: 詩的な結論1〜2文
+         * - baseExplain: 具体化（つまり〜）
+         * - closing: 今日は〜 の行
+         * - optionalMetaLines: 追加の補足（数秘/九星など）※短く
+         */
+        function buildReadableReason({ basePoetic, baseExplain, closing, optionalMetaLines = [] }) {
+          const meta = (optionalMetaLines || []).filter(Boolean).join("\n");
+          return [
+            `【結論】${(basePoetic || "").trim()}`,
+            `【理由】つまり、${(baseExplain || "").trim()}${meta ? "\n" + meta : ""}`,
+            `【今日は】${(closing || "").trim()}`
+          ].join("\n");
+        }
+
+        /**
+         * basePoetic: 詩的1文
+         * baseExplain: 具体化（つまり）
+         * isReversed: 正逆
+         * cardKey: カード名 or id (必須：安定選択に使う)
+         * ymdKey: 今日の日付 "YYYY-MM-DD"（なければ生成）
+         */
+        function buildLoveReasonTextStable({ basePoetic, baseExplain, isReversed, cardKey, ymdKey }) {
+
+          const today = ymdKey || new Date().toISOString().slice(0, 10);
+          const seed = `${today}|${cardKey || "card"}|${isReversed ? "R" : "U"}`;
+
+          const rawAction = isReversed
+            ? pickStable(loveActionsReversed, seed)
+            : pickStable(loveActionsUpright, seed);
+
+          const action = toShortAction(rawAction);
+
+          const closing = isReversed
+            ? `今日は${action} 整えるほど、静かに守られる。`
+            : `今日は${action} 小さく動くほど、流れが味方する。`;
+
+          return buildReadableReason({
+            basePoetic,
+            baseExplain,
+            closing,
+            optionalMetaLines: [
+              // 恋愛では数秘/九星は出しすぎると重いので「必要なら」だけ
+              // ここは空にしてもOK。残す場合も短く。
+            ]
+          });
+        }
+
+        function buildMoneyReasonTextStable({ basePoetic, baseExplain, isReversed, cardKey, ymdKey }) {
+          const today = ymdKey || new Date().toISOString().slice(0, 10);
+          const seed = `${today}|${cardKey || "card"}|${isReversed ? "R" : "U"}|money`;
+
+          const rawAction = isReversed
+            ? pickStable(moneyActionsReversed, seed)
+            : pickStable(moneyActionsUpright, seed);
+
+          const action = toShortAction(rawAction);
+
+          const closing = isReversed
+            ? `今日は${action} 整えるほど、静かに守られる。`
+            : `今日は${action} 小さく動くほど、流れが味方する。`;
+
+          return buildReadableReason({
+            basePoetic,
+            baseExplain,
+            closing,
+            optionalMetaLines: [
+              // 金運は “なぜ金運?” を防ぐために一行だけ添える（押しつけない）
+              "このカードは“価値・循環・物質”に触れているため、金運の助言として読めます。"
+            ]
+          });
+        }
+
+        /**
+         * basePoetic: 詩的1文
+         * baseExplain: 具体化（つまり）
+         * isReversed: 正逆
+         * cardKey: カード名 or id
+         * ymdKey: "YYYY-MM-DD"（省略可）
+         */
+        function buildWorkReasonTextStable({ basePoetic, baseExplain, isReversed, cardKey, ymdKey }) {
+          const today = ymdKey || new Date().toISOString().slice(0, 10);
+          const seed = `${today}|${cardKey || "card"}|${isReversed ? "R" : "U"}|work`;
+
+          const rawAction = isReversed
+            ? pickStable(workActionsReversed, seed)
+            : pickStable(workActionsUpright, seed);
+
+          const action = toShortAction(rawAction);
+
+          const closing = isReversed
+            ? `今日は${action} 整えるほど、静かに守られる。`
+            : `今日は${action} 小さく動くほど、流れが味方する。`;
+
+          return buildReadableReason({
+            basePoetic,
+            baseExplain,
+            closing,
+            optionalMetaLines: []
+          });
+        }
+
+        if (typeof calculateLifePath === "function" && typeof getHonmeiStar === "function") {
+          const uDate = document.getElementById("userBirthdate")?.value;
+          const pDate = document.getElementById("partnerBirthdate")?.value;
+
+          if (uDate) {
+            const lp = calculateLifePath(uDate);
+            const [y, m, d] = uDate.split("-");
+            const honmei = getHonmeiStar(y, m, d);
+
+            const honmeiTheme = honmei && STAR_DATA[honmei] ? STAR_DATA[honmei].theme : "流れを整える";
+            const honmeiName = honmei && STAR_DATA[honmei] ? STAR_DATA[honmei].name : `本命星${honmei}`;
+            const lpDesc = NUMEROLOGY_DATA[lp] ? NUMEROLOGY_DATA[lp].lp : "軸を整える";
+
+            const basePoetic = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
+            const baseExplain = `${formatNumerologyLabel(lp)}は“${lpDesc}”。${formatKyuseiLabel(honmeiName)}は“${honmeiTheme}”。`;
+
+            // 恋愛（相手の日付あり）か、テーマによる仕事/金運の推測
+
+            if (pDate) {
+              reasonText = buildLoveReasonTextStable({
+                basePoetic,
+                baseExplain,
+                isReversed,
+                cardKey: primaryCard.id || primaryCard.name_ja
+              });
+            } else if (!pDate && isMoneyTheme(primaryCard.themes, primaryCard.name_ja || primaryCard.name)) {
+              reasonText = buildMoneyReasonTextStable({
+                basePoetic,
+                baseExplain,
+                isReversed,
+                cardKey: primaryCard.id || primaryCard.name_ja
+              });
+            } else {
+              reasonText = buildWorkReasonTextStable({
+                basePoetic,
+                baseExplain,
+                isReversed,
+                cardKey: primaryCard.id || primaryCard.name_ja
+              });
+            }
+
+            energyText += `\n\n【あなたのエネルギー】\n・数秘：ライフパス${lp}（${lpDesc}）\n・九星：${honmeiName}（${honmeiTheme}）`;
+          } else {
+            reasonText = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
+          }
+
+          if (pDate) {
+            const p_lp = calculateLifePath(pDate);
+            const [py, pm, pd] = pDate.split("-");
+            const p_star = getHonmeiStar(py, pm, pd);
+
+            const p_starTheme = p_star && STAR_DATA[p_star] ? STAR_DATA[p_star].theme : "流れを整える";
+            const p_starName = p_star && STAR_DATA[p_star] ? STAR_DATA[p_star].name : `本命星${p_star}`;
+            const p_lpDesc = NUMEROLOGY_DATA[p_lp] ? NUMEROLOGY_DATA[p_lp].lp : "軸を整える";
+
+            energyText += `\n\n【お相手のエネルギー】\n・数秘：ライフパス${p_lp}（${p_lpDesc}）\n・九星：${p_starName}（${p_starTheme}）`;
+          }
+        } else {
+          reasonText = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
+        }
+
+        const SUPP_RE = /(数秘|九星|宿曜|干支|星座|ラッキー|開運|方位|風水|ラッキーカラー|ラッキーアイテム|カラー|アイテム)/;
+
+        const normalized = String(reasonText ?? "")
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+
+        const lines = normalized
+          .split("\n")
+          .map(l => l.replace(/<\/?[^>]+>/g, "").trim())
+          .filter(l => l.length > 0);
+
+        const suppLines = [];
+        const mainLines = [];
+        for (const line of lines) {
+          if (SUPP_RE.test(line)) suppLines.push(line);
+          else mainLines.push(line);
+        }
+
+        const limitedSupp = suppLines
+          .map(s => s.trim())
+          .filter(s => s.length > 0)
+          .slice(0, 2);
+
+        const cleanSupp = (limitedSupp || [])
+          .map(s => String(s || "")
+            .replace(/^【(結論|理由|今日は|補足)】/g, "")
+            .replace(/^(理由|今日は|結論)[）\):：]\s*/g, "")
+            .trim()
+          )
+          .filter(s => s.length > 0 && !/^[・\-\s]+$/.test(s))
+          .slice(0, 2);
+
+        const suppInline = cleanSupp.join(" / ");
+
+        const mainText = mainLines.join("\n");
+
+        const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
+        const summaryReason = `【理由】${mainText}`;
+        const summaryAction = `【一歩】${actionSub} あなたはもう十分、やってきた。`;
+
+        let safeEnergy = "";
+        if (energyText) {
+          safeEnergy = `<div class="summaryText" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">${escapeHtml(energyText).replace(/\n/g, "<br>")}</div>`;
+        }
+
+        let mainReasonHTML = escapeHtml(summaryReason).replace(/\n/g, "<br>");
+        mainReasonHTML = mainReasonHTML.replace(
+          /【今日は】([^<]*)/g,
+          '【今日は】<span style="color:#fff; font-weight:600;">$1</span>'
+        );
+        if (suppInline) {
+          mainReasonHTML += `<br><span style="opacity:.85;">【補足】${escapeHtml(suppInline)}</span>`;
+        }
+
+        globalSummaryHTML = `
+      <div class="summaryCard line">
+        <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
+        <div class="summaryText">${mainReasonHTML}</div>
+        <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
+        ${safeEnergy}
+      </div>
+    `;
+      }
+
+      let headerBlock = "";
+      try {
+        const primary = picked?.[0]?.card;
+        const primaryRev = !!picked?.[0]?.isReversed;
+
+        const themeLabel = deriveThemeLabel(primary, !!document.getElementById("partnerBirthdate")?.value);
+
+        const cardNameForYesNo = (primary?.name_ja || primary?.name_en || primary?.name || primary?.id || "").toString();
+        const yesNo = getYesNo(cardNameForYesNo, primaryRev);
+
+        headerBlock = `
+          <div style="
+            margin-bottom:14px;
+            padding:10px 14px;
+            border:1px solid rgba(214,178,94,.35);
+            border-radius:14px;
+            background:linear-gradient(to right, rgba(214,178,94,.10), rgba(255,255,255,0));
+            font-size:14px;
+            letter-spacing:.5px;
+          ">
+            ✨ 今回のテーマ：${escapeHtml(themeLabel)}<br>
+            <span style="font-size:18px;font-weight:650;color:#d6b25e;">
+              答え：${escapeHtml(yesNo)}
+            </span>
+          </div>
+        `;
+      } catch (e) {
+        console.warn("headerBlock failed but continuing draw:", e);
+        headerBlock = "";
+      }
+
+      elResult.innerHTML = headerBlock + `
+  ${globalSummaryHTML}
+  <div class="${gridClass}">
+    ${picked.map((p, i) =>
+        renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "ワンオラクル")
+      ).join("")}
+  </div>
+`;
+
+      setStatus(`結果表示：${count}枚引き。`);
+      scrollToResultSmooth();
+
+      elResult.classList.remove("result-animate");
+      void elResult.offsetWidth; // reflow
+      elResult.classList.add("result-animate");
+      requestAnimationFrame(() => {
+        elResult.classList.add("show");
+      });
+    }
+
+    // --- キーワード：| 区切りで最大10個 ---
+    function splitKeywords(str, limit = 10) {
+      const raw = (str ?? "").toString().trim();
+      if (!raw) return [];
+      return raw.split("|").map(s => s.trim()).filter(Boolean).slice(0, limit);
+    }
+    function strengthenCore(core, themes) {
+      const c = (core ?? "").toString().trim();
+
+      // 55文字以上なら、そのまま返す（完全ノータッチ）
+      if (c.length >= 55) return c;
+
+      const t = (themes ?? "").toString().trim();
+      const focus = t ? t.split("|")[0].trim() : "";
+
+      // 短いときだけ底上げ（最低40文字を狙う）
+      const base = c || "いまは流れの節目にいます。";
+      const focusLine = focus
+        ? `焦点：${focus}。`
+        : `焦点：いま大切な感覚に気づくこと。`;
+      const direction = `方向性：焦らず、できる一歩を選びましょう。`;
+
+      let out = `${base} ${focusLine} ${direction}`;
+
+      // 最低40文字の保険（短すぎるカード用）
+      if (out.length < 40) {
+        out += " 受け取った合図を大切に。";
+      }
+
+      return out;
+    }
+
+
+
+    function metaLine(card) {
+      const parts = [];
+      if (card.arcana) parts.push(`区分:${card.arcana}`);
+      if (card.suit) parts.push(`スート:${card.suit}`);
+      if (card.number) parts.push(`番号:${card.number}`);
+      if (card.element) parts.push(`元素:${card.element}`);
+      if (card.polarity) parts.push(`極性:${card.polarity}`);
+      if (card.timing) parts.push(`時期:${card.timing}`);
+      return parts.join(" / ");
+    }
+
+
+    // --- 4つのエネルギー分類テキスト生成 ---
+    function generateEnergyCategories(uDate, pDate) {
+      if (!uDate) return "";
+
+      const lp = calculateLifePath(uDate);
+      const [y, m, d] = uDate.split("-");
+      const honmei = getHonmeiStar(y, m, d) || 1;
+      const isLpOdd = lp % 2 !== 0;
+      const hElement = STAR_DATA[honmei] ? STAR_DATA[honmei].element : "水";
+
+      // 要件にある calculateNameNumbers の利用 (Name入力がないためプレースホルダで算出)
+      const nameEnergy = typeof calculateNameNumbers === "function" ? calculateNameNumbers("TAROT") : { su: 3, pe: 5 };
+      const hasStrongSoul = nameEnergy.su >= 5;
+
+      let romance = "【恋愛】";
+      if (pDate) {
+        const p_lp = calculateLifePath(pDate);
+        if (lp === p_lp || (isLpOdd && p_lp % 2 !== 0) || (!isLpOdd && p_lp % 2 === 0)) {
+          romance += "波長が合いやすい時期。お互いの長所を認め合うことで絆が深まります。";
+        } else {
+          romance += "違う視点を持つからこそ補い合える関係。違いを楽しむ心のゆとりが愛を育てます。";
+        }
+      } else {
+        romance += (hElement === "水" || hElement === "木" || hasStrongSoul)
+          ? "柔らかな気配りがご縁を引き寄せる時。自然なコミュニケーションが吉。"
+          : "あなたの情熱や芯の強さが魅力として伝わりやすい時期。素直な表現を心がけて。";
+      }
+
+      const work = " 【仕事】" + (["土", "金"].includes(hElement)
+        ? "堅実な積み上げが大きな成果に繋がります。焦らず着実な一歩を。"
+        : "直感やアイデアが光るタイミング。新しいアプローチを試してみる価値あり。");
+
+      const intp = " 【対人】" + (isLpOdd
+        ? "明るいエネルギーが周囲を牽引します。積極的な声かけが好循環を生むでしょう。"
+        : "聞き役に徹することで、深い信頼関係を築ける時期。相手の言葉に耳を傾けて。");
+
+      const money = " 【金運】" + ([8, 22].includes(lp) || hElement === "金"
+        ? "豊かさを引き寄せる力が強い時。自己投資や長期的な計画にお金を使うのがおすすめ。"
+        : "堅実な管理が金運安定の鍵。日々の小さな感謝が更なる豊かさを呼び込みます。");
+
+      return `\n${romance}${work}${intp}${money}`;
+    }
+
+    // 逆位置の時は逆位置だけ表示（正位置は表示しない）
+    function renderCard(card, isReversed, positionLabel) {
+
+      // --- データ取得 ---
+      const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
+      const kwLimit = isThree ? 6 : 10;
+      const kw = splitKeywords(isReversed ? card.keywords_reversed : card.keywords_upright, kwLimit);
+      const core = (isReversed ? card.core_reversed : card.core_upright) || "";
+      const interpretation = (isReversed ? card.interpretation_reversed : card.interpretation_upright) || "";
+      const angel = (isReversed ? card.angel_reversed : card.angel_upright) || "";
+      const action = (isReversed ? card.action_reversed : card.action_upright) || "";
+      const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
+      const meta = metaLine(card);
+      const themes = (card.themes ?? "").toString().trim();
+
+      // --- 表示ブロック ---
+      const coreBlock = `
+    <div class="line">
+      <span class="k">要点：</span>
+     <div class="coreText">${escapeHtml(strengthenCore(core, themes))}</div>
+    </div>
+  `;
+
+      const interpretationBlock = `
+    <div class="line"><span class="k">読み解き：</span>${escapeHtml(interpretation)}</div>
+  `;
+
+      const angelBlock = `
+    <div class="line"><span class="k">天使からの言葉：</span>${escapeHtml(angel)}</div>
+  `;
+
+      const actionBlock = `
+    <div class="line"><span class="k">今日の一歩：</span>${escapeHtml(action)}</div>
+  `;
+
+      // --- 位置別出し分け ---
+      let mainMessageHTML = "";
+
+      if (positionLabel === "過去") {
+        mainMessageHTML = coreBlock;
+      } else if (positionLabel === "現在") {
+        mainMessageHTML = coreBlock + interpretationBlock;
+      } else if (positionLabel === "未来") {
+        mainMessageHTML = coreBlock + angelBlock + actionBlock;
+      } else {
+        // 1枚引き
+        mainMessageHTML = coreBlock + interpretationBlock + angelBlock + actionBlock;
+      }
+
+      // --- HTML返却 ---
+      return `
+    <div class="tcard">
+      <div class="tcardHeader">
+        <div class="tcardTitle">
+          <div class="pos">${escapeHtml(positionLabel)}</div>
+          <div class="name">${escapeHtml(card.name_ja)} <span class="sub">(${escapeHtml(card.name_en)})</span></div>
+          <div class="sub">${escapeHtml(meta)}</div>
+          ${themes ? `<div class="sub">テーマ：${escapeHtml(themes)}</div>` : ``}
+        </div>
+        <div class="badge ${isReversed ? "rev" : "up"}">${isReversed ? "逆位置" : "正位置"}</div>
+      </div>
+
+      <div class="tcardVisual">
+        <img class="cardImg ${isReversed ? "reversed" : ""}"
+          src="${cardImageUrl(card.image)}"
+          alt="${escapeHtml(card.name_ja)}"
+          onerror="handleCardImgError(this)"
+        />
+      </div>
+
+      ${yn ? `
+        <div class="ynRow">
+          <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${escapeHtml(yn)}</div>
+        </div>` : ``}
+
+      <div class="tcardBody">
+        <div class="line">
+          <span class="k">キーワード（${isReversed ? "逆" : "正"}）：</span>
+         <div class="kwWrap">
+  ${kw.length
+          ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${escapeHtml(w)}</span>`).join("")
+          : `<span class="small">（なし）</span>`
+        }
+</div>
+
+        </div>
+        ${mainMessageHTML}
+      </div>
+    </div>
+  `;
+    }
+
+    function cardImageUrl(image) {
+      let raw = (image ?? "").toString().trim();
+      if (!raw) return "public/cards/back.png";
+
+      raw = raw
+        .replace(/^\uFEFF/, "")
+        .replace(/^"+|"+$/g, "")
+        .replace(/^'+|'+$/g, "")
+        .replace(/^\/+/, "")
+        .replace(/\\/g, "/");
+
+      // 拡張子が無いなら png を付ける（webp 等は onerror 側で差し替え）
+      if (!/\.(png|jpg|jpeg|webp)$/i.test(raw)) {
+        raw += ".png";
+      }
+
+      // すでに絶対URLならそのまま
+      if (/^https?:\/\//i.test(raw)) return raw;
+
+      // raw が "wands/xxx.png" みたいに来る前提：必ず public/cards/ を付ける
+      return encodeURI("public/cards/" + raw);
+    }
+
+
+
+    function handleCardImgError(img) {
+      const tried = parseInt(img.dataset.tried || "0", 10);
+
+      // まず、元の src から「拡張子だけ」差し替えて試す
+      const src = img.getAttribute("src") || "";
+      const base = src.replace(/\.(webp|png|jpg|jpeg)(\?.*)?$/i, ""); // 末尾拡張子を除去
+      const query = (src.match(/(\?.*)$/) || [""])[0];
+
+      const exts = ["webp", "png", "jpg", "jpeg"];
+
+      // すでに back.png なら終了（無限ループ防止）
+      if (src.includes("back.png")) return;
+
+      if (tried < exts.length) {
+        img.dataset.tried = String(tried + 1);
+        img.src = `${base}.${exts[tried]}${query}`;
+        return;
+      }
+      console.warn("[MISSING IMAGE]", {
+        alt: img.alt,
+        lastTried: src,
+        base
+      });
+
+      // 最後の砦：裏面
+      img.src = "public/cards/back.png";
+    }
+
+
+    // ---- HTMLエスケープ ----
+    function escapeHtml(str) {
+      return (str ?? "").toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+  </script>
+  <!-- <script src="numerology_logic_pure.js"></script> -->
+  <script src="assets/js/energy/energy_logic_clean.js"></script>
+</body>
+
+</html>

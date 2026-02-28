@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数秘術 - 数字の意味 | Angelique Tarot</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Noto+Serif+JP:wght@400;600;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #666132;
+            --text: #ffffff;
+            --muted: rgba(231, 206, 233, 0.72);
+            --accent: #f0abfc;
+            --accent2: #a5b4fc;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Noto Serif JP', ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background:
+                radial-gradient(120% 100% at 50% 0%, rgba(245, 230, 179, .08), rgba(0, 0, 0, 0) 60%),
+                radial-gradient(80% 70% at 90% 20%, rgba(214, 178, 94, .06), rgba(0, 0, 0, 0) 60%),
+                linear-gradient(to bottom, #11111d 0%, #15152b 60%, #0c0c18 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        h1,
+        h2,
+        h3,
+        .title,
+        .heading,
+        .numberLabel {
+            font-family: 'Cinzel', 'Noto Serif JP', serif;
+            letter-spacing: .04em;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f5e6b3;
+            text-shadow: 0 0 20px rgba(245, 230, 179, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .searchBox {
+            max-width: 400px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+
+        .searchInput {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(214, 178, 94, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .searchInput:focus {
+            border-color: rgba(214, 178, 94, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(214, 178, 94, 0.2);
+        }
+
+        .searchInput::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .numCard {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        /* 光の装飾 */
+        .numCard::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(214, 178, 94, 0.4), transparent);
+        }
+
+        .cardHeader {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 16px;
+        }
+
+        .numberLabel {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, #efd39a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .numberTitle {
+            flex: 1;
+        }
+
+        .keywordTitle {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .catchphrase {
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .sectionName {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: .05em;
+            margin-bottom: 4px;
+            border-left: 2px solid rgba(214, 178, 94, 0.5);
+            padding-left: 8px;
+        }
+
+        .sectionText {
+            font-size: 14px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .prayer {
+            font-style: italic;
+            color: var(--accent2);
+            margin-top: 16px;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .backLink {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .backLink:hover {
+            color: #fff;
+        }
+
+        /* 検索で非表示にするクラス */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="title">Numerology</div>
+        <div class="subtitle">数字が持つ普遍的なエネルギーとその意味。<br>あなたのライフパスナンバーや、気になる数字の意味を探してみてください。</div>
+    </header>
+
+    <div class="searchBox">
+        <input type="text" id="searchInput" class="searchInput" placeholder="数字やキーワードで検索（例: 1, 愛, 変化）">
+    </div>
+
+    <div class="container" id="numContainer">
+        <!-- JSでカードを生成します -->
+    </div>
+
+    <a href="./index.html" class="backLink">←Angelique Tarot へ戻る</a>
+
+
+    <script>
+        const NUM_DATA = [
+            {
+                num: "1",
+                title: "開拓者・独立",
+                catchphrase: "すべてを創り出す、意思の力とスタート。",
+                gift: "未開の地に道を作る力。強い意志とリーダーシップで、新しいアイデアやプロジェクトを立ち上げる才能があります。",
+                shadow: "独りよがりになったり、誰かに頼ることを極端に恐れる傾向があります。孤独を感じやすい一面も。",
+                alignment: "自分の直感を信じてまずは行動すること。そして、周りのサポートにも感謝し、時には任せる勇気を持つこと。",
+                prayer: "あなたの勇気が、新しい世界への扉を開きますように。"
+            },
+            {
+                num: "2",
+                title: "調和・受容",
+                catchphrase: "静かに受け入れ、繋ぐ力。",
+                gift: "他者の感情や場の空気を敏感に感じ取る力。縁の下の力持ちとして、人と人を繋ぎ、平和をもたらす才能があります。",
+                shadow: "相手の顔色をうかがいすぎて自分が分からなくなったり、ノーと言えずに抱え込むことがあります。",
+                alignment: "まずは自分自身との調和を大切にすること。自分の感情を否定せず、美しいものに触れて心を休ませてください。",
+                prayer: "あなたの優しさが、世界に美しい調和をもたらしますように。"
+            },
+            {
+                num: "3",
+                title: "創造・表現",
+                catchphrase: "無邪気な喜びと、溢れ出るアイデア。",
+                gift: "子どものような純粋さと表現力。会話やアート、ユーモアを通して、周りに明るいエネルギーと笑顔をもたらします。",
+                shadow: "飽きっぽさや、表面的な楽しさだけで逃避してしまうこと。責任から目を背けてしまう一面も。",
+                alignment: "自分の心からの「楽しい！」という感情を大切にすること。言葉や作品にして、自由に感情を外に出してください。",
+                prayer: "あなたの笑顔が、暗闇を照らす光となりますように。"
+            },
+            {
+                num: "4",
+                title: "安定・基盤",
+                catchphrase: "揺るぎない土台を作る、現実化の力。",
+                gift: "真面目で論理的。ルールや秩序を重んじ、形のないものを現実の世界で機能するシステムとして構築する才能があります。",
+                shadow: "変化を極端に恐れ、頑固になったり、マイルールを他人に押し付けてしまうことがあります。",
+                alignment: "小さなステップをコツコツと積み上げること。そして、たまには計画を手放し、予想外の出来事も楽しんでみること。",
+                prayer: "あなたの築く土台が、確かな安心と未来を守りますように。"
+            },
+            {
+                num: "5",
+                title: "変化・自由",
+                catchphrase: "常に新しい風を求める、冒険心。",
+                gift: "柔軟性と適応力。未知の世界へ飛び込む行動力があり、多様な経験を通して成長し、人々に刺激を与えます。",
+                shadow: "退屈を嫌うあまり、落ち着きがなく散漫になりがち。衝動的な行動で周囲を振り回すことも。",
+                alignment: "変化を楽しむと同時に、一つのことを深める時間も持つこと。真の自由とは、自分軸があってこそだと知ること。",
+                prayer: "あなたの歩む道が、胸躍る冒険に満ちていますように。"
+            },
+            {
+                num: "6",
+                title: "愛・奉仕",
+                catchphrase: "無条件の愛と、美しさへの奉仕。",
+                gift: "深い愛情と責任感。家族やコミュニティを守り、育む才能。また、美意識が高く、空間を美しく整える力があります。",
+                shadow: "過干渉になったり、自己犠牲を払いすぎて見返りを求めてしまうこと。「私がやらなきゃ」を抱え込みすぎます。",
+                alignment: "他人に注ぐ愛と同じだけ、自分自身も愛し、甘やかすこと。「NO」と言うことは、自分への愛の形です。",
+                prayer: "あなたの温かな愛が、人々の心を癒やしますように。"
+            },
+            {
+                num: "7",
+                title: "探求・孤独",
+                catchphrase: "本質を見抜く、深い洞察と内省。",
+                gift: "ひとつのことを徹底的に探求し、真理を見出す力。優れた分析力と独自の哲学を持ち、専門分野で才能を発揮します。",
+                shadow: "完璧主義が行き過ぎて他人を批判したり、自分の殻に引きこもりすぎて周囲との関わりを断絶してしまうこと。",
+                alignment: "ひとりの静かな時間を確保して内省すること。そして得た気づきを、自分の言葉で少しずつ外の世界と分かち合うこと。",
+                prayer: "あなたの探求が、魂の真実へと辿り着きますように。"
+            },
+            {
+                num: "8",
+                title: "豊かさ・力",
+                catchphrase: "無限のエネルギーを回す、現実的な成功。",
+                gift: "目標達成能力と組織力。物質的な豊かさ（お金・地位）を引き寄せ、大きなプロジェクトを動かし、社会に循環させる力があります。",
+                shadow: "物質主義に偏りすぎたり、コントロール欲求が強くなり、権力で人を支配しようとしてしまうこと。",
+                alignment: "豊かさを独占せず、人や社会に「還元・循環」させること。恐れからではなく、愛からビジネスや人生を動かすこと。",
+                prayer: "あなたの放つ力が、豊かな実りをもたらしますように。"
+            },
+            {
+                num: "9",
+                title: "完結・手放し",
+                catchphrase: "すべてを包み込む、人類愛とサイクルの終わり。",
+                gift: "1〜8の要素をすべて内包する高い共感力と理解力。偏見なく人を愛し、癒やし、世界のために何ができるかを考える広い視野。",
+                shadow: "他者の感情を吸い込みすぎて圧倒されたり、理想が高すぎて現実の世界に生きづらさを感じてしまうこと。",
+                alignment: "過去のこだわりや不要な感情を「手放す」こと。自分の中にある感情の境界線を明確に引くこと。",
+                prayer: "あなたの大きな愛が、世界を優しく包み込みますように。"
+            },
+            {
+                num: "11",
+                title: "直感・メッセンジャー",
+                catchphrase: "天啓を受け取るアンテナ。（マスターナンバー）",
+                gift: "非常に鋭い直感力とスピリチュアルな感受性。見えない世界からのメッセージを受け取り、人々にインスピレーションを与える役割。",
+                shadow: "感受性が強すぎるため、神経過敏になりやすく、現実世界での浮世離れや精神的なアップダウンに苦しむこと。",
+                alignment: "感覚が鋭い自分を受け入れ、グラウンディング（地に足をつける）を意識すること。自然に触れてチャージしてください。",
+                prayer: "あなたの魂の輝きが、暗闇を歩く人の道標となりますように。"
+            },
+            {
+                num: "22",
+                title: "大きな理想・具現化",
+                catchphrase: "壮大なビジョンを現実にする構築者。（マスターナンバー）",
+                gift: "高い理想（直感）と、それを現実の世界（システム・建築・社会）に落とし込む強力な実行力を併せ持つ稀有な才能。",
+                shadow: "プレッシャーが大きく、そこから逃げるために全く別の道を選んだり、強引に事を進めて暴君になってしまうこと。",
+                alignment: "自分の持つビジョンの大きさを恐れないこと。そして、一人で抱え込まずに有能な仲間を巻き込んでいくこと。",
+                prayer: "あなたの描く未来が、この世界に確かな希望の光を結びますように。"
+            },
+            {
+                num: "33",
+                title: "宇宙的愛・奉仕者",
+                catchphrase: "規格外の愛と、常識を超える無私の心。（マスターナンバー）",
+                gift: "損得や見返りを全く計算しない、宇宙レベルのスケールの大きな愛。ただそこにいるだけで人を癒やし、導くようなカリスマ性。",
+                shadow: "地球の常識に馴染めず、周囲から「変わっている」と理解されずに苦しんだり、自己犠牲を限界まで重ねてしまうこと。",
+                alignment: "まずは「普通の世界の枠」に自分を当てはめようとしないこと。あなたの感じるままの愛を、焦らずに表現すること。",
+                prayer: "あなたの無限の愛が、すべての魂を優しく癒やしますように。"
+            }
+        ];
+
+        function renderCards(filterText = "") {
+            const container = document.getElementById("numContainer");
+            container.innerHTML = "";
+
+            const lowerFilter = filterText.toLowerCase();
+
+            NUM_DATA.forEach(data => {
+                // 検索: 名前、数字、キャッチフレーズ、ギフトのいずれかにマッチするか
+                const textToSearch = `${data.num} ${data.title} ${data.catchphrase} ${data.gift} ${data.shadow}`.toLowerCase();
+                if (filterText && !textToSearch.includes(lowerFilter)) {
+                    return; // マッチしない場合はスキップ
+                }
+
+                const card = document.createElement("div");
+                card.className = "numCard";
+
+                card.innerHTML = `
+          <div class="cardHeader">
+            <div class="numberLabel">${data.num}</div>
+            <div class="numberTitle">
+              <div class="keywordTitle">${data.title}</div>
+              <div class="catchphrase">${data.catchphrase}</div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="sectionName">光（才能・資質）</div>
+            <div class="sectionText">${data.gift}</div>
+          </div>
+          
+          <div class="section">
+            <div class="sectionName">影（気をつけること）</div>
+            <div class="sectionText">${data.shadow}</div>
+          </div>
+          
+          <div class="section">
+            <div class="sectionName">流れを整えるには</div>
+            <div class="sectionText">${data.alignment}</div>
+          </div>
+          
+          <div class="prayer">「${data.prayer}」</div>
+        `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // 初期表示
+        renderCards();
+
+        // 検索イベント
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            renderCards(e.target.value);
+        });
+    </script>
+</body>
+
+</html>
