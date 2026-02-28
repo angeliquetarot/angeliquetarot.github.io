@@ -4444,13 +4444,20 @@ font:12px/1.2 ui-sans-serif;">
   }
 
   // popupに「生成中」表示（空白回避）
-  try {
-    popup.document.write(`
-      <body style="background:#11111d;color:#fff;font-family:system-ui;padding:30px;">
-        画像を生成中です… 少しお待ちください。
-      </body>
-    `);
-  } catch {}
+ try {
+  popup.document.open();
+  popup.document.write(`
+    <!doctype html><html><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Generating...</title></head>
+    <body style="margin:0;background:#11111d;color:#fff;font-family:system-ui;padding:30px;">
+      画像を生成中です… 少しお待ちください。
+    </body></html>
+  `);
+  popup.document.close();
+} catch (e) {
+  console.error("popup write failed:", e);
+}
 
   const canvas = document.getElementById("shareCanvas");
       if (!canvas) return;
@@ -4585,7 +4592,7 @@ font:12px/1.2 ui-sans-serif;">
           } catch (err) {
             console.error("Image Share failed or cancelled:", err);
             // キャンセルまたは失敗時は新規タブで開くフォールバックへ
-            openImageFallback(canvas, popup);;
+            openImageFallback(canvas, popup);
           }
         } else {
           // 非対応なら新規タブで画像表示
@@ -4597,23 +4604,56 @@ font:12px/1.2 ui-sans-serif;">
     function openImageFallback(canvas, popup) {
   showToast("画像を開きました。保存して共有してください", 4000);
 
-  try {
-    const url = canvas.toDataURL("image/png");
+  if (!popup) {
+    fallbackCopyText(getResultPlainText());
+    showToast("ポップアップがブロックされました。テキストをコピーしました。", 4000);
+    return;
+  }
 
-    // ★ ここが重要：about:blankのままにしない
+  try {
+    const dataUrl = canvas.toDataURL("image/png"); // ★ここがCORSで失敗することがある
+
     popup.document.open();
     popup.document.write(`
+      <!doctype html><html><head><meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Angelique Tarot | Share Image</title></head>
       <body style="margin:0;background:#11111d;">
-        <img src="${url}" style="max-width:100%;height:auto;display:block;margin:0 auto;">
-      </body>
+        <img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="color:rgba(255,255,255,0.75);font-family:system-ui;padding:14px;text-align:center;">
+          画像を保存して、LINE等で添付してください
+        </div>
+      </body></html>
     `);
     popup.document.close();
 
   } catch (err) {
-    console.error("Fallback failed:", err);
+    console.error("Canvas toDataURL failed:", err);
+
+    // ★真っ白放置しない：popupに失敗理由を表示
+    try {
+      popup.document.open();
+      popup.document.write(`
+        <!doctype html><html><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Share Image Error</title></head>
+        <body style="margin:0;background:#11111d;color:#fff;font-family:system-ui;padding:18px;line-height:1.6;">
+          <h3 style="margin:0 0 10px;color:#f5e6b3;">画像を表示できませんでした</h3>
+          <p style="opacity:.85;margin:0 0 10px;">
+            原因：画像の読み込み制限（CORS）などでCanvasからPNGを書き出せない場合があります。
+          </p>
+          <p style="opacity:.85;margin:0 0 10px;">
+            対処：もう一度試す / 画像カードの読み込み元を同一オリジンにする（GitHub Pages内の相対パスに統一）
+          </p>
+          <hr style="border:none;border-top:1px solid rgba(249,224,138,.25);margin:14px 0;">
+          <pre style="white-space:pre-wrap;opacity:.75;">${String(err)}</pre>
+        </body></html>
+      `);
+      popup.document.close();
+    } catch {}
+
     fallbackCopyText(getResultPlainText());
-    showToast("画像を表示できませんでした。テキストをコピーしました。");
-    popup.close();
+    showToast("画像生成が制限されました。テキストをコピーしました。", 4000);
   }
 }
 
