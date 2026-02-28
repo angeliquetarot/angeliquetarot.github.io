@@ -1,0 +1,15 @@
+[33m58a9113[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m refactor: separate share image modal logic
+[33m8f3b39f[m fix: remove duplicate drawMode and show share image modal on iOS
+[33m688fe5c[m style: fix resultActions css + improve numerology CTA + iOS share fallback
+[33m7675c0a[m fix: share image popup fallback
+[33m292cc2b[m fix: share image popup fallback
+[33mfb1112c[m fix: share image popup fallback
+[33m148352a[m fix: share image popup fallback
+[33mf6ea675[m 2026.03.01.1 antigravity: share + deep reading + numerology + polish
+[33m8578a90[m ...
+[33ma00e496[m UI: add antigravity floating animation to result cards
+[33m56929b1[m Add files via upload
+[33m3c34eb6[m Update index.html
+[33ma8246f7[m Update index.html
+[33m8aea765[m Update index.html
+[33mae5920c[m Update index.html
