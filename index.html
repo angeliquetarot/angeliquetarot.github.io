@@ -3269,7 +3269,7 @@ font:12px/1.2 ui-sans-serif;">
 
     if (elFile) elFile.addEventListener("change", onPickFile);
 
-    const CSV_PATH = "public/data/deck.csv";
+    const CSV_PATH = new URL("public/data/deck.csv", location.href).toString();
 
     function guessDelimiterFromText(text) {
       const firstLine = (text || "").split(/\r?\n/)[0] || "";
@@ -3331,9 +3331,10 @@ font:12px/1.2 ui-sans-serif;">
         setStatus(`同梱CSV 読み込み完了：${cards.length}枚。引けます。`);
         showReady();
       } catch (e) {
-        console.error(e);
-        setStatus("同梱CSVの読み込みに失敗しました（Console参照）。");
-      }
+  console.error(e);
+  setStatus("同梱CSVの読み込みに失敗しました（Console参照）。");
+  showToast("同梱CSVの読み込みに失敗しました。Consoleを確認してください。", 5000);
+}
     }
 
 
@@ -3571,9 +3572,10 @@ font:12px/1.2 ui-sans-serif;">
 
     async function onDraw() {
       if (!cards.length) {
-        setStatus("先にCSVを読み込んでください。");
-        return;
-      }
+  setStatus("デッキが未読み込みです（CSV読み込み待ち）");
+  showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
+  return;
+}
       const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
       const count = (String(drawMode) === "3") ? 3 : 1;
 
