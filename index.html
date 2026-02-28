@@ -1,4 +1,29 @@
-<!doctype html>
+
+    /* Hover: keep motion same, only enrich shadow tone */
+    .tcard:hover {
+      box-shadow:
+        0 30px 86px rgba(0, 0, 0, .60),
+        0 10px 22px rgba(160, 200, 255, .08),
+        inset 0 1px 0 rgba(255, 255, 255, .12);
+    }
+
+    /* Card image: richer “presence” without scaling more */
+    .cardImg {
+      filter:
+        drop-shadow(0 18px 44px rgba(0, 0, 0, .62)) drop-shadow(0 2px 8px rgba(160, 200, 255, .08));
+    }
+
+    .tcard:hover .cardImg {
+      filter:
+        drop-shadow(0 30px 70px rgba(0, 0, 0, .70)) drop-shadow(0 3px 10px rgba(160, 200, 255, .10));
+    }
+
+    /* Buttons: edge definition + quieter glow */
+    button {
+      border: 1px solid rgba(255, 255, 255, .14);
+      box-shadow:
+        0 16px 44px rgba(0, 0, 0, .30),
+        0 2px 10px rgba(160<!doctype html>
 <html lang="ja">
 
 <head>
@@ -434,18 +459,7 @@ h1,h2,.shareTitle,.summaryTitle{
     /* 結果カード（tcard）内の画像 */
     /* === ②-1 結果カード画像を大きく === */
     /* ===== cardImg はここで一括管理（最後に置く） ===== */
-    .cardImg {
-      width: 340px;
-      /* 3枚すべて大きく */
-      max-width: 92%;
-      height: auto;
-      display: block;
-      aspect-ratio: 2 / 3;
-      object-fit: cover;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, .22);
-      box-shadow: 0 22px 46px rgba(0, 0, 0, .45);
-    }
+    
 
     .cardImg.reversed {
       transform: rotate(180deg);
@@ -459,10 +473,7 @@ h1,h2,.shareTitle,.summaryTitle{
       align-items: start;
     }
 
-    /* 真ん中だけ“さらに”強調（任意。要らなければ消してOK） */
-    .cardsGrid.three .tcard:nth-child(2) .cardImg {
-      width: 360px;
-    }
+    
 
     /* 1枚引き */
     .cardsGrid.single {
@@ -720,21 +731,7 @@ h1,h2,.shareTitle,.summaryTitle{
       align-items: start;
     }
 
-    /* 画像サイズ（全体） */
-    .cardImg {
-      width: min(360px, 28vw);
-      /* 3枚とも大きい */
-      max-width: 92%;
-      height: auto;
-      display: block;
-      aspect-ratio: 2 / 3;
-      object-fit: cover;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, .22);
-      box-shadow:
-        0 18px 44px rgba(0, 0, 0, .45),
-        0 0 36px rgba(240, 171, 252, .12);
-    }
+    
 
     .cardImg.reversed {
       transform: rotate(180deg);
@@ -836,10 +833,7 @@ h1,h2,.shareTitle,.summaryTitle{
       max-width: 100%;
     }
 
-    /* 結果：真ん中だけ少し強調（任意） */
-    .cardsGrid.three .tcard:nth-child(2) .cardImg {
-      width: var(--result-w-3-mid) !important;
-    }
+    
 
     /* 結果：1枚引き（#tarotCard は今使ってないけど保険で） */
     .cardsGrid.single .cardImg {
@@ -1035,11 +1029,7 @@ h1,h2,.shareTitle,.summaryTitle{
         max-width: 28vw !important;
       }
 
-      /* 真ん中だけ少し強調したい場合（任意。不要なら削除OK） */
-      .cardsGrid.three .tcard:nth-child(2) .cardImg {
-        width: 30vw !important;
-        max-width: 30vw !important;
-      }
+     
 
       /* カード枠（tcard）自体が横に広がらないように保険 */
       .cardsGrid.three .tcard {
@@ -1841,33 +1831,7 @@ h1,h2,.shareTitle,.summaryTitle{
       width: 58%;
       height: 34%;
       opacity: .45;
-    }
-
-    /* Hover: keep motion same, only enrich shadow tone */
-    .tcard:hover {
-      box-shadow:
-        0 30px 86px rgba(0, 0, 0, .60),
-        0 10px 22px rgba(160, 200, 255, .08),
-        inset 0 1px 0 rgba(255, 255, 255, .12);
-    }
-
-    /* Card image: richer “presence” without scaling more */
-    .cardImg {
-      filter:
-        drop-shadow(0 18px 44px rgba(0, 0, 0, .62)) drop-shadow(0 2px 8px rgba(160, 200, 255, .08));
-    }
-
-    .tcard:hover .cardImg {
-      filter:
-        drop-shadow(0 30px 70px rgba(0, 0, 0, .70)) drop-shadow(0 3px 10px rgba(160, 200, 255, .10));
-    }
-
-    /* Buttons: edge definition + quieter glow */
-    button {
-      border: 1px solid rgba(255, 255, 255, .14);
-      box-shadow:
-        0 16px 44px rgba(0, 0, 0, .30),
-        0 2px 10px rgba(160, 200, 255, .08),
+    
         inset 0 1px 0 rgba(255, 255, 255, .20);
     }
 
@@ -3020,109 +2984,7 @@ font:12px/1.2 ui-sans-serif;">
     VERSION:
   </div>
 
-  <!-- Toast Container -->
-  <div id="toastContainer"></div>
-
-  <div class="app">
-    <header>
-      <div class="title">
-        <h1>Angelique Tarot</h1>
-        <p>キーワード10個 / （コア・注釈・天使）/ Yes・No（正逆）を表示。</p>
-      </div>
-    </header>
-
-    <div class="panel topGrid">
-      <div>
-        <div id="creatorOnly"></div>
-        <div class="fileBox" id="csvArea">
-
-          <div>
-            <input id="csvFile" type="file" accept=".csv,text/csv" />
-            <div class="hint">
-
-            </div>
-          </div>
-          <div style="margin-left:auto; display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="secondary" id="btnUseSaved">保存済みCSVを使う</button>
-            <button class="secondary" id="btnClearSaved">保存を消す</button>
-          </div>
-        </div>
-        <div class="status" id="status"> Angelique Tarot はすぐに使えます ✨</div>
-      </div>
-    </div>
-
-    
-
-
-
-
-  <div class="panel stage">
-    <div class="stageTop">
-      <div class="stageTitle">
-        <h2>シャッフル</h2>
-        <p>演出 → 引いた結果を表示</p>
-      </div>
-      <div class="small" id="deckInfo">デッキ：未読み込み</div>
-    </div>
-
-    <!-- ✅ シャッフル表示 -->
-    <div class="shuffleArea" id="shuffleArea">
-      <div class="deck"></div>
-      <div class="fly"></div>
-      <div class="fly"></div>
-      <div class="fly"></div>
-      <div class="fly"></div>
-      <div class="fly"></div>
-      <div class="fly"></div>
-    </div>
-
-    <!-- ✅ ボタン＋引き方（シャッフルと結果の間） -->
-<div class="drawBar">
-  <button id="btnDraw" class="drawBtn">カードを引く</button>
-
-  <div class="drawModeInline" aria-label="引き方">
-    <label class="chip">
-      <input type="radio" name="drawMode" value="1" checked />
-      <div><strong>ワンオラクル（1枚）</strong><br><span>ワンオラクル</span></div>
-    </label>
-
-    <label class="chip">
-      <input type="radio" name="drawMode" value="3" />
-      <div><strong>3枚引き（過去/現在/未来）</strong><br><span>過去 / 現在 / 未来</span></div>
-    </label>
-  </div>
-
-  <div class="drawModeInline" style="margin-top:10px;">
-    <label class="chip" style="cursor:text;">
-      <div>
-        <strong>あなたの生年月日</strong><br />
-        <input type="date" id="userBirthdate"
-          style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
-      </div>
-    </label>
-
-    <label class="chip" style="cursor:text;">
-      <div>
-        <strong>お相手の生年月日</strong><br />
-        <input type="date" id="partnerBirthdate"
-          style="background:transparent; border:none; color:inherit; outline:none; font-family:inherit; margin-top:2px;" />
-      </div>
-    </label>
-  </div>
-</div>
-
-    <div class="drawBar
-
-    <!-- ✅ 結果表示 -->
-    <div id="result" class="antigravity" style="margin-top:14px;">
-      <div class="empty">
-        ここに結果が出ます。<br>
-        「カードを引く」を押してください。
-      </div>
-    </div>
-  </div>
-
-
+ 
 
   <!-- 描画用見えないCanvas -->
   <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
@@ -3260,7 +3122,6 @@ font:12px/1.2 ui-sans-serif;">
     const elShuffleArea = document.getElementById("shuffleArea");
     const elResult = document.getElementById("result");
 
-    document.getElementById("btnDraw").addEventListener("click", onDraw);
     const btnUseSaved = document.getElementById("btnUseSaved");
     if (btnUseSaved) btnUseSaved.addEventListener("click", useSaved);
 
