@@ -1155,10 +1155,31 @@
       }
     }
 
+    .cardSection {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .cardSection:first-child {
+      margin-top: 8px;
+    }
+
+    .cardSection h4 {
+      display: block;
+      font-size: 13px;
+      margin: 0 0 6px 0;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .cardSection div {
+      font-size: 13px;
+      line-height: 1.75;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
     .coreText {
-      margin-top: 6px;
-      font-size: 14px;
-      line-height: 1.7;
       font-weight: 600;
       color: rgba(255, 255, 255, .95);
     }
@@ -4063,29 +4084,46 @@ font:12px/1.2 ui-sans-serif;">
       return raw.split("|").map(s => s.trim()).filter(Boolean).slice(0, limit);
     }
     function strengthenCore(core, themes) {
-      const c = (core ?? "").toString().trim();
-
-      // 55文字以上なら、そのまま返す（完全ノータッチ）
-      if (c.length >= 55) return c;
-
+      let c = (core ?? "").toString().trim();
       const t = (themes ?? "").toString().trim();
-      const focus = t ? t.split("|")[0].trim() : "";
 
-      // 短いときだけ底上げ（最低40文字を狙う）
-      const base = c || "いまは流れの節目にいます。";
-      const focusLine = focus
-        ? `焦点：${focus}。`
-        : `焦点：いま大切な感覚に気づくこと。`;
-      const direction = `方向性：焦らず、できる一歩を選びましょう。`;
+      // カードDBによっては、すでにコアテキスト内に「焦点：〜」「方向性：〜」が含まれている場合があるため分離する
+      let baseText = c;
+      let focusText = t ? t.split("|")[0].trim() + "。" : "";
+      let directionText = "焦らず、できる一歩を選びましょう。";
 
-      let out = `${base} ${focusLine} ${direction}`;
-
-      // 最低40文字の保険（短すぎるカード用）
-      if (out.length < 40) {
-        out += " 受け取った合図を大切に。";
+      if (c.includes("焦点：")) {
+        const parts = c.split("焦点：");
+        baseText = parts[0].trim();
+        const remain = parts[1];
+        if (remain.includes("方向性：")) {
+          const subParts = remain.split("方向性：");
+          focusText = subParts[0].trim();
+          directionText = subParts[1].trim();
+        } else {
+          focusText = remain.trim();
+        }
       }
 
-      return out;
+      if (!baseText) {
+        baseText = "いまは流れの節目にいます。";
+      }
+      if (!focusText) {
+        focusText = "いま大切な感覚に気づくこと。";
+      }
+
+      // 独立したセクションHTMLとして返す
+      return `
+      <div class="coreText">${escapeHtml(baseText)}</div>
+    </div>
+    <div class="cardSection">
+      <h4>焦点</h4>
+      <div>${escapeHtml(focusText)}</div>
+    </div>
+    <div class="cardSection">
+      <h4>方向性</h4>
+      <div>${escapeHtml(directionText)}</div>
+`;
     }
 
 
@@ -4161,23 +4199,43 @@ font:12px/1.2 ui-sans-serif;">
       const themes = (card.themes ?? "").toString().trim();
 
       // --- 表示ブロック ---
-      const coreBlock = `
-    <div class="line">
-      <span class="k">要点：</span>
-     <div class="coreText">${escapeHtml(strengthenCore(core, themes))}</div>
+      const coreHTML = strengthenCore(core, themes);
+      // coreHTML はすでに内部で 必要に応じて複数の <div class="cardSection"> に分かれているか、
+      // 単一の文字列 (55文字以上の場合) を返す。
+      // 単一の場合は通常の要点ブロックに包む。
+      const coreBlock = coreHTML.includes('<div class="cardSection">')
+        ? `
+    <div class="cardSection">
+      <h4>要点</h4>
+      ${coreHTML}
+    </div>
+  `
+        : `
+    <div class="cardSection">
+      <h4>要点</h4>
+      <div class="coreText">${escapeHtml(coreHTML)}</div>
     </div>
   `;
 
       const interpretationBlock = `
-    <div class="line"><span class="k">読み解き：</span>${escapeHtml(interpretation)}</div>
+    <div class="cardSection">
+      <h4>読み解き</h4>
+      <div>${escapeHtml(interpretation)}</div>
+    </div>
   `;
 
       const angelBlock = `
-    <div class="line"><span class="k">天使からの言葉：</span>${escapeHtml(angel)}</div>
+    <div class="cardSection">
+      <h4>天使からの言葉</h4>
+      <div>${escapeHtml(angel)}</div>
+    </div>
   `;
 
       const actionBlock = `
-    <div class="line"><span class="k">今日の一歩：</span>${escapeHtml(action)}</div>
+    <div class="cardSection">
+      <h4>今日の一歩</h4>
+      <div>${escapeHtml(action)}</div>
+    </div>
   `;
 
       // --- 位置別出し分け ---
@@ -4351,21 +4409,25 @@ font:12px/1.2 ui-sans-serif;">
       document.body.removeChild(textArea);
     }
 
-    function shareResultText() {
+    async function shareResultText() {
       const text = getResultPlainText();
       if (!text) return;
 
       if (navigator.share) {
-        navigator.share({
-          title: 'Angelique Tarot Reading',
-          text: text
-        }).then(() => {
-          console.log('Thanks for sharing!');
-        }).catch(console.error);
+        try {
+          await navigator.share({
+            title: 'Angelique Tarot Reading',
+            text: text
+          });
+          showToast("シェアしました！");
+        } catch (err) {
+          console.error("Share failed or was cancelled:", err);
+          // 失敗またはキャンセルされた場合は確実にクリップボードコピーへ
+          copyResultText();
+        }
       } else {
         // フォールバック: コピー
         copyResultText();
-        showToast("シェア機能が非対応のためコピーしました");
       }
     }
 
@@ -4483,9 +4545,10 @@ font:12px/1.2 ui-sans-serif;">
       ctx.fillText("Search 'Angelique Tarot' to pull your own cards.", 540, 980);
 
       // 6. 出力
-      canvas.toBlob((blob) => {
+      canvas.toBlob(async (blob) => {
         if (!blob) {
           showToast("画像の生成に失敗しました");
+          fallbackCopyText(getResultPlainText());
           return;
         }
 
@@ -4493,29 +4556,42 @@ font:12px/1.2 ui-sans-serif;">
 
         // Share API 対応チェック
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({
-            files: [file],
-            title: 'Angelique Tarot Reading',
-            text: '私のタロットリーディング結果です #AngeliqueTarot'
-          }).then(() => {
-            console.log('Image shared successfully');
-          }).catch((err) => {
-            console.error("Share failed:", err);
-            // キャンセルされた場合などもここに来るのでエラー表示は控えめに
-          });
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Angelique Tarot Reading',
+              text: '私のタロットリーディング結果です #AngeliqueTarot'
+            });
+            showToast("画像をシェアしました！");
+          } catch (err) {
+            console.error("Image Share failed or cancelled:", err);
+            // キャンセルまたは失敗時は新規タブで開くフォールバックへ
+            openImageFallback(canvas);
+          }
         } else {
           // 非対応なら新規タブで画像表示
-          showToast("表示された画像を長押し（右クリック）で保存してください", 4000);
-          const dataUrl = canvas.toDataURL("image/png");
-          const newWin = window.open();
-          if (newWin) {
-            newWin.document.write(`<img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">`);
-          } else {
-            fallbackCopyText(getResultPlainText());
-            showToast("画像を開けませんでした。テキストをコピーしました。");
-          }
+          openImageFallback(canvas);
         }
       }, "image/png");
+    }
+
+    function openImageFallback(canvas) {
+      showToast("画像を長押しして保存してください", 4000);
+      try {
+        const dataUrl = canvas.toDataURL("image/png");
+        const newWin = window.open();
+        if (newWin) {
+          newWin.document.write(`<img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">`);
+        } else {
+          // ポップアップブロックなどで開けなかった場合
+          fallbackCopyText(getResultPlainText());
+          showToast("画像を表示できませんでした。テキストをコピーしました。");
+        }
+      } catch (err) {
+        console.error("Canvas toDataURL failed:", err);
+        fallbackCopyText(getResultPlainText());
+        showToast("画像を表示できませんでした。テキストをコピーしました。");
+      }
     }
 
     function drawCardOnCanvas(ctx, item, x, y, w, h) {
