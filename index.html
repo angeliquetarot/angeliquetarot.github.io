@@ -43,9 +43,7 @@ h1,h2,.shareTitle,.summaryTitle{
 
 
 
-    .app {
-      width: min(1100px, 100%)
-    }
+    .app { width: min(1100px, 100%); margin-inline: auto; }
 
     header {
       display: flex;
@@ -2842,27 +2840,6 @@ h1,h2,.shareTitle,.summaryTitle{
   position: relative;
   margin-top: 18px;
 
-  .numerologyCta{
-  display:block;
-  width: 100%;
-  text-align:center;
-  padding: 12px 14px;
-  border-radius: 16px;
-  text-decoration:none;
-
-  color: rgba(255,255,255,0.92);
-  background: rgba(10,10,18,0.28);
-  border: 1px solid rgba(249,224,138,0.55);
-  box-shadow: inset 0 0 0 1px rgba(253,245,199,0.12), 0 12px 36px rgba(0,0,0,0.22);
-
-  font-family:"Cinzel","Shippori Mincho",serif;
-  letter-spacing: .04em;
-}
-
-.numerologyCta:hover{
-  transform: translateY(-1px);
-}
-
   /* レイアウト */
   display: flex;
   flex-direction: column;
@@ -2881,6 +2858,26 @@ h1,h2,.shareTitle,.summaryTitle{
   transform: translateY(10px);
   transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
 }
+
+/* ★ネストを外へ */
+.resultActions .numerologyCta{
+  display:block;
+  width: 100%;
+  text-align:center;
+  padding: 12px 14px;
+  border-radius: 16px;
+  text-decoration:none;
+
+  color: rgba(255,255,255,0.92);
+  background: rgba(10,10,18,0.28);
+  border: 1px solid rgba(249,224,138,0.55);
+  box-shadow: inset 0 0 0 1px rgba(253,245,199,0.12), 0 12px 36px rgba(0,0,0,0.22);
+
+  font-family:"Cinzel","Shippori Mincho",serif;
+  letter-spacing: .04em;
+}
+
+.resultActions .numerologyCta:hover{ transform: translateY(-1px); }
 
 /* 角の金飾り（上品） */
 .resultActions::before,
@@ -3051,22 +3048,7 @@ font:12px/1.2 ui-sans-serif;">
     <div class="drawBar">
       <button id="btnDraw" class="drawBtn">カードを引く</button>
 
-      <div class="drawModeInline" aria-label="引き方">
-        <label class="chip">
-          <input type="radio" name="drawMode" value="1" checked />
-          <div><strong>ワンオラクル（1枚）</strong><br><span>ワンオラクル</span></div>
-        </label>
-
-        <label class="chip">
-          <input type="radio" name="drawMode" value="3" />
-          <div><strong>3枚引き（過去/現在/未来）</strong><br><span>過去 / 現在 / 未来</span></div>
-        </label>
-      </div>
-    </div>
-
-    <div class="drawModeInline" aria-label="引き方">
-  ...（既存の1枚/3枚）...
-</div>
+      
 
 <div class="drawModeInline" style="margin-top:10px;">
   <label class="chip" style="cursor:text;">
@@ -4460,144 +4442,135 @@ font:12px/1.2 ui-sans-serif;">
 
     // --- Share Image (Canvas) ---
     async function shareResultImage() {
+  const canvas = document.getElementById("shareCanvas");
+  if (!canvas) { showToast("Canvasが見つかりません"); return; }
 
- 
+  const ctx = canvas.getContext("2d");
+  if (!ctx) { showToast("Canvas描画に失敗しました"); return; }
 
-      // 1. 背景描画 (暗いトーン)
-      ctx.fillStyle = "#11111d";
-      ctx.fillRect(0, 0, 1080, 1080);
+  // 1. 背景描画 (暗いトーン)
+  ctx.fillStyle = "#11111d";
+  ctx.fillRect(0, 0, 1080, 1080);
 
-      // 上部のグラデーション
-      let grad = ctx.createLinearGradient(0, 0, 0, 400);
-      grad.addColorStop(0, "rgba(245, 230, 179, 0.15)");
-      grad.addColorStop(1, "rgba(17, 17, 29, 0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1080, 1080);
+  // 上部のグラデーション
+  let grad = ctx.createLinearGradient(0, 0, 0, 400);
+  grad.addColorStop(0, "rgba(245, 230, 179, 0.15)");
+  grad.addColorStop(1, "rgba(17, 17, 29, 0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 1080);
 
-      // 2. 金色の枠線
-      ctx.strokeStyle = "rgba(214, 178, 94, 0.4)";
-      ctx.lineWidth = 4;
-      ctx.strokeRect(40, 40, 1000, 1000);
-      ctx.strokeStyle = "rgba(214, 178, 94, 0.15)";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(50, 50, 980, 980);
+  // 2. 金色の枠線
+  ctx.strokeStyle = "rgba(214, 178, 94, 0.4)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(40, 40, 1000, 1000);
+  ctx.strokeStyle = "rgba(214, 178, 94, 0.15)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(50, 50, 980, 980);
 
-      // 3. タイトル
-      ctx.fillStyle = "#f5e6b3"; // pale gold
-      ctx.font = "40px 'Cinzel', serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillText("Angelique Tarot", 540, 80);
+  // 3. タイトル
+  ctx.fillStyle = "#f5e6b3"; // pale gold
+  ctx.font = "40px 'Cinzel', serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText("Angelique Tarot", 540, 80);
 
-      const today = new Date();
-      const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
-      ctx.font = "24px 'Cinzel', serif";
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.fillText(dateStr, 540, 130);
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`;
+  ctx.font = "24px 'Cinzel', serif";
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.fillText(dateStr, 540, 130);
 
-      // 4. 画像の描画 (現在表示されているカード画像を集める)
-      const imgs = document.querySelectorAll("#result .cardImg");
-      if (imgs.length === 0) {
-        showToast("カード画像がありません");
-        return;
-      }
+  // 4. 画像の描画 (現在表示されているカード画像を集める)
+  const imgs = document.querySelectorAll("#result .cardImg");
+  if (imgs.length === 0) {
+    showToast("カード画像がありません");
+    return;
+  }
 
-      const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
-      const count = (String(drawMode) === "3") ? 3 : 1;
+  const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+  const count = (String(drawMode) === "3") ? 3 : 1;
 
-      // 何枚引きかでレイアウト変更
-      // カード比率 約 1 : 1.6
-      const cardW = count === 1 ? 300 : 240;
-      const cardH = count === 1 ? 480 : 384;
-      const startY = 220;
+  const cardW = count === 1 ? 300 : 240;
+  const cardH = count === 1 ? 480 : 384;
+  const startY = 220;
 
-      // 画像をロードして描画するPromiseを作成
-      const loadImg = (src, isReversed) => {
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = "Anonymous"; // 重要: CORS回避
-          img.onload = () => resolve({ img, isReversed, ok: true });
-          img.onerror = () => resolve({ img: null, isReversed, ok: false });
-          img.src = src;
-        });
-      };
+  const loadImg = (src, isReversed) => new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve({ img, isReversed, ok: true });
+    img.onerror = () => resolve({ img: null, isReversed, ok: false });
+    img.src = src;
+  });
 
-      const promises = [];
-      // DOM側のカード状態を取得 (正逆含む)
-      const cardElements = document.querySelectorAll("#result .tcard");
-      cardElements.forEach(cel => {
-        const imgEl = cel.querySelector("img");
-        // tcardVisual > img
-        if (imgEl) {
-          const isReversed = cel.querySelector(".badge")?.classList.contains("rev") || imgEl.classList.contains("reversed");
-          promises.push(loadImg(imgEl.src, isReversed));
-        } else {
-          // 読み込み失敗時の保険
-          const reversedFallback = cel.querySelector("img.reversed");
-          if (reversedFallback) promises.push(loadImg(reversedFallback.src, true));
-        }
-      });
-
-      const loadedImgs = await Promise.all(promises);
-      const validImgs = loadedImgs.filter(item => item.ok);
-
-      if (validImgs.length === 1) {
-        // 1枚引き
-        drawCardOnCanvas(ctx, validImgs[0], 540 - cardW / 2, startY, cardW, cardH);
-      } else if (validImgs.length === 3) {
-        // 3枚引き
-        const gap = 40;
-        const totalW = cardW * 3 + gap * 2; // 720 + 80 = 800
-        const startX = 540 - totalW / 2;
-        drawCardOnCanvas(ctx, validImgs[0], startX, startY, cardW, cardH);
-        drawCardOnCanvas(ctx, validImgs[1], startX + cardW + gap, startY, cardW, cardH);
-        drawCardOnCanvas(ctx, validImgs[2], startX + (cardW + gap) * 2, startY, cardW, cardH);
-      }
-
-      // 5. 結論テキスト
-      // .summaryTitle のテキストを取得
-      const summaryTitleEl = document.querySelector("#result .summaryTitle");
-      if (summaryTitleEl) {
-        ctx.font = "bold 28px 'Noto Serif JP', serif";
-        ctx.fillStyle = "rgba(255,255,255,0.95)";
-        ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
-      }
-
-      // Footer text
-      ctx.font = "20px 'Noto Serif JP', serif";
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillText("Search 'Angelique Tarot' to pull your own cards.", 540, 980);
-
-      // 6. 出力
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          showToast("画像の生成に失敗しました");
-          fallbackCopyText(getResultPlainText());
-          return;
-        }
-
-        const file = new File([blob], "reading.png", { type: "image/png" });
-
-        // Share API 対応チェック
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'Angelique Tarot Reading',
-              text: '私のタロットリーディング結果です #AngeliqueTarot'
-            });
-            showToast("画像をシェアしました！");
-          } catch (err) {
-            console.error("Image Share failed or cancelled:", err);
-            // キャンセルまたは失敗時は新規タブで開くフォールバックへ
-            openImageFallback(canvas);
-          }
-        } else {
-          // 非対応なら新規タブで画像表示
-          openImageFallback(canvas);
-        }
-      }, "image/png");
+  const promises = [];
+  const cardElements = document.querySelectorAll("#result .tcard");
+  cardElements.forEach(cel => {
+    const imgEl = cel.querySelector("img");
+    if (imgEl) {
+      const isReversed = cel.querySelector(".badge")?.classList.contains("rev") || imgEl.classList.contains("reversed");
+      promises.push(loadImg(imgEl.src, isReversed));
     }
+  });
+
+  const loadedImgs = await Promise.all(promises);
+  const validImgs = loadedImgs.filter(item => item.ok);
+
+  if (validImgs.length === 1) {
+    drawCardOnCanvas(ctx, validImgs[0], 540 - cardW / 2, startY, cardW, cardH);
+  } else if (validImgs.length === 3) {
+    const gap = 40;
+    const totalW = cardW * 3 + gap * 2;
+    const startX = 540 - totalW / 2;
+    drawCardOnCanvas(ctx, validImgs[0], startX, startY, cardW, cardH);
+    drawCardOnCanvas(ctx, validImgs[1], startX + cardW + gap, startY, cardW, cardH);
+    drawCardOnCanvas(ctx, validImgs[2], startX + (cardW + gap) * 2, startY, cardW, cardH);
+  } else {
+    showToast("画像の読み込みに失敗しました");
+    return;
+  }
+
+  // 5. 結論テキスト
+  const summaryTitleEl = document.querySelector("#result .summaryTitle");
+  if (summaryTitleEl) {
+    ctx.font = "bold 28px 'Noto Serif JP', serif";
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
+  }
+
+  // Footer
+  ctx.font = "20px 'Noto Serif JP', serif";
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.fillText("Search 'Angelique Tarot' to pull your own cards.", 540, 980);
+
+  // 6. 出力
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      showToast("画像の生成に失敗しました");
+      fallbackCopyText(getResultPlainText());
+      return;
+    }
+
+    const file = new File([blob], "reading.png", { type: "image/png" });
+
+    // Share API
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "Angelique Tarot Reading",
+          text: "私のタロットリーディング結果です #AngeliqueTarot"
+        });
+        showToast("画像をシェアしました！");
+      } catch (err) {
+        console.error("Image Share failed or cancelled:", err);
+        // フォールバック：モーダル表示へ
+        openImageFallback(canvas);
+      }
+    } else {
+      openImageFallback(canvas);
+    }
+  }, "image/png");
+}
 
     function openImageFallback(canvas) {
   showToast("画像を表示しました。保存して共有してください", 3000);
