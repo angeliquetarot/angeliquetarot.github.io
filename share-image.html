@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Angelique Tarot | Share Image</title>
+  <style>
+    body{margin:0; font-family:system-ui,-apple-system,"Noto Serif JP",serif; background:#0f1834; color:rgba(255,255,255,.92);}
+    .wrap{max-width:920px; margin:0 auto; padding:18px;}
+    .card{background:rgba(255,255,255,.06); border:1px solid rgba(249,224,138,.25); border-radius:18px; padding:14px;}
+    img{width:100%; height:auto; border-radius:14px; display:block;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+    button,a{border-radius:14px; padding:10px 12px; border:1px solid rgba(249,224,138,.35); background:rgba(255,255,255,.06); color:rgba(255,255,255,.92); text-decoration:none;}
+    button.primary{background:linear-gradient(90deg,#B78628,#F9E08A,#B78628); color:#1a1430; border:none; font-weight:700;}
+    .hint{opacity:.85; margin-top:10px; line-height:1.6;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2 style="margin:0 0 12px;">Share Image</h2>
+    <div class="card">
+      <img id="img" alt="Angelique Tarot share image"/>
+      <div class="row">
+        <button id="btnShare" class="primary">共有する</button>
+        <a id="btnOpen" href="#" target="_blank" rel="noopener">画像を新規タブで開く</a>
+        <a href="./" rel="noopener">アプリに戻る</a>
+      </div>
+      <p class="hint">
+        共有がうまくいかない場合は、画像を保存してLINEなどに添付してください。<br/>
+        ※端末/ブラウザにより「画像ファイル共有」は制限されることがあります。
+      </p>
+    </div>
+  </div>
+
+<script>
+(async function(){
+  const dataUrl = sessionStorage.getItem("ANGELIQUE_SHARE_IMAGE");
+  const img = document.getElementById("img");
+  const btnOpen = document.getElementById("btnOpen");
+  const btnShare = document.getElementById("btnShare");
+
+  if(!dataUrl){
+    img.alt = "画像データが見つかりませんでした。アプリで再生成してください。";
+    btnShare.disabled = true;
+    btnOpen.textContent = "画像データなし";
+    return;
+  }
+
+  img.src = dataUrl;
+  btnOpen.href = dataUrl;
+
+  async function dataURLtoFile(dataurl, filename){
+    const res = await fetch(dataurl);
+    const blob = await res.blob();
+    return new File([blob], filename, {type: "image/png"});
+  }
+
+  btnShare.addEventListener("click", async ()=>{
+    try{
+      const file = await dataURLtoFile(dataUrl, "angelique-tarot.png");
+      if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+        await navigator.share({files:[file], title:"Angelique Tarot"});
+      }else{
+        alert("この環境では画像ファイル共有に未対応です。画像を保存して共有してください。");
+      }
+    }catch(e){
+      alert("共有に失敗しました。画像を保存して共有してください。");
+    }
+  });
+})();
+</script>
+</body>
+</html>

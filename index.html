@@ -4433,7 +4433,26 @@ font:12px/1.2 ui-sans-serif;">
 
     // --- Share Image (Canvas) ---
     async function shareResultImage() {
-      const canvas = document.getElementById("shareCanvas");
+
+  // ★ ユーザー操作の瞬間にpopupを開く（ブロック回避）
+  const popup = window.open("about:blank", "_blank", "noopener,noreferrer");
+
+  if (!popup) {
+    showToast("ポップアップがブロックされました。テキストをコピーします。", 3000);
+    fallbackCopyText(getResultPlainText());
+    return;
+  }
+
+  // popupに「生成中」表示（空白回避）
+  try {
+    popup.document.write(`
+      <body style="background:#11111d;color:#fff;font-family:system-ui;padding:30px;">
+        画像を生成中です… 少しお待ちください。
+      </body>
+    `);
+  } catch {}
+
+  const canvas = document.getElementById("shareCanvas");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
 
@@ -4555,7 +4574,7 @@ font:12px/1.2 ui-sans-serif;">
         const file = new File([blob], "reading.png", { type: "image/png" });
 
         // Share API 対応チェック
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
           try {
             await navigator.share({
               files: [file],
@@ -4566,33 +4585,37 @@ font:12px/1.2 ui-sans-serif;">
           } catch (err) {
             console.error("Image Share failed or cancelled:", err);
             // キャンセルまたは失敗時は新規タブで開くフォールバックへ
-            openImageFallback(canvas);
+            openImageFallback(canvas, popup);;
           }
         } else {
           // 非対応なら新規タブで画像表示
-          openImageFallback(canvas);
+          openImageFallback(canvas, popup);
         }
       }, "image/png");
     }
 
-    function openImageFallback(canvas) {
-      showToast("画像を長押しして保存してください", 4000);
-      try {
-        const dataUrl = canvas.toDataURL("image/png");
-        const newWin = window.open();
-        if (newWin) {
-          newWin.document.write(`<img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">`);
-        } else {
-          // ポップアップブロックなどで開けなかった場合
-          fallbackCopyText(getResultPlainText());
-          showToast("画像を表示できませんでした。テキストをコピーしました。");
-        }
-      } catch (err) {
-        console.error("Canvas toDataURL failed:", err);
-        fallbackCopyText(getResultPlainText());
-        showToast("画像を表示できませんでした。テキストをコピーしました。");
-      }
-    }
+    function openImageFallback(canvas, popup) {
+  showToast("画像を開きました。保存して共有してください", 4000);
+
+  try {
+    const url = canvas.toDataURL("image/png");
+
+    // ★ ここが重要：about:blankのままにしない
+    popup.document.open();
+    popup.document.write(`
+      <body style="margin:0;background:#11111d;">
+        <img src="${url}" style="max-width:100%;height:auto;display:block;margin:0 auto;">
+      </body>
+    `);
+    popup.document.close();
+
+  } catch (err) {
+    console.error("Fallback failed:", err);
+    fallbackCopyText(getResultPlainText());
+    showToast("画像を表示できませんでした。テキストをコピーしました。");
+    popup.close();
+  }
+}
 
     function drawCardOnCanvas(ctx, item, x, y, w, h) {
       if (!item || !item.img) return;
