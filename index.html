@@ -4293,6 +4293,14 @@ document.addEventListener("DOMContentLoaded", boot);
 
 
     async function onDraw() {
+       try {
+    // ここから下が今までの onDraw 本体…
+      } catch (e) {
+    console.error(e);
+    setStatus("エラーで停止しました（Console参照）");
+    showToast("エラーで停止しました（Console参照）", 5000);
+  }
+}
       if (!cards.length) {
   setStatus("デッキが未読み込みです（CSV読み込み待ち）");
   showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
@@ -4784,16 +4792,25 @@ document.addEventListener("DOMContentLoaded", boot);
 
         const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
         const summaryReason = `【理由】${mainText}`;
-        // ===== actionSub をここで必ず作る（今のコードに合わせて復元） =====
-let actionSub = action ? action.substring(0, 20) + "…" : "今できることを";
+        // ===== actionSub をここで必ず作る（落ちない版） =====
+let actionSub = (typeof action === "string" && action.trim())
+  ? action.substring(0, 20) + "…"
+  : "今できることを";
 
-// 五行の「不足」を一言だけ混ぜる（誕生日未入力なら weakElem="" で何も起きない）
-const weakElem = getWeakElemFromInputs?.() || ""; // 関数が無い場合でも落ちないように保険
-if (weakElem === "火") actionSub += " ほんの少し勇気を足して。";
-if (weakElem === "水") actionSub += " 感情を整えながら。";
-if (weakElem === "木") actionSub += " まず一歩、動いて。";
-if (weakElem === "土") actionSub += " 足場を固めてから。";
-if (weakElem === "金") actionSub += " 境界線を意識して。";
+try {
+  const weakElem =
+    (typeof getWeakElemFromInputs === "function")
+      ? (getWeakElemFromInputs() || "")
+      : "";
+
+  if (weakElem === "火") actionSub += " ほんの少し勇気を足して。";
+  if (weakElem === "水") actionSub += " 感情を整えながら。";
+  if (weakElem === "木") actionSub += " まず一歩、動いて。";
+  if (weakElem === "土") actionSub += " 足場を固めてから。";
+  if (weakElem === "金") actionSub += " 境界線を意識して。";
+} catch (e) {
+  console.warn("[weakElem hint skipped]", e);
+}
 // ==========================================================
         const summaryAction = `【一歩】${actionSub} あなたはもう十分、やってきた。`;
 
