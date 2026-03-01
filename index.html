@@ -2971,36 +2971,76 @@ button, .drawBtn, .btnGhost, .btnDrawAgain{
 .cardImg.reversed{
   transform: rotate(180deg) !important;
 }
-/* =========================
-   Birthdate UI - Premium glass
-   ========================= */
-
-.birthPanel{
-  margin-top: 10px;
-  padding: 16px 16px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(249,224,138,0.16);
-  box-shadow: 0 18px 50px rgba(0,0,0,0.22);
-}
-
-.birthPanel .panelTitle{
-  margin: 0 0 12px;
-  font-family: "Cinzel","Shippori Mincho",serif;
-  letter-spacing: .06em;
-  font-size: 15px;
-  color: rgba(249,224,138,0.92);
-}
-
+/* ===== Birth UI layout (clean, premium) ===== */
 .birthGrid{
   display:grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-@media (max-width: 560px){
-  .birthGrid{ grid-template-columns: 1fr; }
+  gap: 14px 16px;
+  align-items:start;
 }
 
+.birthField{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+}
+
+.birthLabel{
+  font-size: 12px;
+  letter-spacing:.06em;
+  color: rgba(255,255,255,.78);
+}
+
+.birthHint{
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.62);
+}
+
+/* mobile */
+@media (max-width: 640px){
+  .birthGrid{ grid-template-columns: 1fr; }
+}
+/* Birth inputs (base) */
+.birthInput{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.92);
+  font-size: 14px;
+  line-height: 1.2;
+  outline: none;
+}
+
+/* Focus: premium glow */
+.birthInput:focus{
+  border-color: rgba(249,224,138,0.55);
+  box-shadow: 0 0 0 3px rgba(249,224,138,0.12);
+}
+
+/* Mobile: compact (ここが効く) */
+@media (max-width: 560px){
+  .birthPanel{ padding: 14px 12px; }
+  .birthPanel .panelTitle{ margin-bottom: 10px; }
+
+  .birthGrid{ gap: 10px; }
+
+  .birthInput{
+    padding: 10px 11px;
+    border-radius: 12px;
+    font-size: 13.5px;
+  }
+
+  /* ヒント文も詰める */
+  .birthHint{
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: .85;
+  }
+}
 .birthBlock{
   padding: 12px 12px;
   border-radius: 16px;
@@ -3671,36 +3711,42 @@ font:12px/1.2 ui-sans-serif;">
     </header>
 
     <!-- 生年月日入力（JSが読むidで） -->
-    <section class="panel birthPanel" id="birthPanel">
-      <h2 class="panelTitle">生年月日</h2>
-      <div class="birthGrid">
-        <div class="birthBlock">
-          <label class="birthLabel" for="userBirthdate">あなた</label>
-          <input type="date" id="userBirthdate" class="birthInput" />
-        </div>
-        <!-- 追加：時刻（任意） -->
-<div class="birthRow">
-  <div class="birthLabel">あなた（任意：出生時刻）</div>
-  <input id="userBirthtime" class="birthInput" type="time" step="60" placeholder="--:--">
-</div>
+<section class="panel birthPanel" id="birthPanel">
+  <h2 class="panelTitle">生年月日</h2>
 
-<div class="birthRow">
-  <div class="birthLabel">お相手（任意：出生時刻）</div>
-  <input id="partnerBirthtime" class="birthInput" type="time" step="60" placeholder="--:--">
-</div>
+  <div class="birthGrid">
+    <!-- あなた：生年月日 -->
+    <div class="birthBlock">
+      <label class="birthLabel" for="userBirthdate">あなた</label>
+      <input type="date" id="userBirthdate" class="birthInput" />
+    </div>
 
-<div class="birthHint">
-  ※任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。
-</div>
+    <!-- あなた：出生時刻（任意） -->
+    <div class="birthBlock">
+      <label class="birthLabel" for="userBirthtime">あなた（任意：出生時刻）</label>
+      <input id="userBirthtime" class="birthInput" type="time" step="60" />
+    </div>
 
-        <div class="birthBlock">
-          <label class="birthLabel" for="partnerBirthdate">お相手（任意）</label>
-          <input type="date" id="partnerBirthdate" class="birthInput" />
-        </div>
-      </div>
+    <!-- お相手：生年月日 -->
+    <div class="birthBlock">
+      <label class="birthLabel" for="partnerBirthdate">お相手（任意）</label>
+      <input type="date" id="partnerBirthdate" class="birthInput" />
+    </div>
 
-      <p class="birthHint">※ 生年月日を入れると、読み解きがよりパーソナルになります</p>
-    </section>
+    <!-- お相手：出生時刻（任意） -->
+    <div class="birthBlock">
+      <label class="birthLabel" for="partnerBirthtime">お相手（任意：出生時刻）</label>
+      <input id="partnerBirthtime" class="birthInput" type="time" step="60" />
+    </div>
+  </div>
+
+  <p class="birthHint">
+    ※ 任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。
+  </p>
+  <p class="birthHint">
+    ※ 生年月日を入れると、読み解きがよりパーソナルになります
+  </p>
+</section>
 
     <div class="divider"></div>
 
@@ -5069,7 +5115,32 @@ const STEM_TO_ELEM = {
   "庚":"金","辛":"金",
   "壬":"水","癸":"水",
 };
+function normalizeDateInput(v){
+  const s = (v || "").toString().trim();
+  if (!s) return "";
+  // 1980/04/06 や 1980.04.06 も吸収して YYYY-MM-DD に寄せる
+  const m = s.match(/^(\d{4})[\/\.\-](\d{1,2})[\/\.\-](\d{1,2})$/);
+  if (m) {
+    const Y = m[1];
+    const M = String(m[2]).padStart(2,"0");
+    const D = String(m[3]).padStart(2,"0");
+    return `${Y}-${M}-${D}`;
+  }
+  // type="date" は元々 YYYY-MM-DD のはずなのでそれはそのまま通す
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return ""; // 変な文字列は空扱い（計算しない）
+}
 
+function normalizeTimeInput(v){
+  const s = (v || "").toString().trim();
+  if (!s) return "";
+  // "1545" -> "15:45" も許す
+  const m = s.match(/^(\d{1,2}):?(\d{2})$/);
+  if (!m) return "";
+  const hh = String(m[1]).padStart(2,"0");
+  const mm = String(m[2]).padStart(2,"0");
+  return `${hh}:${mm}`;
+}
 // 地支→（蔵干）を簡易配分（重み付き）
 // 例：子=癸(100)、丑=己60/癸30/辛10 など
 const BRANCH_HIDDEN = {
@@ -5302,10 +5373,11 @@ function buildGogyouBlock(title, dateStr, timeStr){
 }
 
 function buildBothGogyouHTML(){
-  const uDate = document.getElementById("userBirthdate")?.value;
-  const uTime = document.getElementById("userBirthtime")?.value;
-  const pDate = document.getElementById("partnerBirthdate")?.value;
-  const pTime = document.getElementById("partnerBirthtime")?.value;
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+　const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
+
+　const pDate = normalizeDateInput(document.getElementById("partnerBirthdate")?.value);
+　const pTime = normalizeTimeInput(document.getElementById("partnerBirthtime")?.value);
 
   const u = buildGogyouBlock("あなた", uDate, uTime);
   const p = buildGogyouBlock("お相手", pDate, pTime);
