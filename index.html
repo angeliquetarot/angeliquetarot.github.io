@@ -4293,33 +4293,48 @@ document.addEventListener("DOMContentLoaded", boot);
 
 
     async function onDraw() {
-       try {
-    // ここから下が今までの onDraw 本体…
-      } catch (e) {
+  try {
+    // 1) デッキ未読み込みガード
+    if (!cards || !cards.length) {
+      setStatus("デッキが未読み込みです（CSV読み込み待ち）");
+      showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
+      return;
+    }
+
+    // 2) 枚数
+    const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+    const count = (String(drawMode) === "3") ? 3 : 1;
+
+    // 3) シャッフル演出
+    setStatus(`シャッフル中…（${count}枚引き）`);
+    startShuffle();
+    await new Promise(r => setTimeout(r, 1400));
+    stopShuffle();
+
+    // 4) ドロー
+    const picked = drawUnique(count);
+    console.log("picked[0] raw =", picked[0]);
+    console.log("picked[0] json =", JSON.stringify(picked[0], null, 2));
+    console.log("picked[0].card json =", JSON.stringify(picked[0]?.card, null, 2));
+
+    // 5) ↓↓↓ ここから下に「結果HTML生成〜表示」の本体を戻す ↓↓↓
+    // 例：
+    // const labels3 = ["過去","現在","未来"];
+    // const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
+    // const gogyouHTML = buildBothGogyouHTML();
+    // ...
+    // elResult.innerHTML = `...`
+    // elResult.classList.remove("antigravity");
+    // void elResult.offsetWidth;
+    // elResult.classList.add("antigravity");
+    // scrollToResultSmooth();
+
+  } catch (e) {
     console.error(e);
     setStatus("エラーで停止しました（Console参照）");
     showToast("エラーで停止しました（Console参照）", 5000);
   }
 }
-      if (!cards.length) {
-  setStatus("デッキが未読み込みです（CSV読み込み待ち）");
-  showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
-  return;
-  elResult.classList.add("antigravity");
-}
-      const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
-      const count = (String(drawMode) === "3") ? 3 : 1;
-
-      setStatus(`シャッフル中…（${count}枚引き）`);
-      startShuffle();
-      await new Promise(r => setTimeout(r, 1400));
-      stopShuffle();
-
-      const picked = drawUnique(count);
-      console.log("picked[0] raw =", picked[0]);
-      console.log("picked[0] json =", JSON.stringify(picked[0], null, 2));
-      console.log("picked[0].card json =", JSON.stringify(picked[0]?.card, null, 2));
-
 
 
 
@@ -4904,7 +4919,7 @@ elResult.classList.add("antigravity");
       requestAnimationFrame(() => {
         elResult.classList.add("show");
       });
-    }
+    
 
     // --- キーワード：| 区切りで最大10個 ---
     function splitKeywords(str, limit = 10) {
@@ -5426,7 +5441,6 @@ function buildEnergyDetailHTML(score){
   const strongData = ELEMENT_SOUL[strongElem];
   const weakData   = ELEMENT_SOUL[weakElem];
 
-  // 保険（データ欠けでも落とさない）
   const strongUrl = strongData?.strongUrl || "./elements/index.html";
   const weakUrl   = weakData?.weakUrl   || "./elements/index.html";
 
