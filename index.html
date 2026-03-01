@@ -4468,57 +4468,44 @@ return `
   ctx.fillStyle = "rgba(255,255,255,0.5)";
   ctx.fillText("Search 'Angelique Tarot' to pull your own cards.", 540, 980);
 
-  // 6. 出力
-  // 6. 出力
-canvas.toBlob(async (blob) => {
-  if (!blob) {
-    showToast("画像の生成に失敗しました");
-    fallbackCopyText(getResultPlainText());
-    return;
-  }
+    // 6. 出力（PNG化して、スマホ=共有 / PC=モーダル表示）
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      showToast("画像の生成に失敗しました");
+      fallbackCopyText(getResultPlainText());
+      return;
+    }
 
-  const file = new File([blob], "reading.png", { type: "image/png" });
+    const file = new File([blob], "reading.png", { type: "image/png" });
 
-  // ✅ PCは「共有シート」を使わない（直感的じゃないので）
-  if (!isProbablyMobile()) {
-    openImageFallbackFromBlob(blob);
-    return;
-  }
+    // ✅ PCは共有シートを使わず、モーダルで画像を見せる
+    if (!isProbablyMobile()) {
+      openImageFallbackFromBlob(blob);
+      return;
+    }
 
-  // ✅ スマホは Share API が使えるなら使う
-  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: "Angelique Tarot Reading",
-        text: "私のタロットリーディング結果です #AngeliqueTarot"
-      });
-      showToast("画像をシェアしました！");
-    } catch (err) {
-      console.error("Image Share failed or cancelled:", err);
-      // キャンセル時はモーダルへ
+    // ✅ スマホは Share API が使えるなら使う
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "Angelique Tarot Reading",
+          text: "私のタロットリーディング結果です #AngeliqueTarot"
+        });
+        showToast("画像をシェアしました！");
+      } catch (err) {
+        console.error("Image Share failed or cancelled:", err);
+        // キャンセル時はモーダルへ
+        openImageFallbackFromBlob(blob);
+      }
+    } else {
       openImageFallbackFromBlob(blob);
     }
-  } else {
-    openImageFallbackFromBlob(blob);
-  }
-}, "image/png");
+  }, "image/png");
+}
 
-    function openImageFallback(canvas) {
-  showToast("画像を表示しました。保存して共有してください", 3000);
-
-  const modal = document.getElementById("shareModal");
-  const imgEl = document.getElementById("shareModalImg");
-  const dl = document.getElementById("shareModalDownload");
-  const closeBtn = document.getElementById("shareModalClose");
-
-  if (!modal || !imgEl || !dl || !closeBtn) {
-    fallbackCopyText(getResultPlainText());
-    showToast("画像表示UIが見つかりません。テキストをコピーしました。", 4000);
-    return;
-  }
-
-  function openImageFallbackFromBlob(blob) {
+// ✅ ここは shareResultImage の「外」に置く（超重要）
+function openImageFallbackFromBlob(blob) {
   showToast("画像を表示しました。右クリック/長押しで保存できます", 3500);
 
   const modal = document.getElementById("shareModal");
@@ -4538,7 +4525,6 @@ canvas.toBlob(async (blob) => {
   dl.href = url;
   openBtn.href = url;
 
-  // 表示
   modal.style.display = "block";
 
   const close = () => {
@@ -4554,9 +4540,6 @@ canvas.toBlob(async (blob) => {
 
   closeBtn.addEventListener("click", close);
   modal.addEventListener("click", onBg);
-}
-
- 
 }
 
  
