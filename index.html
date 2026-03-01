@@ -3688,6 +3688,58 @@ body{
   line-height: 1.55;
   opacity: .80;
 }
+/* =========================
+   Energy Details (Fold)
+   ========================= */
+.energyDetails{
+  margin-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: 12px;
+}
+
+.energyDetails summary{
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(249,224,138,0.92);
+  letter-spacing: .06em;
+  list-style: none;
+  user-select: none;
+}
+.energyDetails summary::-webkit-details-marker{ display:none; }
+
+.energyDetails .energyInner{
+  margin-top: 12px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(249,224,138,0.14);
+}
+
+.energyDetails .energyMeta{
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(255,255,255,.88);
+}
+
+.energyLinks{
+  margin-top: 10px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.energyLinks a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  text-decoration:none;
+  font-size: 12px;
+  color: rgba(255,255,255,.9);
+  background: rgba(10,10,18,0.28);
+  border: 1px solid rgba(255,255,255,.15);
+}
+.energyLinks a:hover{ transform: translateY(-1px); }
   </style>
 </head>
 
@@ -4732,6 +4784,17 @@ document.addEventListener("DOMContentLoaded", boot);
 
         const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
         const summaryReason = `【理由】${mainText}`;
+        // ===== actionSub をここで必ず作る（今のコードに合わせて復元） =====
+let actionSub = action ? action.substring(0, 20) + "…" : "今できることを";
+
+// 五行の「不足」を一言だけ混ぜる（誕生日未入力なら weakElem="" で何も起きない）
+const weakElem = getWeakElemFromInputs?.() || ""; // 関数が無い場合でも落ちないように保険
+if (weakElem === "火") actionSub += " ほんの少し勇気を足して。";
+if (weakElem === "水") actionSub += " 感情を整えながら。";
+if (weakElem === "木") actionSub += " まず一歩、動いて。";
+if (weakElem === "土") actionSub += " 足場を固めてから。";
+if (weakElem === "金") actionSub += " 境界線を意識して。";
+// ==========================================================
         const summaryAction = `【一歩】${actionSub} あなたはもう十分、やってきた。`;
 
         let safeEnergy = "";
@@ -4760,6 +4823,7 @@ document.addEventListener("DOMContentLoaded", boot);
         globalSummaryHTML = `
   ${gogyouHTML}
   <div class="summaryCard line">
+    
     <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
     <div class="summaryText">${mainReasonHTML}</div>
     <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
@@ -5335,7 +5399,32 @@ function elemMeaning(e){
   };
   return map[e] || "";
 }
+function buildEnergyDetailHTML(score){
+  const { strong, weak } = pickStrongWeak(score);
 
+  const strongData = ELEMENT_SOUL[strong[0]];
+  const weakData   = ELEMENT_SOUL[weak[0]];
+
+  return `
+    <div class="energyBlock">
+      <div>
+        🔥 強く出ている：${strong[0]}  
+        <br>
+        <a href="${strongData.pageStrong}" target="_blank">
+          ${strongData.strong}とは？
+        </a>
+      </div>
+      <br>
+      <div>
+        🌿 今回のテーマに影響する要素：${weak[0]}  
+        <br>
+        <a href="${weakData.pageWeak}" target="_blank">
+          ${weakData.weak}とは？
+        </a>
+      </div>
+    </div>
+  `;
+}
 function buildGogyouBlock(title, dateStr, timeStr){
   if (!dateStr) return "";
   const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
@@ -5358,6 +5447,8 @@ function buildGogyouBlock(title, dateStr, timeStr){
     dStem: dgz.stem, dBranch: dgz.branch,
     hStem, hBranch
   });
+  const energyHTML = buildEnergyDetailHTML(score);
+document.getElementById("energyDetailContent").innerHTML = energyHTML;
 
   const { strong, weak } = pickStrongWeak(score);
 
@@ -5390,18 +5481,78 @@ function buildGogyouBlock(title, dateStr, timeStr){
 
 function buildBothGogyouHTML(){
   const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
-　const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
+  const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
 
-　const pDate = normalizeDateInput(document.getElementById("partnerBirthdate")?.value);
-　const pTime = normalizeTimeInput(document.getElementById("partnerBirthtime")?.value);
+  const pDate = normalizeDateInput(document.getElementById("partnerBirthdate")?.value);
+  const pTime = normalizeTimeInput(document.getElementById("partnerBirthtime")?.value);
 
   const u = buildGogyouBlock("あなた", uDate, uTime);
   const p = buildGogyouBlock("お相手", pDate, pTime);
 
   if (!u && !p) return "";
-  return `<div class="gogyouWrap">${u}${p}</div>`;
-}
+function getWeakElemFromInputs(){
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
+  if (!uDate) return ""; // 誕生日未入力なら何もしない
 
+  const [y,m,d] = uDate.split("-").map(n=>parseInt(n,10));
+  if (!y || !m || !d) return "";
+
+  const fpYear = approxYearForFourPillars(y,m,d);
+  const ygz = yearGanzhi(fpYear);
+
+  const mBranch = approxMonthBranch(y,m,d);
+  const mStem = monthStemFrom(ygz.stem, mBranch);
+
+  const dgz = dayGanzhi(y,m,d);
+
+  const hBranch = hourBranchFromTime(uTime);
+  const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
+
+  const score = calcFiveElements({
+    yStem: ygz.stem, yBranch: ygz.branch,
+    mStem, mBranch,
+    dStem: dgz.stem, dBranch: dgz.branch,
+    hStem, hBranch
+  });
+
+  const { weak } = pickStrongWeak(score);
+  return weak?.[0] || "";
+}
+  // ▼ 五行の「強い/不足」リンクは、buildGogyouBlockの中で strong/weak が出ているなら
+  // そこにリンクを足すのが理想だけど、まずは “五行ページへの入口” をここに置く（簡易でOK）
+  const links = `
+    <div class="energyLinks">
+      <a href="./numbers.html" target="_blank">数秘を詳しく</a>
+      <a href="./elements/index.html" target="_blank">五行を詳しく</a>
+    </div>
+  `;
+
+  return `
+    <details class="energyDetails">
+      <summary>あなたの設計図を見る（数秘 / 九星 / 五行）</summary>
+      <div class="energyInner">
+        <div class="energyMeta">
+          ※ 深く知りたい人向け。本文はカードだけで成立するようにしています。
+        </div>
+        ${links}
+        <div style="margin-top:12px;">
+          <div class="gogyouWrap">${u}${p}</div>
+        </div>
+      </div>
+    </details>
+  `;
+}
+// =========================
+// Five Elements -> Soul Theme Links
+// =========================
+const ELEMENT_SOUL = {
+  "木": { strong:"成長を導く魂", weak:"芽吹きを恐れている魂", strongUrl:"./elements/wood-strong.html", weakUrl:"./elements/wood-weak.html" },
+  "火": { strong:"情熱を灯す魂", weak:"情熱を思い出す魂", strongUrl:"./elements/fire-strong.html", weakUrl:"./elements/fire-weak.html" },
+  "土": { strong:"世界を支える魂", weak:"安心を求める魂", strongUrl:"./elements/earth-strong.html", weakUrl:"./elements/earth-weak.html" },
+  "金": { strong:"境界を守る魂", weak:"自分を守りきれない魂", strongUrl:"./elements/metal-strong.html", weakUrl:"./elements/metal-weak.html" },
+  "水": { strong:"深く感じ取る魂", weak:"感情を閉じ込めた魂", strongUrl:"./elements/water-strong.html", weakUrl:"./elements/water-weak.html" },
+};
 
     // ---- HTMLエスケープ ----
     function escapeHtml(str) {
