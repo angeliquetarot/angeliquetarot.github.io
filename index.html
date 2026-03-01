@@ -5214,13 +5214,29 @@ function toJdn(y, m, d){
   return d + Math.floor((153*m2 + 2)/5) + 365*y2 + Math.floor(y2/4) - Math.floor(y2/100) + Math.floor(y2/400) - 32045;
 }
 
-// 日干支（簡易）：JDN基準から60干支
-// ※基準合わせは流派差あり。ここは“簡易推定”として固定。
-//   もしズレを感じたらこの offset を調整すれば全体が揃う。
+// ====== Day Ganzhi offset calibration ======
+// アンカー: 1980-04-06 は「乙亥」想定（あなたが提示した基準）
+function findDayOffsetFor(y, m, d, targetStem, targetBranch){
+  const jdn = toJdn(y, m, d);
+  for (let off = 0; off < 60; off++){
+    const idx = (jdn + off) % 60;
+    const stem = STEMS[idx % 10];
+    const branch = BRANCHES[idx % 12];
+    if (stem === targetStem && branch === targetBranch) return off;
+  }
+  return null;
+}
+
+// ここで offset を確定（見つからなければ旧値49を使う）
+const DAY_OFFSET = (()=>{
+  const off = findDayOffsetFor(1980, 4, 6, "乙", "亥");
+  return (off == null) ? 49 : off;
+})();
+
+// 日干支（60干支）: JDN基準から算出
 function dayGanzhi(y,m,d){
   const jdn = toJdn(y,m,d);
-  const offset = 49; // ★調整ポイント（簡易基準）
-  const idx = (jdn + offset) % 60;
+  const idx = (jdn + DAY_OFFSET) % 60;
   const stem = STEMS[idx % 10];
   const branch = BRANCHES[idx % 12];
   return { stem, branch };
