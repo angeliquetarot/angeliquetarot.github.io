@@ -2992,7 +2992,19 @@ font:12px/1.2 ui-sans-serif;">
   <div class="fly" aria-hidden="true"></div>
   <div class="fly" aria-hidden="true"></div>
 </div>
+<!-- 結果エリア（showReadyが触る箱） -->
+<div id="stage" class="stage">
+  <div id="deckInfo" class="status"></div>
 
+  <!-- ここに結論カードなどが入る想定 -->
+  <div id="summaryCard" class="summaryCard"></div>
+
+  <!-- ここにカード3枚/1枚が並ぶ想定 -->
+  <div id="cardsGrid" class="cardsGrid"></div>
+
+  <!-- 既に result を使ってるなら残す（JSが scrollToResultSmooth で使う） -->
+  <div id="result"></div>
+</div>
 <div id="result" class="result-animate"></div>
 
   <!-- 描画用見えないCanvas -->
