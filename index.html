@@ -2984,7 +2984,8 @@ font:12px/1.2 ui-sans-serif;">
     VERSION:
   </div>
 
- 
+ <div id="status" class="status" aria-live="polite"></div>
+<div id="deckInfo" class="status"></div>
 
   <!-- 描画用見えないCanvas -->
   <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
@@ -3001,6 +3002,11 @@ font:12px/1.2 ui-sans-serif;">
       el.className = "toast";
       el.textContent = message;
       container.appendChild(el);
+
+      function setDeckInfo() {
+  if (!elDeckInfo) return;
+  elDeckInfo.textContent = `Deck: ${cards.length} cards loaded`;
+}
 
       // reflow
       void el.offsetWidth;
@@ -3172,9 +3178,9 @@ font:12px/1.2 ui-sans-serif;">
         }
 
         cards = rows;
-        setDeckInfo();
-        setStatus(`同梱CSV 読み込み完了：${cards.length}枚。引けます。`);
-        showReady();
+if (typeof setDeckInfo === "function") setDeckInfo();
+setStatus(`同梱CSV 読み込み完了：${cards.length}枚。引けます。`);
+showReady();
       } catch (e) {
   console.error(e);
   setStatus("同梱CSVの読み込みに失敗しました（Console参照）。");
