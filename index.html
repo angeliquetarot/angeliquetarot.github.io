@@ -3120,7 +3120,6 @@ font:12px/1.2 ui-sans-serif;">
 
 
     const elFile = document.getElementById("csvFile");
-    const elStatus = document.getElementById("status");
     const elDeckInfo = document.getElementById("deckInfo");
     const elShuffleArea = document.getElementById("shuffleArea");
     const elResult = document.getElementById("result");
@@ -3211,11 +3210,26 @@ document.addEventListener("DOMContentLoaded", boot);
 
 
 
-    function setStatus(msg) {
-  const el = document.getElementById("status");
-  if (!el) return;          // 無ければ何もしない
-  el.textContent = msg;
+    let elStatus, elDeckInfo, elShuffleArea, elResult, elFile;
+
+function setStatus(msg) {
+  if (!elStatus) return;            // ←保険（これ大事）
+  elStatus.textContent = msg;
 }
+
+function boot() {
+  // DOMが出来てから要素を取得する
+  elStatus = document.getElementById("status");
+  elDeckInfo = document.getElementById("deckInfo");
+  elShuffleArea = document.getElementById("shuffleArea");
+  elResult = document.getElementById("result");
+  elFile = document.getElementById("csvFile");
+
+  applyCreatorMode();
+  loadBundledCsv();
+}
+
+document.addEventListener("DOMContentLoaded", boot);
     function setDeckInfo() {
       elDeckInfo.textContent = cards.length ? `デッキ：${cards.length}枚 読み込み済み` : "デッキ：未読み込み";
     }
