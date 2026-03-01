@@ -3320,49 +3320,110 @@ body{
     rgba(255,255,255,.06));
 }
 /* =========================
-   👑 Corner Ornaments (Luxury)
+   👑 Corner ornaments (NO pseudo elements)
+   - safe for 1-card / 3-card / mobile
    ========================= */
 
-/* 角飾りを描くため relative 必須 */
 .tcardVisual{
+  /* 調整はここだけ */
+  --corner-size: 22px;     /* 角の長さ */
+  --corner-th: 2px;        /* 太さ */
+  --corner: rgba(249,224,138,.55);
+
   position: relative;
+  border-radius: 20px;
+
+  /* 角飾り：背景の多重グラデで描画（擬似要素不要） */
+  background-image:
+    /* TL */
+    linear-gradient(var(--corner), var(--corner)),
+    linear-gradient(var(--corner), var(--corner)),
+    /* TR */
+    linear-gradient(var(--corner), var(--corner)),
+    linear-gradient(var(--corner), var(--corner)),
+    /* BL */
+    linear-gradient(var(--corner), var(--corner)),
+    linear-gradient(var(--corner), var(--corner)),
+    /* BR */
+    linear-gradient(var(--corner), var(--corner)),
+    linear-gradient(var(--corner), var(--corner));
+  background-size:
+    /* TL */ var(--corner-size) var(--corner-th), var(--corner-th) var(--corner-size),
+    /* TR */ var(--corner-size) var(--corner-th), var(--corner-th) var(--corner-size),
+    /* BL */ var(--corner-size) var(--corner-th), var(--corner-th) var(--corner-size),
+    /* BR */ var(--corner-size) var(--corner-th), var(--corner-th) var(--corner-size);
+  background-position:
+    /* TL */ 10px 10px, 10px 10px,
+    /* TR */ calc(100% - 10px) 10px, calc(100% - 10px) 10px,
+    /* BL */ 10px calc(100% - 10px), 10px calc(100% - 10px),
+    /* BR */ calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) calc(100% - 10px);
+  background-repeat: no-repeat;
+}
+/* =========================
+   📱 Mobile polish: birth panel
+   ========================= */
+@media (max-width: 520px){
+  .birthPanel{
+    padding: 12px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .birthGrid{
+    gap: 10px !important;
+  }
+
+  .birthBlock{
+    padding: 10px 10px !important;
+    border-radius: 14px !important;
+  }
+
+  .birthLabel{
+    font-size: 11px !important;
+    letter-spacing: .04em !important;
+    margin-bottom: 6px !important;
+  }
+
+  .birthInput{
+    height: 40px !important;      /* ←大きすぎ対策 */
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .birthHint{
+    font-size: 11px !important;
+    line-height: 1.55 !important;
+    letter-spacing: .02em !important;
+    opacity: .78;
+    margin-top: 8px !important;
+    text-wrap: balance; /* 対応ブラウザのみ効く */
+  }
+}
+/* =========================
+   VERSION badge: keep it out of the way
+   ========================= */
+#versionBadge{
+  opacity: .55;
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 10px;
 }
 
-/* 共通サイズ調整（ここで微調整できる） */
-.tcardVisual{
-  --corner-size: 22px;      /* 角飾りの大きさ */
-  --corner-thickness: 2px;  /* 線の太さ */
-  --corner-color: rgba(249,224,138,.65);
+@media (max-width: 520px){
+  #versionBadge{
+    display: none !important; /* ←邪魔ならこれが最適解 */
+  }
 }
-
-/* 左上 */
-.tcardVisual::before{
-  content:"";
-  position:absolute;
-  top: 6px;
-  left: 6px;
-  width: var(--corner-size);
-  height: var(--corner-size);
-  border-top: var(--corner-thickness) solid var(--corner-color);
-  border-left: var(--corner-thickness) solid var(--corner-color);
-  border-radius: 6px 0 0 0;
-  pointer-events:none;
-  opacity:.85;
+.cardsGrid.three{
+  perspective: 900px;
 }
-
-/* 右下 */
-.tcardVisual::after{
-  content:"";
-  position:absolute;
-  bottom: 6px;
-  right: 6px;
-  width: var(--corner-size);
-  height: var(--corner-size);
-  border-bottom: var(--corner-thickness) solid var(--corner-color);
-  border-right: var(--corner-thickness) solid var(--corner-color);
-  border-radius: 0 0 6px 0;
-  pointer-events:none;
-  opacity:.85;
+@media (hover:hover) and (pointer:fine){
+  .cardsGrid.three .tcard{
+    transform: translateY(0) rotateX(0deg);
+  }
+  .cardsGrid.three .tcard:hover{
+    transform: translateY(-6px) rotateX(1.2deg);
+  }
 }
   </style>
 </head>
@@ -3400,7 +3461,7 @@ font:12px/1.2 ui-sans-serif;">
           <input type="date" id="partnerBirthdate" class="birthInput" />
         </div>
       </div>
-      <p class="birthHint">※ 入力すると、リーディングがより “あなた仕様” に整います。</p>
+      <p class="birthHint">※ 生年月日を入れると、読み解きがよりパーソナルになります</p>
     </section>
 
     <div class="divider"></div>
