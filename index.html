@@ -4318,50 +4318,47 @@ document.addEventListener("DOMContentLoaded", boot);
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
-    @@
--    // ✅ ここから下に「あなたの既存ロジック」を戻す
--    // まずは仮で最低限だけ表示（動作確認用）
--    const globalSummaryHTML = "";
--    const wrapUpHTML = "";
--    const actionsHTML = "";
-+    // Step1: 本文は「結論→理由→今日は→一歩」だけ（情報過多を防ぐ）
-+    // Deep Reading がまだ未接続でも、1枚目カード情報から“物語”を生成して落ちないようにする
-+    const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
-+
-+    const first = picked?.[0];
-+    const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
-+    const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
-+
-+    // ※いまは仮の物語文：後で deepReading を戻したらここだけ差し替えればOK
-+    const conclusionText = `いまのあなたは、${cardName}${revText}が示す流れの中にいます。`;
-+    const reasonText = `このカードは、心の奥で「本当はどうしたい？」という問いが静かに強まっていることを伝えています。`;
-+    const todayText = `今日は、無理に答えを出すよりも、状況を整えるほど運が味方します。小さな違和感を丁寧に扱って。`;
-+    const stepText = `一歩だけでいいので、できる範囲をひとつ片づけて、あなたの呼吸が深くなる選択を。`;
-+
-+    const globalSummaryHTML = `
-+      <section class="angel-summary">
-+        <div class="angel-block angel-conclusion">
-+          <div class="angel-label">結論</div>
-+          <div class="angel-text">${conclusionText}</div>
-+        </div>
-+        <div class="angel-block angel-reason">
-+          <div class="angel-label">理由</div>
-+          <div class="angel-text">${reasonText}</div>
-+        </div>
-+        <div class="angel-block angel-today">
-+          <div class="angel-label">今日は</div>
-+          <div class="angel-text">${todayText}</div>
-+        </div>
-+        <div class="angel-block angel-step">
-+          <div class="angel-label">一歩</div>
-+          <div class="angel-text">${stepText}</div>
-+        </div>
-+      </section>
-+    `;
-+
-+    // Step1ではまだ空でOK（Step2/3で実装）
-+    const wrapUpHTML = "";
-+    const actionsHTML = "";
+    
+    // Step1: 本文は「結論→理由→今日は→一歩」だけ（情報過多を防ぐ）
+const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
+
+const first = picked?.[0];
+const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
+const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
+
+// 仮ストーリー（Deep Reading 未接続でも落ちない）
+const conclusionText = `いまのあなたは、${cardName}${revText}が示す流れの中にいます。`;
+const reasonText = `このカードは、心の奥で「本当はどうしたい？」という問いが静かに強まっていることを伝えています。`;
+const todayText = `今日は、無理に答えを出すよりも、状況を整えるほど運が味方します。小さな違和感を丁寧に扱って。`;
+const stepText = `一歩だけでいいので、できる範囲をひとつ片づけて、あなたの呼吸が深くなる選択を。`;
+
+const globalSummaryHTML = `
+  <section class="angel-summary">
+    <div class="angel-block angel-conclusion">
+      <div class="angel-label">結論</div>
+      <div class="angel-text">${conclusionText}</div>
+    </div>
+
+    <div class="angel-block angel-reason">
+      <div class="angel-label">理由</div>
+      <div class="angel-text">${reasonText}</div>
+    </div>
+
+    <div class="angel-block angel-today">
+      <div class="angel-label">今日は</div>
+      <div class="angel-text">${todayText}</div>
+    </div>
+
+    <div class="angel-block angel-step">
+      <div class="angel-label">一歩</div>
+      <div class="angel-text">${stepText}</div>
+    </div>
+  </section>
+`;
+
+// Step1ではまだ空でOK（Step2/3で実装）
+const wrapUpHTML = "";
+const actionsHTML = "";
 
     elResult.innerHTML = `
       ${globalSummaryHTML}
