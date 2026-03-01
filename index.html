@@ -5423,12 +5423,12 @@ function buildEnergyDetailHTML(score){
   const strongElem = strong?.[0];
   const weakElem   = weak?.[0];
 
-  const strongData = ELEMENT_SOUL?.[strongElem];
-  const weakData   = ELEMENT_SOUL?.[weakElem];
+  const strongData = ELEMENT_SOUL[strongElem];
+  const weakData   = ELEMENT_SOUL[weakElem];
 
-  // データが無い時でも落とさない
-  const strongUrl = strongData?.pageStrong || strongData?.strongUrl || "./elements/index.html";
-  const weakUrl   = weakData?.pageWeak     || weakData?.weakUrl   || "./elements/index.html";
+  // 保険（データ欠けでも落とさない）
+  const strongUrl = strongData?.strongUrl || "./elements/index.html";
+  const weakUrl   = weakData?.weakUrl   || "./elements/index.html";
 
   const strongLabel = strongData?.strong || "強い要素";
   const weakLabel   = weakData?.weak     || "不足の要素";
