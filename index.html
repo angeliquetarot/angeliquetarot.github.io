@@ -5417,26 +5417,35 @@ function elemMeaning(e){
   return map[e] || "";
 }
 function buildEnergyDetailHTML(score){
-  const { strong, weak } = pickStrongWeak(score);
+  if (!score) return "";
 
-  const strongData = ELEMENT_SOUL[strong[0]];
-  const weakData   = ELEMENT_SOUL[weak[0]];
+  const { strong, weak } = pickStrongWeak(score);
+  const strongElem = strong?.[0];
+  const weakElem   = weak?.[0];
+
+  const strongData = ELEMENT_SOUL?.[strongElem];
+  const weakData   = ELEMENT_SOUL?.[weakElem];
+
+  // データが無い時でも落とさない
+  const strongUrl = strongData?.pageStrong || strongData?.strongUrl || "./elements/index.html";
+  const weakUrl   = weakData?.pageWeak     || weakData?.weakUrl   || "./elements/index.html";
+
+  const strongLabel = strongData?.strong || "強い要素";
+  const weakLabel   = weakData?.weak     || "不足の要素";
 
   return `
     <div class="energyBlock">
       <div>
-        🔥 強く出ている：${strong[0]}  
-        <br>
-        <a href="${strongData.pageStrong}" target="_blank">
-          ${strongData.strong}とは？
+        🔥 強く出ている：${escapeHtml(strongElem || "")}<br>
+        <a href="${strongUrl}" target="_blank" rel="noopener">
+          ${escapeHtml(strongLabel)}とは？
         </a>
       </div>
       <br>
       <div>
-        🌿 今回のテーマに影響する要素：${weak[0]}  
-        <br>
-        <a href="${weakData.pageWeak}" target="_blank">
-          ${weakData.weak}とは？
+        🌿 今回のテーマに影響する要素：${escapeHtml(weakElem || "")}<br>
+        <a href="${weakUrl}" target="_blank" rel="noopener">
+          ${escapeHtml(weakLabel)}とは？
         </a>
       </div>
     </div>
