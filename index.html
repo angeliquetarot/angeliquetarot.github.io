@@ -3319,6 +3319,51 @@ body{
     rgba(165,180,252,.14),
     rgba(255,255,255,.06));
 }
+/* =========================
+   👑 Corner Ornaments (Luxury)
+   ========================= */
+
+/* 角飾りを描くため relative 必須 */
+.tcardVisual{
+  position: relative;
+}
+
+/* 共通サイズ調整（ここで微調整できる） */
+.tcardVisual{
+  --corner-size: 22px;      /* 角飾りの大きさ */
+  --corner-thickness: 2px;  /* 線の太さ */
+  --corner-color: rgba(249,224,138,.65);
+}
+
+/* 左上 */
+.tcardVisual::before{
+  content:"";
+  position:absolute;
+  top: 6px;
+  left: 6px;
+  width: var(--corner-size);
+  height: var(--corner-size);
+  border-top: var(--corner-thickness) solid var(--corner-color);
+  border-left: var(--corner-thickness) solid var(--corner-color);
+  border-radius: 6px 0 0 0;
+  pointer-events:none;
+  opacity:.85;
+}
+
+/* 右下 */
+.tcardVisual::after{
+  content:"";
+  position:absolute;
+  bottom: 6px;
+  right: 6px;
+  width: var(--corner-size);
+  height: var(--corner-size);
+  border-bottom: var(--corner-thickness) solid var(--corner-color);
+  border-right: var(--corner-thickness) solid var(--corner-color);
+  border-radius: 0 0 6px 0;
+  pointer-events:none;
+  opacity:.85;
+}
   </style>
 </head>
 
