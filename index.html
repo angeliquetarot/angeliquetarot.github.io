@@ -3218,6 +3218,107 @@ body{
 @media (prefers-reduced-motion: reduce){
   #result.antigravity .tcard .tcardVisual{ animation: none !important; }
 }
+/* =========================
+   Luxury Frame for Card Visual
+   ========================= */
+
+/* 画像を包む額縁 */
+.tcardVisual{
+  position: relative;
+  padding: 14px;                 /* ← 額縁の厚み */
+  border-radius: 20px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(249,224,138,.14);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    0 18px 54px rgba(0,0,0,.45);
+}
+
+/* 内側の細い金ライン（高級感が一気に出る） */
+.tcardVisual::before{
+  content:"";
+  position:absolute;
+  inset: 9px;
+  border-radius: 16px;
+  border: 1px solid rgba(249,224,138,.18);
+  pointer-events:none;
+}
+
+/* 上品な反射（フィルム感） */
+.tcardVisual::after{
+  content:"";
+  position:absolute;
+  left: 12%;
+  top: 10%;
+  width: 66%;
+  height: 38%;
+  border-radius: 999px;
+  background: radial-gradient(circle at 25% 25%,
+    rgba(255,255,255,.18),
+    rgba(255,255,255,0) 65%);
+  opacity: .42;
+  pointer-events:none;
+  mix-blend-mode: screen;
+}
+
+/* 画像自体も“浮いてる物体”にする */
+.tcardVisual .cardImg{
+  display:block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.58),
+    0 6px 18px rgba(0,0,0,.22);
+}
+/* 影の台座（薄い楕円） */
+.tcardVisual{
+  overflow: visible; /* 台座を外に出す */
+}
+.tcardVisual .cardImg{
+  position: relative;
+  z-index: 2;
+}
+.tcardVisual .cardImg::after{ content:none; } /* 念のため */
+
+.tcardVisual::marker{ content:""; } /* 無害化 */
+
+.tcardVisual{
+  --pedestal: rgba(0,0,0,.55);
+}
+.tcardVisual::after{
+  /* 既に反射を使っている場合は、台座用に別疑似要素が必要 */
+}
+
+/* 台座は .tcardVisual の別疑似要素にする（conflict回避） */
+.tcardVisual .cardPedestal{ display:none; } /* 未使用ならOK */
+
+.tcardVisual{
+  /* 台座用にもう1枚、shadowを足すだけでも十分 */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    0 18px 54px rgba(0,0,0,.45),
+    0 34px 60px rgba(0,0,0,.35);
+}
+/* 3枚引き：中央を主役に（やりすぎない） */
+.cardsGrid.three .tcard:nth-child(2){
+  transform: translateY(-6px);
+}
+@media (hover:hover) and (pointer:fine){
+  .cardsGrid.three .tcard:nth-child(2):hover{
+    transform: translateY(-10px);
+  }
+}
+
+/* 中央だけリムの輝きを少し増やす */
+.cardsGrid.three .tcard:nth-child(2)::before{
+  opacity: .88;
+  background: linear-gradient(135deg,
+    rgba(249,224,138,.22),
+    rgba(165,180,252,.14),
+    rgba(255,255,255,.06));
+}
   </style>
 </head>
 
