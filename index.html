@@ -3545,6 +3545,109 @@ body{
 }
 /* 3枚引きだけ「テーマ：」行を消す（超スッキリ） */
 .cardsGrid.three .tcardTitle .sub:nth-of-type(2){ display:none !important; }
+@media (max-width: 520px){
+  .birthPanel input[type="date"].birthInput,
+  .birthPanel input[type="time"].birthInput,
+  .birthPanel .birthInput{
+    height: 34px !important;
+    padding: 6px 10px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  .birthHint{
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+    opacity: .72 !important;
+  }
+}
+/* =========================
+   五行ブロック（上品・短い・見やすい）
+   ========================= */
+.gogyouWrap{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+@media (max-width: 640px){
+  .gogyouWrap{ grid-template-columns: 1fr; }
+}
+
+.gogyouCard{
+  border-radius: 16px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(249,224,138,.14);
+  box-shadow: 0 14px 40px rgba(0,0,0,.28);
+  padding: 12px 12px;
+}
+
+.gogyouHead{
+  display:flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.gogyouTitle{
+  font-family:"Cinzel","Shippori Mincho",serif;
+  letter-spacing:.06em;
+  font-size: 13px;
+  color: rgba(249,224,138,.92);
+}
+
+.gogyouNote{
+  font-size: 11px;
+  opacity: .70;
+  white-space: nowrap;
+}
+
+.gogyouBody{
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: rgba(255,255,255,.90);
+}
+
+.gogyouSub{
+  font-size: 11px;
+  opacity: .68;
+}
+
+.gogyouFocus{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.gogyouTag{
+  display:inline-block;
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  margin-right: 6px;
+}
+
+.gogyouTag.weak{
+  border-color: rgba(96,165,250,.25);
+  background: rgba(96,165,250,.10);
+}
+
+.gogyouTag.strong{
+  border-color: rgba(74,222,128,.22);
+  background: rgba(74,222,128,.10);
+}
+
+.gogyouHint{
+  margin-top: 8px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  opacity: .80;
+}
   </style>
 </head>
 
@@ -3575,12 +3678,27 @@ font:12px/1.2 ui-sans-serif;">
           <label class="birthLabel" for="userBirthdate">あなた</label>
           <input type="date" id="userBirthdate" class="birthInput" />
         </div>
+        <!-- 追加：時刻（任意） -->
+<div class="birthRow">
+  <div class="birthLabel">あなた（任意：出生時刻）</div>
+  <input id="userBirthtime" class="birthInput" type="time" step="60" placeholder="--:--">
+</div>
+
+<div class="birthRow">
+  <div class="birthLabel">お相手（任意：出生時刻）</div>
+  <input id="partnerBirthtime" class="birthInput" type="time" step="60" placeholder="--:--">
+</div>
+
+<div class="birthHint">
+  ※任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。
+</div>
 
         <div class="birthBlock">
           <label class="birthLabel" for="partnerBirthdate">お相手（任意）</label>
           <input type="date" id="partnerBirthdate" class="birthInput" />
         </div>
       </div>
+
       <p class="birthHint">※ 生年月日を入れると、読み解きがよりパーソナルになります</p>
     </section>
 
@@ -4101,6 +4219,7 @@ document.addEventListener("DOMContentLoaded", boot);
 
       const labels3 = ["過去", "現在", "未来"];
       const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
+      const gogyouHTML = buildBothGogyouHTML();
 
       // --- Global Summary & Energy Block (Spread-level) ---
       let globalSummaryHTML = "";
@@ -4593,14 +4712,15 @@ document.addEventListener("DOMContentLoaded", boot);
         `;
 
         globalSummaryHTML = `
-      <div class="summaryCard line">
-        <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
-        <div class="summaryText">${mainReasonHTML}</div>
-        <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
-        ${safeEnergy}
-        ${readingHTML}
-      </div>
-    `;
+  ${gogyouHTML}
+  <div class="summaryCard line">
+    <div class="summaryTitle">${escapeHtml(summaryConclusion)}</div>
+    <div class="summaryText">${mainReasonHTML}</div>
+    <div class="summaryText" style="font-weight: bold; color: rgba(255,255,255,.95);">${escapeHtml(summaryAction)}</div>
+    ${safeEnergy}
+    ${readingHTML}
+  </div>
+`;
       }
 
 
@@ -4929,6 +5049,270 @@ return `
       // 最後の砦：裏面
       img.src = "public/cards/back.png";
     }
+
+    /* =========================
+   Four Pillars (Simplified) -> Five Elements
+   - year boundary: approx LiChun (Feb 4)
+   - month: approx solar month mapping (fixed ranges)
+   - day: sexagenary by JDN
+   - hour: optional (time)
+   ========================= */
+
+const STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const BRANCHES = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+
+// 五行：天干
+const STEM_TO_ELEM = {
+  "甲":"木","乙":"木",
+  "丙":"火","丁":"火",
+  "戊":"土","己":"土",
+  "庚":"金","辛":"金",
+  "壬":"水","癸":"水",
+};
+
+// 地支→（蔵干）を簡易配分（重み付き）
+// 例：子=癸(100)、丑=己60/癸30/辛10 など
+const BRANCH_HIDDEN = {
+  "子":[["癸",1.00]],
+  "丑":[["己",0.60],["癸",0.30],["辛",0.10]],
+  "寅":[["甲",0.60],["丙",0.25],["戊",0.15]],
+  "卯":[["乙",1.00]],
+  "辰":[["戊",0.60],["乙",0.25],["癸",0.15]],
+  "巳":[["丙",0.60],["庚",0.25],["戊",0.15]],
+  "午":[["丁",0.70],["己",0.30]],
+  "未":[["己",0.60],["丁",0.25],["乙",0.15]],
+  "申":[["庚",0.60],["壬",0.25],["戊",0.15]],
+  "酉":[["辛",1.00]],
+  "戌":[["戊",0.60],["辛",0.25],["丁",0.15]],
+  "亥":[["壬",0.70],["甲",0.30]],
+};
+
+// 年干→寅月の月干（五虎遁の起点）
+const YEAR_STEM_TO_TIGER_MONTH_STEM = {
+  "甲":"丙","己":"丙",
+  "乙":"戊","庚":"戊",
+  "丙":"庚","辛":"庚",
+  "丁":"壬","壬":"壬",
+  "戊":"甲","癸":"甲",
+};
+
+// 月支（寅=1）を得たら、寅月の月干から順に進める
+function monthStemFrom(yearStem, monthBranch){
+  const startStem = YEAR_STEM_TO_TIGER_MONTH_STEM[yearStem] || "丙"; // 寅月の月干
+  const startIndex = STEMS.indexOf(startStem);
+  const mIndex = BRANCHES.indexOf(monthBranch);
+  const tigerIndex = BRANCHES.indexOf("寅");
+  const offset = (mIndex - tigerIndex + 12) % 12; // 寅から何ヶ月進んだか
+  return STEMS[(startIndex + offset) % 10];
+}
+
+// 簡易：節入りの厳密計算はせず、月の範囲で月支を推定（立春＝2/4起点）
+function approxMonthBranch(y, m, d){
+  // おおよその節入り境界（日本向けのざっくり）
+  // 寅:2/4-3/5, 卯:3/6-4/4, 辰:4/5-5/5, 巳:5/6-6/5, 午:6/6-7/6,
+  // 未:7/7-8/7, 申:8/8-9/7, 酉:9/8-10/7, 戌:10/8-11/6, 亥:11/7-12/6,
+  // 子:12/7-1/5, 丑:1/6-2/3
+  const mmdd = m*100 + d;
+  if (mmdd >= 204 && mmdd <= 305) return "寅";
+  if (mmdd >= 306 && mmdd <= 404) return "卯";
+  if (mmdd >= 405 && mmdd <= 505) return "辰";
+  if (mmdd >= 506 && mmdd <= 605) return "巳";
+  if (mmdd >= 606 && mmdd <= 706) return "午";
+  if (mmdd >= 707 && mmdd <= 807) return "未";
+  if (mmdd >= 808 && mmdd <= 907) return "申";
+  if (mmdd >= 908 && mmdd <= 1007) return "酉";
+  if (mmdd >= 1008 && mmdd <= 1106) return "戌";
+  if (mmdd >= 1107 && mmdd <= 1206) return "亥";
+  if (mmdd >= 1207 || mmdd <= 105) return "子";
+  return "丑"; // 1/6-2/3
+}
+
+// 立春（2/4）以前は前年扱い（簡易）
+function approxYearForFourPillars(y, m, d){
+  const mmdd = m*100 + d;
+  if (mmdd < 204) return y - 1;
+  return y;
+}
+
+// JDN（ユリウス日）計算
+function toJdn(y, m, d){
+  // Gregorian calendar
+  const a = Math.floor((14 - m) / 12);
+  const y2 = y + 4800 - a;
+  const m2 = m + 12*a - 3;
+  return d + Math.floor((153*m2 + 2)/5) + 365*y2 + Math.floor(y2/4) - Math.floor(y2/100) + Math.floor(y2/400) - 32045;
+}
+
+// 日干支（簡易）：JDN基準から60干支
+// ※基準合わせは流派差あり。ここは“簡易推定”として固定。
+//   もしズレを感じたらこの offset を調整すれば全体が揃う。
+function dayGanzhi(y,m,d){
+  const jdn = toJdn(y,m,d);
+  const offset = 49; // ★調整ポイント（簡易基準）
+  const idx = (jdn + offset) % 60;
+  const stem = STEMS[idx % 10];
+  const branch = BRANCHES[idx % 12];
+  return { stem, branch };
+}
+
+// 年干支（簡易）：1984=甲子を基準に
+function yearGanzhi(y){
+  const base = 1984; // 甲子
+  const diff = y - base;
+  const idx = (diff % 60 + 60) % 60;
+  return { stem: STEMS[idx % 10], branch: BRANCHES[idx % 12] };
+}
+
+// 時支（任意）
+function hourBranchFromTime(timeStr){
+  if (!timeStr) return null;
+  const [hh, mm] = timeStr.split(":").map(n => parseInt(n,10));
+  if (Number.isNaN(hh)) return null;
+  // 子=23-0, 丑=1-2, ... 2時間刻み
+  // 23:00-00:59 => 子
+  const h = hh;
+  const index = Math.floor(((h + 1) % 24) / 2); // 23->0, 0->0, 1->1...
+  return BRANCHES[index];
+}
+
+// 日干から時干を出す（五鼠遁の起点）
+function hourStemFromDayStem(dayStem, hourBranch){
+  if (!hourBranch) return null;
+  // 甲己日: 甲子, 乙庚日: 丙子, 丙辛日: 戊子, 丁壬日: 庚子, 戊癸日: 壬子
+  const startMap = {
+    "甲":"甲","己":"甲",
+    "乙":"丙","庚":"丙",
+    "丙":"戊","辛":"戊",
+    "丁":"庚","壬":"庚",
+    "戊":"壬","癸":"壬",
+  };
+  const startStem = startMap[dayStem] || "甲"; // 子時の時干
+  const startIndex = STEMS.indexOf(startStem);
+  const bIndex = BRANCHES.indexOf(hourBranch);
+  const ziIndex = BRANCHES.indexOf("子");
+  const offset = (bIndex - ziIndex + 12) % 12;
+  return STEMS[(startIndex + offset) % 10];
+}
+
+// 五行スコア（天干=強め、地支蔵干=合算）
+// ざっくり：干=1.0、支（蔵干合計）=1.0、4柱で最大8前後のイメージ
+function calcFiveElements({ yStem,yBranch, mStem,mBranch, dStem,dBranch, hStem,hBranch }){
+  const score = { "木":0, "火":0, "土":0, "金":0, "水":0 };
+
+  const addStem = (s, w=1.0)=>{
+    if (!s) return;
+    const e = STEM_TO_ELEM[s];
+    if (e) score[e] += w;
+  };
+  const addBranch = (b, w=1.0)=>{
+    if (!b) return;
+    const hidden = BRANCH_HIDDEN[b];
+    if (!hidden) return;
+    for (const [hs, ratio] of hidden){
+      addStem(hs, w * ratio);
+    }
+  };
+
+  // 天干（各1）
+  addStem(yStem, 1.0); addStem(mStem, 1.0); addStem(dStem, 1.0);
+  if (hStem) addStem(hStem, 1.0);
+
+  // 地支（各1）
+  addBranch(yBranch, 1.0); addBranch(mBranch, 1.0); addBranch(dBranch, 1.0);
+  if (hBranch) addBranch(hBranch, 1.0);
+
+  return score;
+}
+
+function toDots(v){
+  // 見た目のための丸め：0〜3を中心に
+  const n = Math.max(0, Math.min(5, Math.round(v)));
+  return "●".repeat(n) + "○".repeat(Math.max(0, 5-n));
+}
+
+function pickStrongWeak(score){
+  const entries = Object.entries(score);
+  entries.sort((a,b)=>b[1]-a[1]);
+  const strong = entries[0];
+  const weak = entries[entries.length-1];
+  return { strong, weak };
+}
+
+function elemMeaning(e){
+  const map = {
+    "木":"育つ力・つながり",
+    "火":"情熱・表現",
+    "土":"安定・現実化",
+    "金":"決断・境界線",
+    "水":"感受性・回復",
+  };
+  return map[e] || "";
+}
+
+function buildGogyouBlock(title, dateStr, timeStr){
+  if (!dateStr) return "";
+  const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
+  if (!y || !m || !d) return "";
+
+  const fpYear = approxYearForFourPillars(y,m,d);
+  const ygz = yearGanzhi(fpYear);
+
+  const mBranch = approxMonthBranch(y,m,d);
+  const mStem = monthStemFrom(ygz.stem, mBranch);
+
+  const dgz = dayGanzhi(y,m,d);
+
+  const hBranch = hourBranchFromTime(timeStr);
+  const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
+
+  const score = calcFiveElements({
+    yStem: ygz.stem, yBranch: ygz.branch,
+    mStem, mBranch,
+    dStem: dgz.stem, dBranch: dgz.branch,
+    hStem, hBranch
+  });
+
+  const { strong, weak } = pickStrongWeak(score);
+
+  const lines = ["木","火","土","金","水"].map(e=>{
+    return `${e}：${toDots(score[e])}　<span class="gogyouSub">${elemMeaning(e)}</span>`;
+  }).join("<br>");
+
+  const note = hBranch
+    ? `（時刻あり：時柱まで反映）`
+    : `（時刻なし：時柱は未反映）`;
+
+  return `
+  <div class="gogyouCard">
+    <div class="gogyouHead">
+      <div class="gogyouTitle">${escapeHtml(title)}の五行</div>
+      <div class="gogyouNote">簡易推定 ${note}</div>
+    </div>
+
+    <div class="gogyouBody">${lines}</div>
+
+    <div class="gogyouFocus">
+      <span class="gogyouTag weak">不足：${weak[0]}</span>
+      <span class="gogyouTag strong">強い：${strong[0]}</span>
+      <div class="gogyouHint">
+        不足（${weak[0]}）を少し足すと、カードのメッセージが“あなた仕様”に整います。
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildBothGogyouHTML(){
+  const uDate = document.getElementById("userBirthdate")?.value;
+  const uTime = document.getElementById("userBirthtime")?.value;
+  const pDate = document.getElementById("partnerBirthdate")?.value;
+  const pTime = document.getElementById("partnerBirthtime")?.value;
+
+  const u = buildGogyouBlock("あなた", uDate, uTime);
+  const p = buildGogyouBlock("お相手", pDate, pTime);
+
+  if (!u && !p) return "";
+  return `<div class="gogyouWrap">${u}${p}</div>`;
+}
 
 
     // ---- HTMLエスケープ ----
