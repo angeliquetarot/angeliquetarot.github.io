@@ -2956,61 +2956,72 @@ font:12px/1.2 ui-sans-serif;">
     VERSION:
   </div>
 
- <div id="status" class="status" aria-live="polite"></div>
-<div id="deckInfo" class="status"></div>
+  <!-- Toast（showToastが探すので必須） -->
+  <div id="toastContainer" aria-live="polite"></div>
 
-<div id="shuffleArea" class="shuffleArea">
-  <div class="deck" aria-hidden="true"></div>
-  <div class="fly" aria-hidden="true"></div>
-  <div class="fly" aria-hidden="true"></div>
-  <div class="fly" aria-hidden="true"></div>
-</div>
-<!-- ▼ draw controls（shuffleArea の直後） -->
-<div class="drawBar">
-  <div class="drawModeInline" aria-label="引き方を選ぶ">
-    <label class="chip">
-      <input type="radio" name="drawMode" value="1" checked>
-      <div><strong>1枚</strong> <span>今のメッセージ</span></div>
-    </label>
+  <div class="app">
+    <!-- ヘッダー -->
+    <header class="appHeader">
+      <div class="title">
+        <h1>Angelique Tarot</h1>
+        <p>光の導きで、心をほどく。</p>
+      </div>
+    </header>
 
-    <label class="chip">
-      <input type="radio" name="drawMode" value="3">
-      <div><strong>3枚</strong> <span>過去/現在/未来</span></div>
-    </label>
+    <!-- 生年月日入力（JSが読むidで） -->
+    <section class="panel birthPanel" id="birthPanel">
+      <h2 class="panelTitle">生年月日</h2>
+      <div class="birthGrid">
+        <div class="birthBlock">
+          <label class="birthLabel" for="userBirthdate">あなた</label>
+          <input type="date" id="userBirthdate" class="birthInput" />
+        </div>
+
+        <div class="birthBlock">
+          <label class="birthLabel" for="partnerBirthdate">お相手（任意）</label>
+          <input type="date" id="partnerBirthdate" class="birthInput" />
+        </div>
+      </div>
+      <p class="birthHint">※ 入力すると、リーディングがより “あなた仕様” に整います。</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ステータス（JSが参照するid） -->
+    <div id="status" class="status" aria-live="polite"></div>
+    <div id="deckInfo" class="status"></div>
+
+    <!-- シャッフル -->
+    <div id="shuffleArea" class="shuffleArea">
+      <div class="deck" aria-hidden="true"></div>
+      <div class="fly" aria-hidden="true"></div>
+      <div class="fly" aria-hidden="true"></div>
+      <div class="fly" aria-hidden="true"></div>
+    </div>
+
+    <!-- 操作バー -->
+    <div class="drawBar">
+      <div class="drawModeInline" aria-label="引き方を選ぶ">
+        <label class="chip">
+          <input type="radio" name="drawMode" value="1" checked>
+          <div><strong>1枚</strong> <span>今のメッセージ</span></div>
+        </label>
+
+        <label class="chip">
+          <input type="radio" name="drawMode" value="3">
+          <div><strong>3枚</strong> <span>過去/現在/未来</span></div>
+        </label>
+      </div>
+
+      <button id="btnDraw" class="drawBtn" type="button">カードを引く</button>
+    </div>
+
+    <!-- 結果は1つだけ（JSがここに描画） -->
+    <div id="result" class="result-animate"></div>
+
+    <!-- 共有用Canvas（JSが参照する） -->
+    <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
   </div>
-
-  <button id="btnDraw" class="drawBtn" type="button">カードを引く</button>
-</div>
-
-<!-- ▼ result containers（存在しないと描画できない） -->
-<div id="summaryCard" class="summaryCard"></div>
-<div id="stage" class="stage">
-  <div id="cardsGrid" class="cardsGrid"></div>
-</div>
-
-<div id="result" class="status" aria-live="polite">準備OK。</div>
-<div id="stage" class="stage">
-  <div id="summaryCard" class="summaryCard"></div>
-  <div id="cardsGrid" class="cardsGrid"></div>
-</div>
-<!-- 結果エリア（showReadyが触る箱） -->
-<div id="stage" class="stage">
-  <div id="deckInfo" class="status"></div>
-
-  <!-- ここに結論カードなどが入る想定 -->
-  <div id="summaryCard" class="summaryCard"></div>
-
-  <!-- ここにカード3枚/1枚が並ぶ想定 -->
-  <div id="cardsGrid" class="cardsGrid"></div>
-
-  <!-- 既に result を使ってるなら残す（JSが scrollToResultSmooth で使う） -->
-  <div id="result"></div>
-</div>
-<div id="result" class="result-animate"></div>
-
-  <!-- 描画用見えないCanvas -->
-  <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
-
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const VERSION = "2026.03.01.1";
