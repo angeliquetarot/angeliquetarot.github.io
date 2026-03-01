@@ -354,7 +354,7 @@ h1,h2,.shareTitle,.summaryTitle{
     }
 
     /* 真ん中だけ少し強調（好みで） */
-    .cardsGrid.three .tcard:nth-child(2).cardImg {
+    .cardsGrid.three .tcard:nth-child(2) .cardImg {
       width: 280px;
       /* ← 基本サイズ */
       max-width: 90%;
@@ -1833,8 +1833,6 @@ h1,h2,.shareTitle,.summaryTitle{
       width: 58%;
       height: 34%;
       opacity: .45;
-    
-        inset 0 1px 0 rgba(255, 255, 255, .20);
     }
 
     button:hover {
@@ -1940,9 +1938,8 @@ h1,h2,.shareTitle,.summaryTitle{
 
     /* Image: give a tighter contact shadow + a halo */
     .cardImg {
-      filter:
-        drop-shadow(0 10px 18px var(--contact)) drop-shadow(0 26px 62px rgba(0, 0, 0, .62)) drop-shadow(0 2px 10px rgba(160, 200, 255, .10));
-    }
+  filter: drop-shadow(0 26px 62px rgba(0,0,0,.62));
+}
 
     /* Buttons: add subtle bevel feel */
     button {
@@ -3117,21 +3114,6 @@ font:12px/1.2 ui-sans-serif;">
     }
 
 
-
-
-    const elFile = document.getElementById("csvFile");
-    const elDeckInfo = document.getElementById("deckInfo");
-    const elShuffleArea = document.getElementById("shuffleArea");
-    const elResult = document.getElementById("result");
-
-    const btnUseSaved = document.getElementById("btnUseSaved");
-    if (btnUseSaved) btnUseSaved.addEventListener("click", useSaved);
-
-    const btnClearSaved = document.getElementById("btnClearSaved");
-    if (btnClearSaved) btnClearSaved.addEventListener("click", clearSaved);
-
-    if (elFile) elFile.addEventListener("change", onPickFile);
-
     const CSV_PATH = new URL("public/data/deck.csv", location.href).toString();
 
     function guessDelimiterFromText(text) {
@@ -3201,38 +3183,46 @@ font:12px/1.2 ui-sans-serif;">
     }
 
 
-    function boot() {
-  applyCreatorMode();
-  loadBundledCsv();
+    // =====================
+// DOM refs (declare once)
+// =====================
+let elStatus, elDeckInfo, elShuffleArea, elResult, elFile;
+
+function bindDomRefs() {
+  elStatus      = document.getElementById("status");
+  elDeckInfo    = document.getElementById("deckInfo");
+  elShuffleArea = document.getElementById("shuffleArea");
+  elResult      = document.getElementById("result");
+  elFile        = document.getElementById("csvFile");
 }
 
-document.addEventListener("DOMContentLoaded", boot);
-
-
-
-    let elStatus, elDeckInfo, elShuffleArea, elResult, elFile;
-
 function setStatus(msg) {
-  if (!elStatus) return;            // ←保険（これ大事）
+  if (!elStatus) {
+    console.warn("status element not found. msg =", msg);
+    return;
+  }
   elStatus.textContent = msg;
 }
 
 function boot() {
-  // DOMが出来てから要素を取得する
-  elStatus = document.getElementById("status");
-  elDeckInfo = document.getElementById("deckInfo");
-  elShuffleArea = document.getElementById("shuffleArea");
-  elResult = document.getElementById("result");
-  elFile = document.getElementById("csvFile");
-
+  bindDomRefs();
   applyCreatorMode();
+
+  // ★ DOMが取れてからイベントを付ける
+  const btnUseSaved = document.getElementById("btnUseSaved");
+  if (btnUseSaved) btnUseSaved.addEventListener("click", useSaved);
+
+  const btnClearSaved = document.getElementById("btnClearSaved");
+  if (btnClearSaved) btnClearSaved.addEventListener("click", clearSaved);
+
+  if (elFile) elFile.addEventListener("change", onPickFile);
+
   loadBundledCsv();
 }
 
 document.addEventListener("DOMContentLoaded", boot);
-    function setDeckInfo() {
-      elDeckInfo.textContent = cards.length ? `デッキ：${cards.length}枚 読み込み済み` : "デッキ：未読み込み";
-    }
+
+
 
 
     function pick(row, key) {
