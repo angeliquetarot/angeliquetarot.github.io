@@ -4309,49 +4309,16 @@ document.addEventListener("DOMContentLoaded", boot);
     stopShuffle();
 
     const picked = drawUnique(count);
-    const labels3 = ["過去", "現在", "未来"];
-      const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
-      const gogyouHTML = buildBothGogyouHTML();
-
-      // --- Global Summary & Energy Block (Spread-level) ---
-      let globalSummaryHTML = "";
-      if (picked.length > 0) {
-        const primaryCard = picked[0].card;
-        const isReversed = picked[0].isReversed;
-        const themes = (primaryCard.themes ?? "").toString().trim();
-        const action = (isReversed ? primaryCard.action_reversed : primaryCard.action_upright) || "";
-
-        const themeList = themes ? themes.split("|").flatMap(x => x.split(",")).map(t => t.trim()).filter(Boolean) : [];
-        let mainTheme = themeList.length > 0 ? themeList[0] : (primaryCard.name_ja || "未知");
-
-        const mood = isReversed ? "静かに" : "確かに";
-        const actionSub = action ? action.substring(0, 20) + "…" : "今できることを";
-
-        let reasonText = "";
-        let energyText = "";
-
-        const cardId = normalizeKey(primaryCard.id) || normalizeKey(primaryCard.name_ja);
-        const ymdKey = new Date().toISOString().slice(0, 10);
-        const seedStr = `${ymdKey}|${cardId}|${isReversed ? "R" : "U"}`;
-
 
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
-    // ✅ ここはあなたの既存ロジックを残す（今まで作ってる globalSummaryHTML 等）
-    // 例：
-    // const gogyouHTML = buildBothGogyouHTML();
-    // let globalSummaryHTML = ...（あなたの全文）
-    // let wrapUpHTML = ...
-    // let actionsHTML = ...
+    // ✅ ここから下に「あなたの既存ロジック」を戻す
+    // まずは仮で最低限だけ表示（動作確認用）
+    const globalSummaryHTML = "";
+    const wrapUpHTML = "";
+    const actionsHTML = "";
 
-    // --- ここだけは最低限の仮置き（あなたのコードがあるならそれを使う） ---
-    const gogyouHTML = (typeof buildBothGogyouHTML === "function") ? buildBothGogyouHTML() : "";
-    let globalSummaryHTML = gogyouHTML || "";
-    let wrapUpHTML = "";
-    let actionsHTML = "";
-
-    // ✅ 結果描画（このブロックは1回だけ）
     elResult.innerHTML = `
       ${globalSummaryHTML}
       <div class="${gridClass}">
@@ -4363,7 +4330,6 @@ document.addEventListener("DOMContentLoaded", boot);
       ${actionsHTML}
     `;
 
-    // Float ON
     elResult.classList.remove("antigravity");
     void elResult.offsetWidth;
     elResult.classList.add("antigravity");
@@ -4374,9 +4340,7 @@ document.addEventListener("DOMContentLoaded", boot);
     elResult.classList.remove("result-animate");
     void elResult.offsetWidth;
     elResult.classList.add("result-animate");
-    requestAnimationFrame(() => {
-      elResult.classList.add("show");
-    });
+    requestAnimationFrame(() => elResult.classList.add("show"));
 
   } catch (e) {
     console.error(e);
