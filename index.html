@@ -3425,6 +3425,126 @@ body{
     transform: translateY(-6px) rotateX(1.2deg);
   }
 }
+/* =========================
+   📱 Mobile: birth inputs truly smaller (force)
+   ========================= */
+@media (max-width: 520px){
+  /* パネル自体も少し締める */
+  .birthPanel{
+    padding: 10px 10px !important;
+    border-radius: 14px !important;
+  }
+
+  .birthGrid{ gap: 8px !important; }
+
+  .birthBlock{
+    padding: 8px 8px !important;
+    border-radius: 12px !important;
+  }
+
+  /* ★これが効く：input[type=date] を直指定 */
+  .birthPanel input[type="date"].birthInput,
+  .birthPanel .birthInput{
+    height: 36px !important;
+    padding: 6px 10px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* iOS/Chromeで“勝手にデカく”なるのを抑える */
+  .birthPanel input[type="date"]{
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* ラベルも少し小さく */
+  .birthPanel .birthLabel{
+    font-size: 11px !important;
+    margin: 0 0 6px !important;
+    letter-spacing: .03em !important;
+  }
+
+  /* ヒントの段落を短く・締める */
+  .birthPanel .birthHint{
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+    margin-top: 6px !important;
+    opacity: .72 !important;
+  }
+}
+/* =========================
+   🃏 3-card header redesign (premium, compact)
+   ========================= */
+
+/* 3枚引きのカードだけヘッダーを締める */
+.cardsGrid.three .tcardHeader{
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-rows: auto auto !important;
+  gap: 6px 10px !important;
+  padding: 10px 10px 8px !important;
+  align-items: start !important;
+}
+
+/* 左上：過去/現在/未来（pos）を強調 */
+.cardsGrid.three .tcardTitle .pos{
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+  font-size: 11px !important;
+  letter-spacing: .10em !important;
+  text-transform: uppercase;
+  color: rgba(249,224,138,.85) !important;
+}
+
+/* 右上：正逆バッジを小さく上品に */
+.cardsGrid.three .badge{
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  font-size: 11px !important;
+  padding: 5px 9px !important;
+  border-radius: 999px !important;
+  opacity: .92;
+}
+
+/* 2行目：カード名をメインに */
+.cardsGrid.three .tcardTitle .name{
+  grid-column: 1 / 3;
+  grid-row: 2 / 3;
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+  font-weight: 800;
+}
+
+/* 英名（sub）は小さく・薄く */
+.cardsGrid.three .tcardTitle .name .sub{
+  font-size: 11px !important;
+  opacity: .72;
+  font-weight: 600;
+}
+
+/* メタ情報（区分/スート等）とテーマは“1行で圧縮”して高級に */
+.cardsGrid.three .tcardTitle .sub{
+  font-size: 11px !important;
+  opacity: .62 !important;
+  line-height: 1.25 !important;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* テーマ行が長い場合も1行省略 */
+.cardsGrid.three .tcardTitle .sub:nth-of-type(2){
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  opacity: .55 !important;
+}
+/* 3枚引きだけ「テーマ：」行を消す（超スッキリ） */
+.cardsGrid.three .tcardTitle .sub:nth-of-type(2){ display:none !important; }
   </style>
 </head>
 
