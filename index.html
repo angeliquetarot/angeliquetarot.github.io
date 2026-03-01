@@ -3198,6 +3198,26 @@ body{
   #shuffleArea::after{ animation:none !important; }
   .tcard{ transition:none !important; }
 }
+/* ===== Antigravity: guaranteed working ===== */
+@keyframes floatY {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-12px); }
+}
+
+/* 結果が出た #result に antigravity が付いたら発動 */
+#result.antigravity .tcard .tcardVisual{
+  animation: floatY 4.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* 3枚引きのディレイ */
+#result.antigravity .tcard:nth-child(2) .tcardVisual{ animation-delay: .6s; }
+#result.antigravity .tcard:nth-child(3) .tcardVisual{ animation-delay: 1.2s; }
+
+/* モーション軽減設定なら止める */
+@media (prefers-reduced-motion: reduce){
+  #result.antigravity .tcard .tcardVisual{ animation: none !important; }
+}
   </style>
 </head>
 
@@ -4297,7 +4317,10 @@ document.addEventListener("DOMContentLoaded", boot);
   ${wrapUpHTML}
   ${actionsHTML}
 `;
-
+// ===== Float ON (must be after innerHTML) =====
+elResult.classList.remove("antigravity"); // 再描画時にアニメをリスタート
+void elResult.offsetWidth;               // reflow
+elResult.classList.add("antigravity");
       setStatus(`結果表示：${count}枚引き。`);
       scrollToResultSmooth();
 
