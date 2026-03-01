@@ -2992,6 +2992,30 @@ font:12px/1.2 ui-sans-serif;">
   <div class="fly" aria-hidden="true"></div>
   <div class="fly" aria-hidden="true"></div>
 </div>
+<!-- ▼ draw controls（shuffleArea の直後） -->
+<div class="drawBar">
+  <div class="drawModeInline" aria-label="引き方を選ぶ">
+    <label class="chip">
+      <input type="radio" name="drawMode" value="1" checked>
+      <div><strong>1枚</strong> <span>今のメッセージ</span></div>
+    </label>
+
+    <label class="chip">
+      <input type="radio" name="drawMode" value="3">
+      <div><strong>3枚</strong> <span>過去/現在/未来</span></div>
+    </label>
+  </div>
+
+  <button id="btnDraw" class="drawBtn" type="button">カードを引く</button>
+</div>
+
+<!-- ▼ result containers（存在しないと描画できない） -->
+<div id="summaryCard" class="summaryCard"></div>
+<div id="stage" class="stage">
+  <div id="cardsGrid" class="cardsGrid"></div>
+</div>
+
+<div id="result" class="status" aria-live="polite">準備OK。</div>
 <div id="stage" class="stage">
   <div id="summaryCard" class="summaryCard"></div>
   <div id="cardsGrid" class="cardsGrid"></div>
