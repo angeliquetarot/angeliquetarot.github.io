@@ -2977,7 +2977,6 @@ button, .drawBtn, .btnGhost, .btnDrawAgain{
 </head>
 
 <body>
-  <div id="status" class="status"></div>
   <div id="versionBadge" style="position:fixed;bottom:12px;right:12px;z-index:9999;
 background:#000a;border:1px solid #fff3;color:#fff;padding:8px 10px;border-radius:10px;
 font:12px/1.2 ui-sans-serif;">
@@ -2987,6 +2986,15 @@ font:12px/1.2 ui-sans-serif;">
  <div id="status" class="status" aria-live="polite"></div>
 <div id="deckInfo" class="status"></div>
 
+<div id="shuffleArea" class="shuffleArea">
+  <div class="deck" aria-hidden="true"></div>
+  <div class="fly" aria-hidden="true"></div>
+  <div class="fly" aria-hidden="true"></div>
+  <div class="fly" aria-hidden="true"></div>
+</div>
+
+<div id="result" class="result-animate"></div>
+
   <!-- 描画用見えないCanvas -->
   <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
 
@@ -2994,31 +3002,25 @@ font:12px/1.2 ui-sans-serif;">
   <script>
     const VERSION = "2026.03.01.1";
 
-    // --- Toast functions ---
     function showToast(message, duration = 3000) {
-      const container = document.getElementById("toastContainer");
-      if (!container) return;
-      const el = document.createElement("div");
-      el.className = "toast";
-      el.textContent = message;
-      container.appendChild(el);
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
 
-      function setDeckInfo() {
-  if (!elDeckInfo) return;
-  elDeckInfo.textContent = `Deck: ${cards.length} cards loaded`;
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.textContent = message;
+  container.appendChild(el);
+
+  void el.offsetWidth;
+  el.classList.add("show");
+
+  setTimeout(() => {
+    el.classList.remove("show");
+    el.addEventListener("transitionend", () => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    });
+  }, duration);
 }
-
-      // reflow
-      void el.offsetWidth;
-      el.classList.add("show");
-
-      setTimeout(() => {
-        el.classList.remove("show");
-        el.addEventListener("transitionend", () => {
-          if (el.parentNode) el.parentNode.removeChild(el);
-        });
-      }, duration);
-    }
 
     document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("btnDraw");
@@ -3035,9 +3037,6 @@ font:12px/1.2 ui-sans-serif;">
   const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
   return /iPhone|Android|iPad|Mobile/i.test(ua) || (touch && coarse);
 }
-
-
-
 
     function getCurrentDrawModeValue() {
       return document.querySelector('input[name="drawMode"]:checked')?.value || "1";
@@ -3089,6 +3088,11 @@ font:12px/1.2 ui-sans-serif;">
 
       const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const behavior = reduce ? "auto" : "smooth";
+
+    function setDeckInfo() {
+  if (!elDeckInfo) return;
+  elDeckInfo.textContent = `Deck: ${cards.length} cards loaded`;
+}
 
       // 描画が完了してからスクロール（2フレーム待つ）
       requestAnimationFrame(() => {
