@@ -3739,12 +3739,19 @@ body{
   background: rgba(10,10,18,0.28);
   border: 1px solid rgba(255,255,255,.15);
 }
+
 .energyLinks a:hover{ transform: translateY(-1px); }
 .angel-summary { display: grid; gap: 12px; margin-bottom: 14px; }
 .angel-block { padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); }
 .angel-label { font-size: 12px; letter-spacing: .08em; opacity: .75; margin-bottom: 6px; }
 .angel-text { font-size: 14px; line-height: 1.7; white-space: pre-line; }
 .angel-step { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); }
+.angel-details { margin-top: 14px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); overflow: hidden; }
+.angel-summaryline { cursor: pointer; padding: 12px 14px; list-style: none; font-size: 13px; opacity: .9; }
+.angel-details[open] .angel-summaryline { border-bottom: 1px solid rgba(255,255,255,0.10); }
+.angel-blueprint { padding: 12px 14px; display: grid; gap: 10px; }
+.angel-row { font-size: 13px; line-height: 1.7; opacity: .92; }
+.angel-links a.angel-link { display: inline-block; margin-top: 4px; opacity: .95; text-decoration: underline; }
   </style>
 </head>
 
@@ -4357,7 +4364,75 @@ const globalSummaryHTML = `
 `;
 
 // Step1ではまだ空でOK（Step2/3で実装）
-const wrapUpHTML = "";
+// --- Step2: 折りたたみ「あなたの設計図」 ---
+// ※既存の五行スコア計算・数秘結果の変数名に合わせて差し替えてください
+// いったん安全に「無ければ出さない」設計にしてあります
+
+const numLabel = (() => {
+  // 例: numerologyResult = { lifePath: 1, name: "開拓者" } みたいなのがある想定
+  const n = numerologyResult?.lifePath ?? numerologyResult?.number ?? null;
+  const name = numerologyResult?.name ?? numerologyResult?.label ?? "";
+  if (n == null) return "";
+  return `数秘：${n}${name ? `（${name}）` : ""}`;
+})();
+
+const gogyouLines = (() => {
+  // 例: gogyou = { wood: 2, fire: 1, earth: 4, metal: 6, water: 3 } のようなスコア想定
+  // 例: gogyouBalance = { strong: ["metal"], weak: ["fire"] } のような抽出結果があるならそれを優先
+  const strong = gogyouBalance?.strong?.[0] ?? null;
+  const weak = gogyouBalance?.weak?.[0] ?? null;
+
+  // 表示名（あなたの ELEMENT_SOUL に合わせて差し替えOK）
+  const jp = (k) => ({ wood: "木", fire: "火", earth: "土", metal: "金", water: "水" }[k] || k);
+
+  const lines = [];
+  if (strong) lines.push(`強く出ている：${jp(strong)}`);
+  if (weak) lines.push(`不足しがち：${jp(weak)}`);
+
+  // スコア一覧も見せたい場合（折りたたみ内ならOK）
+  if (gogyou && typeof gogyou === "object") {
+    const scoreLine =
+      `スコア：木${gogyou.wood ?? "-"} / 火${gogyou.fire ?? "-"} / 土${gogyou.earth ?? "-"} / 金${gogyou.metal ?? "-"} / 水${gogyou.water ?? "-"}`;
+    lines.push(scoreLine);
+  }
+
+  return lines;
+})();
+
+const linkFor = (elemKey, strength) => {
+  // strength: "strong" | "weak"
+  // ルーティングはあなたの構成に合わせて変更OK（例: /elements/fire-weak.html）
+  return `./elements/${elemKey}-${strength}.html`;
+};
+
+// 折りたたみ内のリンク（strong/weak があるときだけ出す）
+const gogyouLinks = (() => {
+  const strong = gogyouBalance?.strong?.[0] ?? null;
+  const weak = gogyouBalance?.weak?.[0] ?? null;
+  const jp = (k) => ({ wood: "木", fire: "火", earth: "土", metal: "金", water: "水" }[k] || k);
+
+  const parts = [];
+  if (strong) parts.push(`<a class="angel-link" href="${linkFor(strong, "strong")}">「${jp(strong)}が強い人」について読む</a>`);
+  if (weak) parts.push(`<a class="angel-link" href="${linkFor(weak, "weak")}">「${jp(weak)}が不足しがちな人」について読む</a>`);
+  return parts.join("<br>");
+})();
+
+const wrapUpHTML = `
+  <details class="angel-details">
+    <summary class="angel-summaryline">あなたの設計図を見る</summary>
+
+    <div class="angel-blueprint">
+      ${numLabel ? `<div class="angel-row">${numLabel}</div>` : ""}
+
+      ${gogyouLines.length
+        ? `<div class="angel-row">五行：<br>${gogyouLines.map(x => `・${x}`).join("<br>")}</div>`
+        : ""
+      }
+
+      ${gogyouLinks ? `<div class="angel-row angel-links">${gogyouLinks}</div>` : ""}
+    </div>
+  </details>
+`;
 const actionsHTML = "";
 
     elResult.innerHTML = `
