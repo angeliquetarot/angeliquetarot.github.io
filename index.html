@@ -725,6 +725,39 @@ document.addEventListener("DOMContentLoaded", boot);
       return picked;
     }
 
+    // =========================
+// Step1-1: 4枠（結論→理由→今日は→一歩）を固定する
+// =========================
+function buildStoryBlockHTML({ conclusion, reason, today, step }) {
+
+  const safe = (s) =>
+    escapeHtml(String(s || "")).replace(/\n/g, "<br>");
+
+  return `
+    <section class="angel-summary">
+      <div class="angel-block angel-conclusion">
+        <div class="angel-label">結論</div>
+        <div class="angel-text">${safe(conclusion)}</div>
+      </div>
+
+      <div class="angel-block angel-reason">
+        <div class="angel-label">理由</div>
+        <div class="angel-text">${safe(reason)}</div>
+      </div>
+
+      <div class="angel-block angel-today">
+        <div class="angel-label">今日は</div>
+        <div class="angel-text">${safe(today)}</div>
+      </div>
+
+      <div class="angel-block angel-step">
+        <div class="angel-label">一歩</div>
+        <div class="angel-text">${safe(step)}</div>
+      </div>
+    </section>
+  `;
+}
+
 
     async function onDraw() {
   try {
@@ -765,35 +798,65 @@ const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim()
 const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
 const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
 
-// 仮ストーリー（Deep Reading 未接続でも落ちない）
-const conclusionText = `いまのあなたは、${cardName}${revText}が示す流れの中にいます。`;
-let reasonText = `このカードは、心の奥で「本当はどうしたい？」という問いが静かに強まっていることを伝えています。`;
-const todayText = `今日は、無理に答えを出すよりも、状況を整えるほど運が味方します。小さな違和感を丁寧に扱って。`;
-const stepText = `一歩だけでいいので、できる範囲をひとつ片づけて、あなたの呼吸が深くなる選択を。`;
+// --- Step1: DB×型で「結論→理由→今日は→一歩」を生成する ---
+const ymdKey = new Date().toISOString().slice(0, 10);
+const cardKey = (primaryCard?.id || primaryCard?.name || cardName).toString();
 
-let globalSummaryHTML = `
-  <section class="angel-summary">
-    <div class="angel-block angel-conclusion">
-      <div class="angel-label">結論</div>
-      <div class="angel-text">${conclusionText}</div>
-    </div>
+// 1) DB（材料）を取得
+const dbEntry = getDbEntryFor(primaryCard, isReversed);
 
-    <div class="angel-block angel-reason">
-      <div class="angel-label">理由</div>
-      <div class="angel-text">${reasonText}</div>
-    </div>
+// 2) 材料を安全に用意
+const basePoetic = normalizeText(dbEntry?.light, `${cardName}${revText}の流れが、静かにあなたを導いています。`);
+const baseExplain = normalizeText(dbEntry?.meaning, "いまは心の奥の声が少し強くなり、次の一手を整える時です。");
+const actionBase = pickFirstAction(dbEntry);
 
-    <div class="angel-block angel-today">
-      <div class="angel-label">今日は</div>
-      <div class="angel-text">${todayText}</div>
-    </div>
+// 3) 「理由」文章はあなたの“型”に任せる（おすすめA）
+let reasonText = "";
+// どの Stable を使うか：今はとりあえず work をデフォルト（後でUI選択に接続できる）
+reasonText = buildWorkReasonTextStable({
+  basePoetic,
+  baseExplain,
+  isReversed,
+  cardKey,
+  ymdKey
+});
 
-    <div class="angel-block angel-step">
-      <div class="angel-label">一歩</div>
-      <div class="angel-text">${stepText}</div>
-    </div>
-  </section>
-`;
+// 4) 表示用の4ブロック（結論/今日は/一歩）
+// 結論は “一行の核心” として basePoetic を使うのが一番作品っぽい
+const conclusionText = basePoetic;
+
+// 「今日は」は軽く状況整理（長くしすぎない）
+const todayText = isReversed
+  ? "今日は、結論を急がず「整える」を優先して。"
+  : "今日は、整えるほど流れが味方します。";
+
+// 「一歩」は actionBase を芯に（Step3で五行補正をここに差し込む）
+let stepText = `今日の一歩：${actionBase}`;
+function normalizeText(s, fallback=""){
+  const t = (s ?? "").toString().trim();
+  return t ? t : fallback;
+}
+
+// dbEntry を「カード＋正逆」で取ってくる関数（あなたの既存実装に寄せる）
+function getDbEntryFor(card, isReversed){
+  // ここはあなたのDB構造に合わせて1行差し替えポイント
+  // 例1) card.id で引けるなら： return DB[card.id + (isReversed?"_R":"_U")];
+  // 例2) nameで検索なら： return deepDB.find(x=>x.name===card.name && x.rev===isReversed);
+  return null; // ←いったん落ちないように
+}
+
+// actions配列が無い/足りない場合の保険
+function pickFirstAction(dbEntry){
+  const a0 = dbEntry?.actions?.[0];
+  if (typeof a0 === "string" && a0.trim()) return a0.trim();
+  return "呼吸が深くなる選択をひとつ";
+}
+let globalSummaryHTML = buildStoryBlockHTML({
+  conclusion: conclusionText,
+  reason: reasonText,
+  today: todayText,
+  step: stepText
+});
 
 // Step1ではまだ空でOK（Step2/3で実装）
 // --- Step2: 折りたたみ「あなたの設計図」 ---
