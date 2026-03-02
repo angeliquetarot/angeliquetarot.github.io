@@ -859,8 +859,8 @@ const todayText = isReversed
 // 「一歩」は actionBase を芯に（Step3で五行補正をここに差し込む）
 let stepText = `今日の一歩：${actionBase}`;
 try {
-  const weakJP = window.__gogyouState?.user?.weak?.[0];
-  stepText = adjustStepByWeakElement(stepText, weakJP);
+  let weakFromState = window.__gogyouState?.user?.weak?.[0];
+stepText = adjustStepByWeakElement(stepText, weakFromState);
 } catch(e){}
 function adjustStepByWeakElement(stepText, weakJP){
   if (!weakJP) return stepText;
