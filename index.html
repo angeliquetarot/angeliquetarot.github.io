@@ -1149,6 +1149,20 @@ button{
   opacity: 1;
   pointer-events:none;
 }
+.shuffleArea .deck::after{ content:"" !important; }
+/* DEBUG（見えるかだけ確認） */
+.shuffleArea .deck{ position:relative; }
+.shuffleArea .deck::after{
+  content:"";
+  position:absolute;
+  inset:-18px;
+  border-radius:28px;
+  background: rgba(255,0,0,.18) !important; /* ←赤が見えれば勝ち */
+  filter: blur(0) !important;
+  opacity: 1 !important;
+  pointer-events:none;
+  z-index: 0;
+}
   </style>
 </head>
 
