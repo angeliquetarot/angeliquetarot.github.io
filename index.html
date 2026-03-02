@@ -178,6 +178,57 @@ button{
   }
   .badge{ font-size: 11px; padding: 5px 8px; white-space: normal; }
 }
+/* =========================
+   🂠 Card Back (simple + reliable)
+   - 既存 .tcard / .tcardVisual を壊さず背面を出す
+   ========================= */
+
+.tcardVisual{
+  position: relative; /* 必須 */
+}
+
+/* 背面画像（最背面に敷く） */
+.cardBack{
+  position: absolute;
+  inset: 10px;                 /* 角飾り背景と合わせる */
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
+    radial-gradient(120% 120% at 70% 80%, rgba(249,224,138,.10), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.25)),
+    url("public/cards/back.webp") center / cover no-repeat; /* ←ここをあなたの背面に */
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 18px 46px rgba(0,0,0,.42);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 表の画像は背面より前に */
+.tcardVisual .cardImg{
+  position: relative;
+  z-index: 1;
+}
+
+/* 画像が無い/未読込のときだけ背面を見せる */
+.cardImg.isHidden{
+  opacity: 0;
+}
+
+/* 逆位置は「画像だけ」回転（あなたの方針に一致） */
+.cardImg.reversed{
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+.cardBack{
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 16px 30px rgba(0,0,0,.40);
+  background:
+    linear-gradient(rgba(14,11,22,.55), rgba(14,11,22,.55)),
+    url("./public/cards/back.png") center / cover no-repeat;
+}
   </style>
 </head>
 
@@ -796,7 +847,16 @@ function normalizeText(s, fallback=""){
 // dbEntry を「カード＋正逆」で取ってくる関数（あなたの既存実装に寄せる）
 // ※あとでここだけ “本物” に差し替える
 function getDbEntryFor(card, isReversed){
-  return null; // ←いったん落ちないように
+  if (!card) return null;
+
+  return {
+    light: card.light,
+    meaning: isReversed ? card.meaning_reversed || card.meaning : card.meaning,
+    actions: Array.isArray(card.actions)
+      ? card.actions
+      : (card.actions ? card.actions.split("|") : []),
+    prayer: card.prayer
+  };
 }
 
 // actions配列が無い/足りない場合の保険
