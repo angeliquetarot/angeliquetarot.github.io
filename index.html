@@ -3129,7 +3129,13 @@ function setStatus(msg) {
   }
   elStatus.textContent = msg;
 }
-
+function showReady() {
+  if (!elResult) return;
+  elResult.innerHTML = `<div class="empty">
+    準備OK。<br>
+    ② 1枚/3枚を選ぶ → ③「カードを引く」
+  </div>`;
+}
 function boot() {
   bindDomRefs();
   applyCreatorMode();
@@ -3145,13 +3151,7 @@ function boot() {
 
   loadBundledCsv();
 }
-function showReady() {
-  if (!elResult) return;
-  elResult.innerHTML = `<div class="empty">
-    準備OK。<br>
-    ② 1枚/3枚を選ぶ → ③「カードを引く」
-  </div>`;
-}
+
 document.addEventListener("DOMContentLoaded", boot);
 
     function pick(row, key) {
@@ -3920,7 +3920,7 @@ return `
 
     function cardImageUrl(image) {
   let raw = (image ?? "").toString().trim();
-  if (!raw) return "public/cards/back.webp"; // back.png しかないなら back.png に
+  if (!raw) return "public/cards/back.webp"; // back.pngしか無いなら back.png に
 
   raw = raw
     .replace(/^\uFEFF/, "")
@@ -3929,15 +3929,14 @@ return `
     .replace(/^\/+/, "")
     .replace(/\\/g, "/");
 
-  // 絶対URLならそのまま
+  // すでに絶対URLならそのまま
   if (/^https?:\/\//i.test(raw)) return raw;
 
-  // 拡張子が無ければ webp を付ける（←ここが重要）
+  // 拡張子が無ければ webp を付ける（重要）
   if (!/\.(webp|png|jpg|jpeg)$/i.test(raw)) raw += ".webp";
 
   return encodeURI("public/cards/" + raw);
 }
-
 
 
     function handleCardImgError(img) {
