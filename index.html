@@ -1140,31 +1140,25 @@ button{
   position:absolute;
   left:50%;
   top:50%;
-  width:220%;
-  height:220%;
+  width:160%;
+  height:160%;
   transform:translate(-50%,-50%);
-  border-radius:40px;
+  border-radius:32px;
 
   background:
     radial-gradient(circle,
-      rgba(255,235,190,.70),
-      rgba(255,235,190,.28) 42%,
-      rgba(0,0,0,0) 72%);
+      rgba(255,235,190,.55),
+      rgba(255,235,190,.22) 38%,
+      rgba(0,0,0,0) 70%);
 
-  filter: blur(10px);
+  filter: blur(18px);
   mix-blend-mode: screen;
-  opacity:.85;
 
-  animation: angelicBreath 6.8s ease-in-out infinite;
+  opacity:.75;
+
+  animation: angelicBreath 7.2s ease-in-out infinite;
   pointer-events:none;
-  z-index: 2; /* ← いったん上に出す（確認用） */
-}
-
-#shuffleArea{
-  overflow: visible !important;
-}
-#shuffleArea .deck{
-  overflow: visible !important;
+  z-index:0;
 }
   </style>
 </head>
