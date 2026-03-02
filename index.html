@@ -600,6 +600,108 @@ button{
 @media (prefers-reduced-motion: reduce){
   #result .tcard{ animation: none !important; }
 }
+/* =========================================
+   FIX: Deck center + soft fade-out (breathing)
+   ========================================= */
+
+/* shuffleArea を100%幅で中央揃え */
+#shuffleArea{
+  width: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position: relative;
+}
+
+/* fly がレイアウトを押さないようにする（ここが左寄りの主因になりやすい） */
+#shuffleArea .fly{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* デッキ本体：停止時にも“薄い余光”を残して作り物感を消す */
+#shuffleArea .deck{
+  position: relative;
+  margin-inline: auto;
+
+  /* 停止→停止の戻りに余韻を作る（急に消える対策） */
+  transition:
+    transform 900ms cubic-bezier(.22,1,.36,1),
+    box-shadow 1200ms cubic-bezier(.22,1,.36,1),
+    filter 1200ms cubic-bezier(.22,1,.36,1);
+  will-change: transform, box-shadow, filter;
+
+  /* “完全にゼロ”にしない：薄い余白として残す */
+  box-shadow:
+    0 26px 90px rgba(0,0,0,.65),
+    0 1px 0 rgba(255,255,255,.10) inset,
+    0 0 18px rgba(249,224,138,.08);
+}
+
+/* ハローの余韻（急に消えない） */
+#shuffleArea .deck::before{
+  transition:
+    opacity 1400ms cubic-bezier(.22,1,.36,1),
+    transform 1400ms cubic-bezier(.22,1,.36,1),
+    filter 1400ms cubic-bezier(.22,1,.36,1);
+}
+
+/* 呼吸を“ゆっくり・優しく”に */
+@keyframes deckFloat {
+  0%   { transform: translateY(0) rotateX(0deg); }
+  50%  { transform: translateY(-10px) rotateX(1.0deg); }
+  100% { transform: translateY(0) rotateX(0deg); }
+}
+
+@keyframes deckGlow {
+  0%   {
+    box-shadow:
+      0 26px 90px rgba(0,0,0,.65),
+      0 1px 0 rgba(255,255,255,.10) inset,
+      0 0 18px rgba(249,224,138,.08);
+    filter: saturate(1.0);
+  }
+  50%  {
+    box-shadow:
+      0 36px 130px rgba(0,0,0,.72),
+      0 1px 0 rgba(255,255,255,.12) inset,
+      0 0 78px rgba(249,224,138,.40);
+    filter: saturate(1.08);
+  }
+  100% {
+    box-shadow:
+      0 26px 90px rgba(0,0,0,.65),
+      0 1px 0 rgba(255,255,255,.10) inset,
+      0 0 18px rgba(249,224,138,.08);
+    filter: saturate(1.0);
+  }
+}
+
+@keyframes haloBreath{
+  0%   { opacity: 0; transform: scale(.985); filter: blur(18px); }
+  50%  { opacity: .72; transform: scale(1.00); filter: blur(18px); }
+  100% { opacity: 0; transform: scale(.985); filter: blur(18px); }
+}
+
+/* シャッフル中だけ、呼吸を付与（止めたらtransitionで“余韻”が出る） */
+#shuffleArea.shuffling .deck{
+  animation:
+    deckFloat 3.6s cubic-bezier(.45,0,.2,1) infinite,
+    deckGlow  3.6s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+#shuffleArea.shuffling .deck::before{
+  animation: haloBreath 3.6s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+/* 動きが苦手な人向け */
+@media (prefers-reduced-motion: reduce){
+  #shuffleArea.shuffling .deck,
+  #shuffleArea.shuffling .deck::before{
+    animation: none !important;
+  }
+}
   </style>
 </head>
 
@@ -1475,7 +1577,7 @@ elResult.innerHTML = `
   ${wrapUpHTML}
   ${actionsHTML}
 `;
-setTimeout(scrollToResultSmooth, 80);
+setTimeout(scrollToResultSmooth, 90);
 elResult.classList.remove("antigravity");
 void elResult.offsetWidth;
 elResult.classList.add("antigravity");
