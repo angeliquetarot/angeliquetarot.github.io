@@ -495,93 +495,67 @@ button{
 .tcard{ position: relative; overflow:hidden; }
 
 /* =========================================
-   Premium Deck Center + Soft Glow (no cheap sweep)
+   Deck glow: stronger + slower + breathing
    ========================================= */
 
-/* シャッフルエリアを中央に */
-#shuffleArea{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin: 18px 0 14px;
-  min-height: 380px;          /* デッキが浮いてもレイアウト崩れない */
-  position: relative;
-}
-
-/* デッキ：立体感 + 中央固定 */
-#shuffleArea .deck{
-  width: 240px;
-  height: 360px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.18);
-  background:
-    radial-gradient(120% 120% at 30% 18%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
-    radial-gradient(120% 120% at 70% 82%, rgba(249,224,138,.10), rgba(0,0,0,0) 60%),
-    linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.30)),
-    url("/public/cards/back.png") center/cover no-repeat;
-  box-shadow:
-    0 26px 90px rgba(0,0,0,.65),
-    0 1px 0 rgba(255,255,255,.10) inset;
-  transform: translateZ(0);
-  position: relative;
-}
-
-/* 微細なハイライト（高級感） */
-#shuffleArea .deck::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius: 20px;
-  pointer-events:none;
-  background:
-    radial-gradient(60% 35% at 35% 12%, rgba(255,255,255,.14), rgba(0,0,0,0) 60%),
-    radial-gradient(60% 45% at 70% 30%, rgba(165,180,252,.10), rgba(0,0,0,0) 65%);
-  opacity:.9;
-}
-
-/* クリック感（押した瞬間の“沈み”はこれで十分上品） */
-#btnDraw{
-  transform: translateZ(0);
-  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
-}
-#btnDraw:active{
-  transform: translateY(1px) scale(.99);
-  filter: brightness(1.02);
-}
-
-/* シャッフル中：デッキが “ふわっ” と動いて “ポワン” と光る */
 @keyframes deckFloat {
   0%   { transform: translateY(0) rotateX(0deg); }
-  50%  { transform: translateY(-10px) rotateX(1.5deg); }
+  50%  { transform: translateY(-12px) rotateX(1.2deg); }
   100% { transform: translateY(0) rotateX(0deg); }
 }
+
 @keyframes deckGlow {
-  0%   { box-shadow: 0 26px 90px rgba(0,0,0,.65), 0 0 0 rgba(249,224,138,0); }
-  55%  { box-shadow: 0 32px 110px rgba(0,0,0,.70), 0 0 28px rgba(249,224,138,.18); }
-  100% { box-shadow: 0 26px 90px rgba(0,0,0,.65), 0 0 0 rgba(249,224,138,0); }
-}
-#shuffleArea.shuffling .deck{
-  animation: deckFloat 1.2s ease-in-out infinite, deckGlow 1.2s ease-in-out infinite;
-}
-
-/* ボタンもスイープじゃなく“呼吸する光”に */
-@keyframes buttonBreath {
-  0%   { filter: drop-shadow(0 0 0 rgba(249,224,138,0)); }
-  55%  { filter: drop-shadow(0 10px 26px rgba(249,224,138,.18)); }
-  100% { filter: drop-shadow(0 0 0 rgba(249,224,138,0)); }
-}
-#shuffleArea.shuffling ~ .drawBar #btnDraw{
-  animation: buttonBreath 1.2s ease-in-out infinite;
-}
-
-/* 動きが苦手な人向け：OS設定で自動オフ */
-@media (prefers-reduced-motion: reduce){
-  #shuffleArea.shuffling .deck,
-  #shuffleArea.shuffling ~ .drawBar #btnDraw{
-    animation: none !important;
+  0%   {
+    box-shadow:
+      0 26px 90px rgba(0,0,0,.65),
+      0 1px 0 rgba(255,255,255,.10) inset,
+      0 0 0 rgba(249,224,138,0);
+  }
+  50%  {
+    box-shadow:
+      0 36px 130px rgba(0,0,0,.72),
+      0 1px 0 rgba(255,255,255,.12) inset,
+      0 0 64px rgba(249,224,138,.38);
+  }
+  100% {
+    box-shadow:
+      0 26px 90px rgba(0,0,0,.65),
+      0 1px 0 rgba(255,255,255,.10) inset,
+      0 0 0 rgba(249,224,138,0);
   }
 }
+
+/* “ぽわっ” を視覚的に分かりやすくする外側ハロー（上品） */
+#shuffleArea .deck::before{
+  content:"";
+  position:absolute;
+  inset:-24px;
+  border-radius: 28px;
+  pointer-events:none;
+  background: radial-gradient(55% 45% at 50% 45%, rgba(249,224,138,.55), rgba(0,0,0,0) 70%);
+  filter: blur(18px);
+  opacity: 0;
+  transform: translateZ(0);
+}
+
+/* 呼吸（ゆっくり、雑味ないカーブ） */
+#shuffleArea.shuffling .deck{
+  animation:
+    deckFloat 2.8s cubic-bezier(.45,0,.2,1) infinite,
+    deckGlow  2.8s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+@keyframes haloBreath{
+  0%   { opacity: 0; transform: scale(.98); }
+  50%  { opacity: .70; transform: scale(1.00); }
+  100% { opacity: 0; transform: scale(.98); }
+}
+#shuffleArea.shuffling .deck::before{
+  animation: haloBreath 2.8s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+/* 安っぽい“スイープ”が残ってる場合は無効化（保険） */
+#btnDraw::after{ display:none !important; }
 /* =========================================
    Result Cards: gentle floating + richer depth
    ========================================= */
@@ -808,27 +782,38 @@ font:12px/1.2 ui-sans-serif;">
     });
 
     function scrollToResultSmooth() {
-      const target = document.getElementById("result");
-      if (!target) return;
+  const target = document.getElementById("result");
+  if (!target) return;
 
-      const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const behavior = reduce ? "auto" : "smooth";
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) {
+    // 動きを減らす設定なら一発で
+    const top = target.getBoundingClientRect().top + window.pageYOffset - 12;
+    window.scrollTo(0, top);
+    return;
+  }
 
-    
+  const startY = window.pageYOffset;
+  const targetY = target.getBoundingClientRect().top + window.pageYOffset - 12;
 
-      // 描画が完了してからスクロール（2フレーム待つ）
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          try {
-            target.scrollIntoView({ behavior, block: "start" });
-          } catch (_) {
-            // 古い環境フォールバック
-            const top = target.getBoundingClientRect().top + window.pageYOffset - 8;
-            window.scrollTo({ top, behavior });
-          }
-        });
-      });
-    }
+  const duration = 1200; // ← ゆっくり（ms）
+  const startT = performance.now();
+
+  // 上品なイージング（呼吸っぽい）
+  const easeInOut = (t) => (t < 0.5)
+    ? 4 * t * t * t
+    : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  function tick(now) {
+    const p = Math.min(1, (now - startT) / duration);
+    const y = startY + (targetY - startY) * easeInOut(p);
+    window.scrollTo(0, y);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+
+  // 描画完了後に始める（2フレーム待ち）
+  requestAnimationFrame(() => requestAnimationFrame((t) => tick(t)));
+}
 
     const STORAGE_KEY = "angelique_tarot_csv_rows_v2";
     let cards = [];
@@ -1480,7 +1465,7 @@ const energyHTML = buildBothGogyouHTML();
 elResult.innerHTML = `
   ${globalSummaryHTML}
   ${energyHTML}
-setTimeout(scrollToResultSmooth, 50);
+
   <div class="${gridClass}">
     ${picked.map((p, i) =>
       renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
@@ -1490,7 +1475,7 @@ setTimeout(scrollToResultSmooth, 50);
   ${wrapUpHTML}
   ${actionsHTML}
 `;
-
+setTimeout(scrollToResultSmooth, 80);
 elResult.classList.remove("antigravity");
 void elResult.offsetWidth;
 elResult.classList.add("antigravity");
