@@ -1433,9 +1433,13 @@ window.__gogyouState = window.__gogyouState || {
       const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
       const meta = metaLine(card);
       const themes = (card.themes ?? "").toString().trim();
-      const basePath = card.img.substring(0, card.img.lastIndexOf("/") + 1);
-      const backSrc = basePath + "back.png";
-      const imgSrc = card.img || card.image || card.image_url || "";
+      const imgSrc =
+  card?.img ||
+  card?.image ||
+  card?.image_url ||
+  card?.img_url ||
+  "";
+      
 
       // --- 表示ブロック ---
       const coreHTML = strengthenCore(core, themes);
@@ -1505,10 +1509,15 @@ return `
     </div>
 
     <div class="tcardVisual">
-  <img class="cardBackImg" src="./public/cards/back.png" alt="" aria-hidden="true">
+  <img class="cardBackImg"
+       src="./public/cards/back.png"
+       alt=""
+       aria-hidden="true">
 
   ${imgSrc
-    ? `<img class="cardImg ${isReversed ? "reversed" : ""}" src="${imgSrc}" alt="">`
+    ? `<img class="cardImg ${isReversed ? "reversed" : ""}"
+            src="${imgSrc}"
+            alt="">`
     : ""
   }
 </div>
