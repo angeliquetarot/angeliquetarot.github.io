@@ -1234,6 +1234,72 @@ button{
     inset 0 0 0 1px rgba(255,255,255,.14);
   opacity: .95 !important;
 }
+/* =========================
+   Deck Pedestal (Background Deck)
+   ========================= */
+#shuffleArea .deckWrap{
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;              /* 中央寄せ */
+  transform-style: preserve-3d;
+}
+
+#shuffleArea .deckWrap img.deck{
+  position: relative;
+  display: block;
+  z-index: 2;
+  border-radius: 18px;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.55),
+    0 2px 0 rgba(255,255,255,.08) inset;
+}
+
+/* 台座（透明なガラス板みたいなやつ） */
+#shuffleArea .deckWrap::before{
+  content:"";
+  position:absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 128%;
+  height: 40px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(closest-side,
+    rgba(255,226,160,.22),
+    rgba(255,226,160,.08) 45%,
+    rgba(0,0,0,0) 72%);
+  filter: blur(2px);
+  opacity: .9;
+  z-index: 1;
+}
+
+/* 呼吸する光（カードの周囲） */
+@keyframes haloBreathSoft {
+  0%   { opacity:.55; transform: translateX(-50%) scale(0.98); filter: blur(18px); }
+  50%  { opacity:.90; transform: translateX(-50%) scale(1.04); filter: blur(22px); }
+  100% { opacity:.55; transform: translateX(-50%) scale(0.98); filter: blur(18px); }
+}
+
+#shuffleArea .deckWrap::after{
+  content:"";
+  position:absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%,-50%);
+  border-radius: 28px;
+  background:
+    radial-gradient(closest-side, rgba(255,226,160,.28), rgba(255,226,160,0) 70%),
+    radial-gradient(circle at 55% 40%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%);
+  animation: haloBreathSoft 4.8s ease-in-out infinite;
+  pointer-events:none;
+  z-index: 0;
+}
+#shuffleArea .deckWrap{
+  outline: 2px solid hotpink !important;
+  background: rgba(255,0,255,.15) !important;
+}
   </style>
 </head>
 
@@ -1791,6 +1857,25 @@ document.addEventListener("DOMContentLoaded", boot);
       }
       return picked;
     }
+    function ensureDeckWrap(){
+  const area = document.getElementById("shuffleArea");
+  if (!area) return;
+
+  const deckImg = area.querySelector("img.deck");
+  if (!deckImg) return;
+
+  // もうwrap済みなら何もしない
+  if (deckImg.parentElement && deckImg.parentElement.classList.contains("deckWrap")) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "deckWrap";
+
+  deckImg.parentNode.insertBefore(wrap, deckImg);
+  wrap.appendChild(deckImg);
+}
+
+// 初期表示で1回
+document.addEventListener("DOMContentLoaded", ensureDeckWrap);
 
     // =========================
 // Step1-1: 4枠（結論→理由→今日は→一歩）を固定する
