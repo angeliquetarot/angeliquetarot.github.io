@@ -2054,6 +2054,7 @@ function pulseDeck(){
       pulseDeck();
   try {
     if (!cards.length) {
+      if (!elResult) elResult = document.getElementById("result");
       setStatus("デッキが未読み込みです（CSV読み込み待ち）");
       showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
       return;
@@ -2190,7 +2191,7 @@ const gogyouLinks = (() => {
 let wrapUpHTML = "";
 let actionsHTML = "";
 const energyHTML = buildBothGogyouHTML();
-eelResult.innerHTML = `
+elResult.innerHTML = `
   ${globalSummaryHTML}
   ${energyHTML}
 
