@@ -840,6 +840,45 @@ function toShortAction(s, maxLen = 22){
 
   return out;
 }
+// =========================
+// Reason builder (global)
+// - basePoetic / baseExplain / closing を “読みやすい一つの理由文” に整形
+// =========================
+function buildReadableReason({ basePoetic = "", baseExplain = "", closing = "", optionalMetaLines = [] }){
+  const clean = (s) => (s ?? "").toString().trim();
+
+  const p = clean(basePoetic);
+  const e = clean(baseExplain);
+  const c = clean(closing);
+
+  const meta = Array.isArray(optionalMetaLines)
+    ? optionalMetaLines.map(clean).filter(Boolean)
+    : [];
+
+  // 長文になりすぎるのを軽く抑える（必要なら調整可）
+  const shorten = (s, max = 160) => {
+    const t = clean(s);
+    if (!t) return "";
+    if (t.length <= max) return t;
+    return t.slice(0, max) + "…";
+  };
+
+  // 「理由」なので、詩→説明→締め で一続きにする
+  // ※ UI側が white-space: pre-line なら \n が綺麗に効く
+  const parts = [
+    shorten(p, 120),
+    shorten(e, 220),
+    ...meta.map(m => shorten(m, 120)),
+    shorten(c, 90),
+  ].filter(Boolean);
+
+  // 文章が何も無いケースでも落とさない
+  if (!parts.length) {
+    return "いまは状況を整えるほど、次の流れが見えてくる時です。";
+  }
+
+  return parts.join("\n");
+}
 
     async function onDraw() {
   try {
