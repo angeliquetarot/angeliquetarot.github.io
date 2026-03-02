@@ -1116,6 +1116,39 @@ button{
 
 /* 結果カードでは裏面を絶対出さない（念押し） */
 #result .cardBackImg{ display:none !important; }
+/* =========================================
+   FIX: correct selector for deck pedestal
+   ========================================= */
+
+/* デッキ本体 */
+.shuffleArea .deck{
+  position: relative !important;
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.75),
+    0 10px 30px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+/* デッキ下の台座 */
+.shuffleArea .deck::after{
+  content:"";
+  position:absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -44px;
+  height: 48px;
+  border-radius: 999px;
+  background:
+    radial-gradient(70% 150% at 50% 30%,
+      rgba(0,0,0,.85),
+      rgba(0,0,0,0) 72%),
+    radial-gradient(60% 140% at 50% 55%,
+      rgba(72,86,200,.28),
+      rgba(0,0,0,0) 72%);
+  filter: blur(16px);
+  opacity: 1;
+  pointer-events:none;
+}
   </style>
 </head>
 
