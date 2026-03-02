@@ -3593,43 +3593,6 @@ requestAnimationFrame(() => elResult.classList.add("show"));
         }
 
         
-        const SUPP_RE = /(数秘|九星|宿曜|干支|星座|ラッキー|開運|方位|風水|ラッキーカラー|ラッキーアイテム|カラー|アイテム)/;
-
-        const normalized = String(reasonText ?? "")
-          .replace(/<br\s*\/?>/gi, "\n")
-          .replace(/\r\n/g, "\n")
-          .replace(/\r/g, "\n");
-
-        const lines = normalized
-          .split("\n")
-          .map(l => l.replace(/<\/?[^>]+>/g, "").trim())
-          .filter(l => l.length > 0);
-
-        const suppLines = [];
-        const mainLines = [];
-        for (const line of lines) {
-          if (SUPP_RE.test(line)) suppLines.push(line);
-          else mainLines.push(line);
-        }
-
-        const limitedSupp = suppLines
-          .map(s => s.trim())
-          .filter(s => s.length > 0)
-          .slice(0, 2);
-
-        const cleanSupp = (limitedSupp || [])
-          .map(s => String(s || "")
-            .replace(/^【(結論|理由|今日は|補足)】/g, "")
-            .replace(/^(理由|今日は|結論)[）\):：]\s*/g, "")
-            .trim()
-          )
-          .filter(s => s.length > 0 && !/^[・\-\s]+$/.test(s))
-          .slice(0, 2);
-
-        const suppInline = cleanSupp.join(" / ");
-
-        const mainText = mainLines.join("\n");
-
         
 /* ===== TEMP OFF: old summary generator (will re-integrate later) =====
 const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
@@ -3690,10 +3653,7 @@ try {
     ${readingHTML}
   </div>
 `;
-      
-
-
-
+  
       wrapUpHTML = "";
 if (count === 3) {
   wrapUpHTML = `
@@ -3734,19 +3694,7 @@ if (count === 3) {
   ${actionsHTML}
 `;
 ===== TEMP OFF END ===== */
-// ===== Float ON (must be after innerHTML) =====
-elResult.classList.remove("antigravity"); // 再描画時にアニメをリスタート
-void elResult.offsetWidth;               // reflow
-elResult.classList.add("antigravity");
-      setStatus(`結果表示：${count}枚引き。`);
-      scrollToResultSmooth();
 
-      elResult.classList.remove("result-animate");
-      void elResult.offsetWidth; // reflow
-      elResult.classList.add("result-animate");
-      requestAnimationFrame(() => {
-        elResult.classList.add("show");
-      });
     
 
     // --- キーワード：| 区切りで最大10個 ---
