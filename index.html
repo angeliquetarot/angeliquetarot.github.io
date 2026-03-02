@@ -341,6 +341,79 @@ button{
 .cardsGrid.three .ynRow{
   display:none;
 }
+/* ====== FIX: deck(トップの裏面)を必ず表示 ====== */
+#shuffleArea .deck{
+  width: 220px;
+  height: 340px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  background:
+    radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.10), rgba(0,0,0,0) 55%),
+    radial-gradient(120% 120% at 70% 80%, rgba(249,224,138,.10), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.25)),
+    url("/public/cards/back.png") center / cover no-repeat;
+  box-shadow: 0 18px 46px rgba(0,0,0,.45);
+}/* ====== FIX: Birth panel layout restore (minimal) ====== */
+.appHeader{
+  margin: 16px 0 8px;
+}
+.title p{
+  margin: 6px 0 0;
+  color: rgba(255,255,255,.72);
+}
+
+.birthPanel .panelTitle{
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.birthGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 740px){
+  .birthGrid{ grid-template-columns: 1fr; }
+}
+
+.birthBlock{ display:flex; flex-direction:column; gap:6px; }
+.birthLabel{
+  font-size: 12px;
+  color: rgba(255,255,255,.72);
+}
+
+.birthInput{
+  width:100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.92);
+  outline: none;
+}
+.birthInput:focus{
+  border-color: rgba(249,224,138,.35);
+  box-shadow: 0 0 0 3px rgba(249,224,138,.10);
+}
+
+.birthHint{
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: rgba(255,255,255,.70);
+}
+
+.status{
+  margin: 10px 0;
+  font-size: 13px;
+  color: rgba(255,255,255,.78);
+}
+
+.divider{
+  height: 1px;
+  background: rgba(255,255,255,.10);
+  margin: 14px 0;
+}
   </style>
 </head>
 
