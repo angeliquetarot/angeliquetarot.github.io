@@ -4403,324 +4403,39 @@ const gogyouLinks = (() => {
   if (weak) parts.push(`<a class="angel-link" href="${linkFor(weak, "weak")}">「${jp(weak)}が不足しがちな人」について読む</a>`);
   return parts.join("<br>");
 })();
+// Step2はまだ表示しない（まず復旧優先）
+const wrapUpHTML = "";
+const actionsHTML = "";
 
-async function onDraw() {
-  try {
-    if (!cards.length) {
-      setStatus("デッキが未読み込みです（CSV読み込み待ち）");
-      showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
-      return;
-    }
-
-    const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
-    const count = (String(drawMode) === "3") ? 3 : 1;
-
-    setStatus(`シャッフル中…（${count}枚引き）`);
-    startShuffle();
-    await new Promise(r => setTimeout(r, 1400));
-    stopShuffle();
-
-    const picked = drawUnique(count);
-
-    const labels3 = ["過去", "現在", "未来"];
-    const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
-
-    
-    // Step1: 本文は「結論→理由→今日は→一歩」だけ（情報過多を防ぐ）
-const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
-
-const first = picked?.[0];
-const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
-const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
-
-// 仮ストーリー（Deep Reading 未接続でも落ちない）
-const conclusionText = `いまのあなたは、${cardName}${revText}が示す流れの中にいます。`;
-const reasonText = `このカードは、心の奥で「本当はどうしたい？」という問いが静かに強まっていることを伝えています。`;
-const todayText = `今日は、無理に答えを出すよりも、状況を整えるほど運が味方します。小さな違和感を丁寧に扱って。`;
-const stepText = `一歩だけでいいので、できる範囲をひとつ片づけて、あなたの呼吸が深くなる選択を。`;
-
-let globalSummaryHTML = `
-  <section class="angel-summary">
-    <div class="angel-block angel-conclusion">
-      <div class="angel-label">結論</div>
-      <div class="angel-text">${conclusionText}</div>
-    </div>
-
-    <div class="angel-block angel-reason">
-      <div class="angel-label">理由</div>
-      <div class="angel-text">${reasonText}</div>
-    </div>
-
-    <div class="angel-block angel-today">
-      <div class="angel-label">今日は</div>
-      <div class="angel-text">${todayText}</div>
-    </div>
-
-    <div class="angel-block angel-step">
-      <div class="angel-label">一歩</div>
-      <div class="angel-text">${stepText}</div>
-    </div>
-  </section>
+elResult.innerHTML = `
+  ${globalSummaryHTML}
+  <div class="${gridClass}">
+    ${picked.map((p, i) =>
+      renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
+    ).join("")}
+  </div>
+  ${wrapUpHTML}
+  ${actionsHTML}
 `;
-let wrapUpHTML = "";
-let actionsHTML = "";
-      
-        // ======= DEEP READING DATA ========
-        const cardDB = {
-          "0": {
-            light: "無限の可能性と純粋な好奇心。",
-            meaning: "いまのあなたには、常識や過去の失敗にとらわれない身軽さがあります。\nふと浮かんだアイデアや衝動を、どうか打ち消さないでください。",
-            actions: ["いつもと違う道を歩いてみる", "理由のない「やりたい」を一つ叶える"],
-            prayer: "自由な風が、あなたの背中を押しますように。"
-          },
-          "1": {
-            light: "すべてを創り出す、意思の力。",
-            meaning: "すでに必要な道具や才能は、あなたの中に揃っています。\nあとは「始める」と決めるだけ。どんな小さな一歩でも、それは大きな魔法の始まりです。",
-            actions: ["頭の中にあるアイデアを一つ書き出す", "「試しに」で何かを始めてみる"],
-            prayer: "あなたの意思が、新しい世界を形作りますように。"
-          },
-          "2": {
-            light: "静寂の中で磨かれる直感。",
-            meaning: "今は外側の意見よりも、内なる声に耳を傾ける時です。\n答えを急がず、白黒つけない「曖昧な時間」を許すことで、真の理解が深まります。",
-            actions: ["1日5分、完全に静かな時間を作る", "直感的に惹かれたものを選ぶ"],
-            prayer: "静かな瞳が、真実を見抜きますように。"
-          },
-          "3": {
-            light: "豊かさと、無条件の愛。",
-            meaning: "あなたの人生に、豊かな実りや愛が流れ込もうとしています。\nまずは自分自身を慈しみ、心地よいと感じる時間や場所をたっぷりと味わってください。",
-            actions: ["五感が喜ぶこと（美味しいもの、良い香り）をする", "自分を褒める言葉を一日一つ見つける"],
-            prayer: "豊かな実りが、あなたの心を満たしますように。"
-          },
-          "4": {
-            light: "揺るぎない基盤と、守る力。",
-            meaning: "今は情熱だけでなく、現実的なルールや秩序を重んじることで物事が安定します。\n焦らず、足元を固め、長期的な視点で計画を立ててみましょう。",
-            actions: ["部屋や机の上を整理整頓する", "未来の目標に向けた小さなルールを作る"],
-            prayer: "確かな足取りが、あなたを望む場所へ導きますように。"
-          },
-          "5": {
-            light: "精神的な教えと、導き。",
-            meaning: "一時的な感情や利益ではなく、あなたの「本質的な価値観」に従う時です。\n尊敬できる人の言葉をヒントにしたり、古い智恵の中にある普遍的な答えを探してみてください。",
-            actions: ["心惹かれる本から一行の言葉を探す", "迷った時は「自分の美学に反しないか」で決める"],
-            prayer: "見えない導きが、あなたの道を照らしますように。"
-          },
-          "6": {
-            light: "純粋な選択と、心の調和。",
-            meaning: "損得ではなく「心が惹かれるかどうか」で選ぶ時です。\n直感的に惹かれ合う人や物事との出会いが、あなたに美しい調和をもたらしてくれるでしょう。",
-            actions: ["本当に着たい服や使いたいものを選ぶ", "誰かに小さな感謝を伝える"],
-            prayer: "心の響き合う選択が、あなたを幸せへ導きますように。"
-          },
-          "7": {
-            light: "前進する力と、勝利の予感。",
-            meaning: "迷いや葛藤を乗り越え、自分の手で手綱を握る時です。\n多少の困難があっても、今のあなたにはそれをコントロールして進むだけの勢いと強さがあります。",
-            actions: ["今日やり遂げる小さな目標を一つ宣言する", "背筋を伸ばし、少し早足で歩いてみる"],
-            prayer: "力強い前進が、あなたを勝利へと導きますように。"
-          },
-          "8": {
-            light: "優しさと、静かな忍耐。",
-            meaning: "力で押さえつけるのではなく、受け入れながらコントロールする勇気が必要です。\nあなたの中にある「許し」や「しなやかさ」こそが、今の状況を乗り越える最強の力となります。",
-            actions: ["イラッとしたら、3回深呼吸して待つ", "自分の中の弱さを一つ認めてあげる"],
-            prayer: "しなやかな強さが、あなたを守りますように。"
-          },
-          "9": {
-            light: "内省と、魂の探求。",
-            meaning: "ひとつのサイクルが終わりへと向かい、静かに自分と向き合う時期です。\n外の世界の喧騒から少し離れ、あなたが本当に歩みたい道を見直すための時間を取りましょう。",
-            actions: ["夜、少しだけスマホを見ない時間を作る", "日記をつけて、今の気持ちを言語化する"],
-            prayer: "あなたの灯す光が、真実の道を照らしますように。"
-          },
-          "10": {
-            light: "運命の転換と、抗えない流れ。",
-            meaning: "あなたを取り巻く状況が、次のステージへと動き出しています。\n思い通りにならないことがあっても、それは大きな流れの一部。変化を恐れず、流れに乗る勇気を持ってください。",
-            actions: ["普段選ばない選択肢をあえて選んでみる", "「なるようになる」と宇宙に委ねてみる"],
-            prayer: "運命の輪が、あなたを最善の場所へ運びますように。"
-          },
-          "default": {
-            light: "カードが導く、小さな気づき。",
-            meaning: "このカードは、今のあなたに必要なメッセージを送っています。\n直感的に感じた「第一印象」や、キーワードの中で一番心に響いた言葉を大切にしてください。",
-            actions: ["ふと気になった言葉をメモしておく", "まずはゆっくりと深呼吸を一つ"],
-            prayer: "この出会いが、あなたの心を軽くしますように。"
-          }
-        };
 
-        const dbEntry = cardDB[cardId] || cardDB[primaryCard.number] || cardDB["default"];
+elResult.classList.remove("antigravity");
+void elResult.offsetWidth;
+elResult.classList.add("antigravity");
 
-        /* =========================================
-           💗 Love Action Integrated Reason Builder
-           - One paste complete version
-           ========================================= */
+setStatus(`結果表示：${count}枚引き。`);
+scrollToResultSmooth();
 
-        /* --- Love action dictionaries --- */
+elResult.classList.remove("result-animate");
+void elResult.offsetWidth;
+elResult.classList.add("result-animate");
+requestAnimationFrame(() => elResult.classList.add("show"));
 
-        const loveActionsUpright = [
-          "短い一言だけでも、自分から連絡してみましょう。",
-          "返信を迷わず、素直な言葉で返してみましょう。",
-          "「ありがとう」を1回多く伝えてみましょう。",
-          "ひとつだけ本音を混ぜてみましょう。",
-          "曖昧なままのことを一つ確認してみましょう。",
-          "次に会う約束の話題を出してみましょう。",
-          "期待を優先して選択してみましょう。",
-          "笑顔の時間を意識して増やしてみましょう。",
-          "目を見て話してみましょう。",
-          "勇気を出して一つ質問してみましょう。"
-        ];
-
-        const loveActionsReversed = [
-          "返信を急がず、自分の気持ちを整えましょう。",
-          "相手の言葉を深読みしすぎないと決めましょう。",
-          "SNSを15分だけ見ない時間を作りましょう。",
-          "嫌だったことを紙に書き出してみましょう。",
-          "自分のペースを守る選択をしましょう。",
-          "無理に優しくしないと決めましょう。",
-          "既読スルーを恐れない練習をしましょう。",
-          "今日は早めに寝て心を回復させましょう。",
-          "今は待つと自分に許可を出しましょう。",
-          "相手より自分の機嫌を優先しましょう。"
-        ];
-
-        /* =========================================
-           💼 Work Action Builder (Stable + Short)
-           - Deterministic pick per card/date
-           ========================================= */
-
-        /* Work action dictionaries */
-        const workActionsUpright = [
-          "今日の最優先を1つ決める。",
-          "15分だけタスクを前に進める。",
-          "先に結論を1行で書く。",
-          "迷っている案件をA/Bで決める。",
-          "最初の一手だけ着手する。",
-          "返信が必要なものを1件片付ける。",
-          "期限と次アクションを明文化する。",
-          "相手の期待値を確認する。",
-          "資料の冒頭だけ整える。",
-          "自分の強みを1つ使う。"
-        ];
-
-        const workActionsReversed = [
-          "無理な予定を1つ減らす。",
-          "曖昧な依頼を確認してから動く。",
-          "今日は結論を急がない。",
-          "やらないことを1つ決める。",
-          "作業環境を10分整える。",
-          "詰め込みをやめて余白を作る。",
-          "先延ばしの原因を1行で書く。",
-          "相談する相手を1人決める。",
-          "休憩を先に確保する。",
-          "境界線を引く（断る/後回し）。"
-        ];
-
-        /* =========================================
-           💰 Money Action Builder (Stable + Short)
-           - Deterministic pick per card/date
-           ========================================= */
-
-        const moneyActionsUpright = [
-          "小さな臨時収入の芽を1つ探す。",
-          "支出を1件だけ最適化する。",
-          "固定費の明細を1つ確認する。",
-          "買い物は“必要”だけに絞る。",
-          "未来のために少額を積み立てる。",
-          "得する選択を1つだけする。",
-          "不要なサブスクを1つ見直す。",
-          "お金が入る導線を1つ整える。",
-          "価値のある学びに15分使う。",
-          "財布（または口座）を整える。"
-        ];
-
-        const moneyActionsReversed = [
-          "衝動買いを今日はしないと決める。",
-          "見栄の出費を1つ手放す。",
-          "支出の原因を1行で書く。",
-          "高い買い物は24時間待つ。",
-          "予算の上限を先に決める。",
-          "今月の“使いすぎ項目”を1つ特定する。",
-          "レシートを3枚だけ整理する。",
-          "損失を広げない選択をする。",
-          "無理な投資や賭けを避ける。",
-          "まず生活の安心を優先する。"
-        ];
-
-        /* --- Utility --- */
-
-        function stableIndex(seedStr, mod) {
-          // simple deterministic hash
-          let h = 2166136261;
-          for (let i = 0; i < seedStr.length; i++) {
-            h ^= seedStr.charCodeAt(i);
-            h = Math.imul(h, 16777619);
-          }
-          return Math.abs(h) % mod;
-        }
-
-        function pickStable(arr, seedStr) {
-          return arr[stableIndex(seedStr, arr.length)];
-        }
-
-        function toShortAction(action) {
-          // optional: shorten overly long endings
-          return action
-            .replace("してみましょう。", "する。")
-            .replace("しましょう。", "する。")
-            .replace("決めましょう。", "決める。");
-        }
-
-        function normalizeThemes(themes) {
-          let s = "";
-          if (Array.isArray(themes)) s = themes.join(" ");
-          else if (typeof themes === "string") s = themes;
-          else s = "";
-          s = s.trim();
-          try { s = s.normalize("NFKC"); } catch (_) { }
-          return s;
-        }
-
-        function isMoneyTheme(themes, cardName) {
-          const t = normalizeThemes(themes);
-          const n = (cardName || "");
-          const hay = `${t} ${n}`;
-          const kws = [
-            "金", "財", "富", "豊", "銭", "稼", "収", "入", "給", "報", "利", "益", "売", "商",
-            "貯", "貯金", "節", "節約", "投", "投資", "資", "資産", "運用", "財布", "口座",
-            "ペンタ", "ペンタクル", "コイン", "pentacle", "coin", "money", "wealth"
-          ];
-          return kws.some(k => hay.includes(k));
-        }
-
-        /* =========================================
-           🧩 Readability helpers
-           - remove jargon like "LP"
-           - format reason text into readable blocks
-           ========================================= */
-
-        function formatNumerologyLabel(nStr) {
-          // nStr: "1" など
-          const n = (nStr || "").toString().trim();
-          if (!n) return "";
-          // "LP" など略語は出さずに、初心者向けラベルで表示
-          return `あなたの本質（数秘${n}）`;
-        }
-
-        function formatKyuseiLabel(kStr) {
-          const k = (kStr || "").toString().trim();
-          if (!k) return "";
-          // 九星は押しつけず、やさしい文＋括弧
-          return `気質の傾向（${k}）`;
-        }
-
-        /**
-         * reasonText を「結論 / 理由 / 今日は」に整形する
-         * - basePoetic: 詩的な結論1〜2文
-         * - baseExplain: 具体化（つまり〜）
-         * - closing: 今日は〜 の行
-         * - optionalMetaLines: 追加の補足（数秘/九星など）※短く
-         */
-        function buildReadableReason({ basePoetic, baseExplain, closing, optionalMetaLines = [] }) {
-          const meta = (optionalMetaLines || []).filter(Boolean).join("\n");
-          return [
-            `【結論】${(basePoetic || "").trim()}`,
-            `【理由】つまり、${(baseExplain || "").trim()}${meta ? "\n" + meta : ""}`,
-            `【今日は】${(closing || "").trim()}`
-          ].join("\n");
-        }
+  } catch (e) {
+    console.error(e);
+    setStatus("エラーで停止しました（Console参照）");
+    showToast("エラーで停止しました（Console参照）", 5000);
+  }
+}
 
         /**
          * basePoetic: 詩的1文
