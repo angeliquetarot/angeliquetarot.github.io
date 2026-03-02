@@ -336,14 +336,7 @@ h1,h2,.shareTitle,.summaryTitle{
       justify-content: center;
     }
 
-    /* 結果カード（tcard）内の画像 */
-    /* 結果カード（tcard）内の画像 */
-    /* === ②-1 結果カード画像を大きく === */
-    /* ===== cardImg はここで一括管理（最後に置く） ===== */
-    
    
-
-
     .face {
       width: 128px;
       height: 188px;
@@ -552,8 +545,6 @@ h1,h2,.shareTitle,.summaryTitle{
     }
 
    
-
-
     /* ===== 表示レイアウト（最終決定版） ===== */
     .cardsGrid {
       margin-top: 14px;
@@ -578,7 +569,6 @@ h1,h2,.shareTitle,.summaryTitle{
       transform: rotate(180deg);
     }
 
-   
 
     /* === シャッフル：光のオーラ === */
     .shuffleArea::before {
@@ -1249,8 +1239,6 @@ h1,h2,.shareTitle,.summaryTitle{
     }
 
 
-   
-
     /* Buttons: premium depth without flash */
     button {
       box-shadow:
@@ -1267,7 +1255,6 @@ h1,h2,.shareTitle,.summaryTitle{
         inset 0 1px 0 rgba(255, 255, 255, .24);
     }
 
-   
 
     /* =========================================
    💎 Premium micro-polish (no extra motion)
@@ -1348,12 +1335,7 @@ h1,h2,.shareTitle,.summaryTitle{
         inset 0 1px 0 rgba(255, 255, 255, .12),
         inset 0 0 0 1px rgba(255, 255, 255, .06);
     }
-
-    
-
-
-
-  
+ 
 
     /* Image: give a tighter contact shadow + a halo */
     .cardImg {
@@ -2422,9 +2404,6 @@ button, .drawBtn, .btnGhost, .btnDrawAgain{
 }
 
 
-
-
-
 /* 結果が出た #result に antigravity が付いたら発動 */
 #result.antigravity .tcard .tcardVisual{
   animation: floatY 4.2s ease-in-out infinite;
@@ -2434,9 +2413,6 @@ button, .drawBtn, .btnGhost, .btnDrawAgain{
 /* 3枚引きのディレイ */
 #result.antigravity .tcard:nth-child(2) .tcardVisual{ animation-delay: .6s; }
 #result.antigravity .tcard:nth-child(3) .tcardVisual{ animation-delay: 1.2s; }
-
-
-
 
 
 /* =========================
@@ -2832,6 +2808,14 @@ button, .drawBtn, .btnGhost, .btnDrawAgain{
 .angel-blueprint { padding: 12px 14px; display: grid; gap: 10px; }
 .angel-row { font-size: 13px; line-height: 1.7; opacity: .92; }
 .angel-links a.angel-link { display: inline-block; margin-top: 4px; opacity: .95; text-decoration: underline; }
+/* ===== 背景 強制復旧 ===== */
+body{
+  background:
+    linear-gradient(rgba(14,11,22,.62), rgba(14,11,22,.62)),
+    url("public/bg/angel_bg1.webp") center / cover no-repeat,
+    #11111d;
+  background-attachment: fixed;
+}
   </style>
 </head>
 
@@ -3401,7 +3385,15 @@ document.addEventListener("DOMContentLoaded", boot);
     stopShuffle();
 
     const picked = drawUnique(count);
-    const mainTheme = (first?.card?.themes ?? "").toString().split("|")[0].trim() || "整える";
+
+// ★必ずここで first / primaryCard / isReversed を作る
+const first = picked[0];
+const primaryCard = first.card;
+const isReversed = first.isReversed;
+
+// ★mainTheme を安全に作る（themes が空でも落ちない）
+const mainTheme =
+  (primaryCard?.themes ?? "").toString().split("|")[0].trim() || "整える";
 
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
@@ -3605,67 +3597,7 @@ requestAnimationFrame(() => elResult.classList.add("show"));
           });
         }
 
-        if (typeof calculateLifePath === "function" && typeof getHonmeiStar === "function") {
-          const uDate = document.getElementById("userBirthdate")?.value;
-          const pDate = document.getElementById("partnerBirthdate")?.value;
-
-          if (uDate) {
-            const lp = calculateLifePath(uDate);
-            const [y, m, d] = uDate.split("-");
-            const honmei = getHonmeiStar(y, m, d);
-
-            const honmeiTheme = honmei && STAR_DATA[honmei] ? STAR_DATA[honmei].theme : "流れを整える";
-            const honmeiName = honmei && STAR_DATA[honmei] ? STAR_DATA[honmei].name : `本命星${honmei}`;
-            const lpDesc = NUMEROLOGY_DATA[lp] ? NUMEROLOGY_DATA[lp].lp : "軸を整える";
-
-            const basePoetic = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
-            const baseExplain = `${formatNumerologyLabel(lp)}は“${lpDesc}”。${formatKyuseiLabel(honmeiName)}は“${honmeiTheme}”。`;
-
-            // 恋愛（相手の日付あり）か、テーマによる仕事/金運の推測
-
-            if (pDate) {
-              reasonText = buildLoveReasonTextStable({
-                basePoetic,
-                baseExplain,
-                isReversed,
-                cardKey: primaryCard.id || primaryCard.name_ja
-              });
-            } else if (!pDate && isMoneyTheme(primaryCard.themes, primaryCard.name_ja || primaryCard.name)) {
-              reasonText = buildMoneyReasonTextStable({
-                basePoetic,
-                baseExplain,
-                isReversed,
-                cardKey: primaryCard.id || primaryCard.name_ja
-              });
-            } else {
-              reasonText = buildWorkReasonTextStable({
-                basePoetic,
-                baseExplain,
-                isReversed,
-                cardKey: primaryCard.id || primaryCard.name_ja
-              });
-            }
-
-            energyText += `\n\n【あなたのエネルギー】\n・数秘：ライフパス${lp}（${lpDesc}）\n・九星：${honmeiName}（${honmeiTheme}）`;
-          } else {
-            reasonText = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
-          }
-
-          if (pDate) {
-            const p_lp = calculateLifePath(pDate);
-            const [py, pm, pd] = pDate.split("-");
-            const p_star = getHonmeiStar(py, pm, pd);
-
-            const p_starTheme = p_star && STAR_DATA[p_star] ? STAR_DATA[p_star].theme : "流れを整える";
-            const p_starName = p_star && STAR_DATA[p_star] ? STAR_DATA[p_star].name : `本命星${p_star}`;
-            const p_lpDesc = NUMEROLOGY_DATA[p_lp] ? NUMEROLOGY_DATA[p_lp].lp : "軸を整える";
-
-            energyText += `\n\n【お相手のエネルギー】\n・数秘：ライフパス${p_lp}（${p_lpDesc}）\n・九星：${p_starName}（${p_starTheme}）`;
-          }
-        } else {
-          reasonText = `カードに宿る『${mainTheme}』の力が、あなたを呼んでいるから。`;
-        }
-
+        
         const SUPP_RE = /(数秘|九星|宿曜|干支|星座|ラッキー|開運|方位|風水|ラッキーカラー|ラッキーアイテム|カラー|アイテム)/;
 
         const normalized = String(reasonText ?? "")
