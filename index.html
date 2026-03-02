@@ -954,96 +954,7 @@ button{
     inset 0 1px 0 rgba(255,255,255,.06);
 }
 
-/* デッキ下の台座（床影） */
-#shuffleArea .deck::after{
-  content:"";
-  position:absolute;
-  left: 12%;
-  right: 12%;
-  bottom: -28px;
-  height: 38px;
-  border-radius: 999px;
-  background:
-    radial-gradient(60% 140% at 50% 30%,
-      rgba(0,0,0,.75),
-      rgba(0,0,0,0) 70%);
-  filter: blur(14px);
-  opacity: 1;
-  pointer-events:none;
-}
 
-/* 軽い透明フレーム効果 */
-#shuffleArea .deck::before{
-  border-radius: 20px;
-}
-/* =========================================
-   LUX BOOST v2 (体感できる版)
-   - 背景デッキ / 結果カード 両方に「台座＋浮遊＋額装」
-   - 影が切れないように overflow を調整
-   ========================================= */
-
-/* --- 影が切れている可能性を潰す（重要） --- */
-#shuffleArea,
-#result .tcard{
-  overflow: visible !important;
-}
-
-/* =========================
-   1) TOP: 背景デッキ（裏面カード）
-   ========================= */
-
-/* デッキを“展示物”に */
-#shuffleArea .deck{
-  position: relative !important;
-  transform: translateZ(0);
-  border-radius: 22px !important;
-  box-shadow:
-    0 34px 120px rgba(0,0,0,.72),
-    0 10px 28px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.10) !important;
-}
-
-/* デッキの“額装” */
-#shuffleArea .deck::before{
-  content:"" !important;
-  position:absolute !important;
-  inset: -10px !important;
-  border-radius: 28px !important;
-  background:
-    radial-gradient(120% 140% at 20% 10%, rgba(249,224,138,.18), rgba(0,0,0,0) 55%),
-    radial-gradient(120% 140% at 80% 90%, rgba(165,180,252,.16), rgba(0,0,0,0) 58%) !important;
-  border: 1px solid rgba(249,224,138,.20) !important;
-  box-shadow:
-    0 18px 70px rgba(0,0,0,.55),
-    inset 0 0 0 1px rgba(255,255,255,.08) !important;
-  pointer-events:none !important;
-  z-index:-1 !important;
-}
-
-/* デッキ下の台座：背景と同化しない“青紫の床影” */
-#shuffleArea .deck::after{
-  content:"" !important;
-  position:absolute !important;
-  left: 8% !important;
-  right: 8% !important;
-  bottom: -44px !important;
-  height: 52px !important;
-  border-radius: 999px !important;
-  background:
-    radial-gradient(70% 150% at 50% 30%,
-      rgba(0,0,0,.88),
-      rgba(0,0,0,0) 72%),
-    radial-gradient(65% 150% at 50% 50%,
-      rgba(72,86,200,.26),
-      rgba(0,0,0,0) 70%),
-    radial-gradient(60% 140% at 50% 45%,
-      rgba(249,224,138,.18),
-      rgba(0,0,0,0) 72%) !important;
-  filter: blur(16px) !important;
-  opacity: .95 !important;
-  pointer-events:none !important;
-  z-index:-2 !important;
-}
 
 /* =========================
    2) RESULT: 引いたカード（表面のみ）
@@ -1116,53 +1027,7 @@ button{
 
 /* 結果カードでは裏面を絶対出さない（念押し） */
 #result .cardBackImg{ display:none !important; }
-/* =========================================
-   FIX: correct selector for deck pedestal
-   ========================================= */
 
-/* デッキ本体 */
-.shuffleArea .deck{
-  position: relative !important;
-  box-shadow:
-    0 40px 120px rgba(0,0,0,.75),
-    0 10px 30px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.08) !important;
-}
-
-/* デッキ下の台座 */
-.shuffleArea .deck::after{
-  content:"";
-  position:absolute;
-  left: 10%;
-  right: 10%;
-  bottom: -44px;
-  height: 48px;
-  border-radius: 999px;
-  background:
-    radial-gradient(70% 150% at 50% 30%,
-      rgba(0,0,0,.85),
-      rgba(0,0,0,0) 72%),
-    radial-gradient(60% 140% at 50% 55%,
-      rgba(72,86,200,.28),
-      rgba(0,0,0,0) 72%);
-  filter: blur(16px);
-  opacity: 1;
-  pointer-events:none;
-}
-.shuffleArea .deck::after{ content:"" !important; }
-/* DEBUG（見えるかだけ確認） */
-.shuffleArea .deck{ position:relative; }
-.shuffleArea .deck::after{
-  content:"";
-  position:absolute;
-  inset:-18px;
-  border-radius:28px;
-  background: rgba(255,0,0,.18) !important; /* ←赤が見えれば勝ち */
-  filter: blur(0) !important;
-  opacity: 1 !important;
-  pointer-events:none;
-  z-index: 0;
-}
 /* ===== Deck pedestal (force visible) ===== */
 
 /* 1) はみ出しを許可（ここが一番多い原因） */
@@ -1180,79 +1045,8 @@ button{
   isolation: isolate;      /* deck内で完結 */
 }
 
-/* 3) 台座は “背面だけど消えない” 0番に置く */
-#shuffleArea .deck::after{
-  content: "" !important;
-  position: absolute;
-  inset: -22px;
-  border-radius: 32px;
-  pointer-events: none;
-  z-index: 0;              /* ←ここ重要（-1禁止） */
 
-  /* 目に見える台座 */
-  background:
-    radial-gradient(70% 55% at 50% 38%, rgba(255,244,214,.22), rgba(0,0,0,0) 62%),
-    radial-gradient(90% 70% at 50% 82%, rgba(165,180,252,.12), rgba(0,0,0,0) 66%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
 
-  box-shadow:
-    0 30px 80px rgba(0,0,0,.65),
-    inset 0 0 0 1px rgba(255,255,255,.12);
-
-  opacity: .95;
-  filter: blur(.2px);
-}
-/* ===== Deck pedestal debug fix ===== */
-#shuffleArea,
-#shuffleArea .shuffleArea,
-#shuffleArea .deck {
-  overflow: visible !important;
-}
-
-#shuffleArea .deck{
-  position: relative !important;
-  margin-inline: auto !important;
-  z-index: 1 !important;
-  isolation: isolate;
-}
-
-#shuffleArea .deck::after{
-  content:"" !important;
-  position:absolute !important;
-  inset:-26px !important;
-  border-radius:36px !important;
-  pointer-events:none;
-  z-index:0 !important;         /* -1は禁止。消える */
-
-  /* わかるくらい強くする */
-  background:
-    radial-gradient(70% 55% at 50% 35%, rgba(255,244,214,.32), rgba(0,0,0,0) 62%),
-    radial-gradient(95% 75% at 50% 86%, rgba(165,180,252,.18), rgba(0,0,0,0) 68%),
-    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.22));
-  box-shadow:
-    0 34px 90px rgba(0,0,0,.70),
-    inset 0 0 0 1px rgba(255,255,255,.14);
-  opacity: .95 !important;
-}
-/* =========================
-   Deck Pedestal (Background Deck)
-   ========================= */
-#shuffleArea .deckWrap{
-  position: relative;
-  width: fit-content;
-  margin: 0 auto;              /* 中央寄せ */
-  transform-style: preserve-3d;
-}
-
-#shuffleArea .deckWrap img.deck{
-  position: relative;
-  display: block;
-  z-index: 2;
-  border-radius: 18px;
-  box-shadow:
-    0 18px 45px rgba(0,0,0,.55),
-    0 2px 0 rgba(255,255,255,.08) inset;
-}
 
 /* 台座（透明なガラス板みたいなやつ） */
 #shuffleArea .deckWrap::before{
@@ -1346,20 +1140,31 @@ button{
   position:absolute;
   left:50%;
   top:50%;
-  width:170%;
-  height:170%;
+  width:220%;
+  height:220%;
   transform:translate(-50%,-50%);
-  border-radius:30px;
+  border-radius:40px;
 
   background:
     radial-gradient(circle,
-      rgba(255,230,170,.40),
-      rgba(255,230,170,.15) 40%,
-      rgba(0,0,0,0) 70%);
+      rgba(255,235,190,.70),
+      rgba(255,235,190,.28) 42%,
+      rgba(0,0,0,0) 72%);
 
-  animation: angelicBreath 6.5s ease-in-out infinite;
+  filter: blur(10px);
+  mix-blend-mode: screen;
+  opacity:.85;
+
+  animation: angelicBreath 6.8s ease-in-out infinite;
   pointer-events:none;
-  z-index:0;
+  z-index: 2; /* ← いったん上に出す（確認用） */
+}
+
+#shuffleArea{
+  overflow: visible !important;
+}
+#shuffleArea .deck{
+  overflow: visible !important;
 }
   </style>
 </head>
