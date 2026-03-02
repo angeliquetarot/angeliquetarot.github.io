@@ -235,28 +235,20 @@ button{
 }
 .tcardVisual{
   position: relative;
-  padding: 10px;
+}
+
+.cardBackImg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:16px;
+  opacity: .95;
+  z-index: 1;
 }
 
 .tcardVisual .cardImg{
-  display:block;
-  width:100%;
-  max-width:100%;
-  height:auto;
-  border-radius: 16px;
-  object-fit: cover;
-}
-
-.tcardVisual .cardBack{
-  position:absolute;
-  inset:10px;            /* paddingと合わせる */
-  width: calc(100% - 20px);
-  height: calc(100% - 20px);
-  opacity: 1;
-  filter: drop-shadow(0 26px 62px rgba(0,0,0,.62));
-}
-
-.tcardVisual .cardFront{
   position: relative;
   z-index: 2;
 }
@@ -1446,38 +1438,46 @@ window.__gogyouState = window.__gogyouState || {
       return `\n${romance}${work}${intp}${money}`;
     }
 
-    // =========================
-// 画像パス生成（ここに追加）
+   // =========================
+// 画像パス生成（これ1本に統一）
 // =========================
 function ensureExt(path){
   const p = String(path || "").trim();
   if (!p) return "";
   if (/\.(webp|png|jpg|jpeg)$/i.test(p)) return p;
-  return p + ".webp";
+  return p + ".webp"; // あなたの運用がwebpなので
 }
 
 function normalizePath(p){
   let s = String(p || "").trim();
   if (!s) return "";
-  if (!s.startsWith("./")) s = "./" + s.replace(/^\.?\//, "");
+  // "major/00_Fool" のような相対パスを想定（サイト直下基準）
+  s = s
+    .replace(/^\uFEFF/, "")
+    .replace(/^"+|"+$/g, "")
+    .replace(/^'+|'+$/g, "")
+    .replace(/^\/+/, "")
+    .replace(/\\/g, "/");
+
   return ensureExt(s);
 }
 
-function getCardImageSrc(card){
-  const raw = String(card?.image || "").trim();
-  if (raw) return normalizePath(raw);
-  return normalizePath("back.png");
+function getBackSrc(){
+  // back.png が cups/major と同じ階層（=サイト直下）にある前提
+  // もし back.webp なら "back.webp" に変える
+  return "back.png";
 }
 
-function getBackSrc(){
-  return normalizePath("back.png");
+function getCardImageSrc(card){
+  const raw = String(card?.image || "").trim(); // CSVの image カラム
+  return raw ? normalizePath(raw) : getBackSrc();
 }
 
     function renderCard(card, isReversed, positionLabel) {
 
   // 画像URL（front/back）
-  const backSrc = "public/cards/back.png";
-  const frontSrc = cardImageUrl(card?.image); // ← CSVの image を使う（major/00_Fool など）
+  const backSrc  = getBackSrc();
+  const frontSrc = getCardImageSrc(card);
 
   // --- データ取得 ---
   const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
@@ -1555,12 +1555,12 @@ function getBackSrc(){
       </div>
 
       <div class="tcardVisual">
-        <img class="cardImg cardBack" src="${backSrc}" alt="" aria-hidden="true">
-        <img class="cardImg cardFront ${isReversed ? "reversed" : ""}"
-             src="${frontSrc}"
-             alt="${escapeHtml(card.name_ja || card.name || "カード")}"
-             onerror="handleCardImgError(this)">
-      </div>
+  <img class="cardBackImg" src="${backSrc}" alt="" aria-hidden="true">
+  <img class="cardImg ${isReversed ? "reversed" : ""}"
+       src="${frontSrc}"
+       alt="${escapeHtml(card.name_ja || card.name_en || "カード")}"
+       onerror="handleCardImgError(this)">
+</div>
 
       ${yn ? `
         <div class="ynRow">
@@ -1605,33 +1605,35 @@ function getBackSrc(){
 }
 
 
-    function handleCardImgError(img) {
-      const tried = parseInt(img.dataset.tried || "0", 10);
+   function handleCardImgError(img) {
+  const tried = parseInt(img.dataset.tried || "0", 10);
 
-      // まず、元の src から「拡張子だけ」差し替えて試す
-      const src = img.getAttribute("src") || "";
-      const base = src.replace(/\.(webp|png|jpg|jpeg)(\?.*)?$/i, ""); // 末尾拡張子を除去
-      const query = (src.match(/(\?.*)$/) || [""])[0];
+  // まず、元の src から「拡張子だけ」差し替えて試す
+  const src = img.getAttribute("src") || "";
+  const base = src.replace(/\.(webp|png|jpg|jpeg)(\?.*)?$/i, ""); // 末尾拡張子を除去
+  const query = (src.match(/(\?.*)$/) || [""])[0];
 
-      const exts = ["webp", "png", "jpg", "jpeg"];
+  const exts = ["webp", "png", "jpg", "jpeg"];
 
-      // すでに back.png なら終了（無限ループ防止）
-      if (src.includes("back.png")) return;
+  // すでに back.png なら終了（無限ループ防止）
+  if (src.includes("back.png")) return;
 
-      if (tried < exts.length) {
-        img.dataset.tried = String(tried + 1);
-        img.src = `${base}.${exts[tried]}${query}`;
-        return;
-      }
-      console.warn("[MISSING IMAGE]", {
-        alt: img.alt,
-        lastTried: src,
-        base
-      });
+  if (tried < exts.length) {
+    img.dataset.tried = String(tried + 1);
+    img.src = `${base}.${exts[tried]}${query}`;
+    return;
+  }
 
-      // 最後の砦：裏面
-      img.src = "public/cards/back.png";
-    }
+  console.warn("[MISSING IMAGE]", {
+    alt: img.alt,
+    lastTried: src,
+    base
+  });
+
+  // 最後の砦：裏面
+  img.src = getBackSrc();
+}
+      
 
     /* =========================
    Four Pillars (Simplified) -> Five Elements
