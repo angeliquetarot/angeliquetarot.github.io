@@ -976,6 +976,146 @@ button{
 #shuffleArea .deck::before{
   border-radius: 20px;
 }
+/* =========================================
+   LUX BOOST v2 (体感できる版)
+   - 背景デッキ / 結果カード 両方に「台座＋浮遊＋額装」
+   - 影が切れないように overflow を調整
+   ========================================= */
+
+/* --- 影が切れている可能性を潰す（重要） --- */
+#shuffleArea,
+#result .tcard{
+  overflow: visible !important;
+}
+
+/* =========================
+   1) TOP: 背景デッキ（裏面カード）
+   ========================= */
+
+/* デッキを“展示物”に */
+#shuffleArea .deck{
+  position: relative !important;
+  transform: translateZ(0);
+  border-radius: 22px !important;
+  box-shadow:
+    0 34px 120px rgba(0,0,0,.72),
+    0 10px 28px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+/* デッキの“額装” */
+#shuffleArea .deck::before{
+  content:"" !important;
+  position:absolute !important;
+  inset: -10px !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(120% 140% at 20% 10%, rgba(249,224,138,.18), rgba(0,0,0,0) 55%),
+    radial-gradient(120% 140% at 80% 90%, rgba(165,180,252,.16), rgba(0,0,0,0) 58%) !important;
+  border: 1px solid rgba(249,224,138,.20) !important;
+  box-shadow:
+    0 18px 70px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  pointer-events:none !important;
+  z-index:-1 !important;
+}
+
+/* デッキ下の台座：背景と同化しない“青紫の床影” */
+#shuffleArea .deck::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 8% !important;
+  right: 8% !important;
+  bottom: -44px !important;
+  height: 52px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(70% 150% at 50% 30%,
+      rgba(0,0,0,.88),
+      rgba(0,0,0,0) 72%),
+    radial-gradient(65% 150% at 50% 50%,
+      rgba(72,86,200,.26),
+      rgba(0,0,0,0) 70%),
+    radial-gradient(60% 140% at 50% 45%,
+      rgba(249,224,138,.18),
+      rgba(0,0,0,0) 72%) !important;
+  filter: blur(16px) !important;
+  opacity: .95 !important;
+  pointer-events:none !important;
+  z-index:-2 !important;
+}
+
+/* =========================
+   2) RESULT: 引いたカード（表面のみ）
+   ========================= */
+
+/* 結果カードの立体感を強める */
+#result .tcard{
+  position: relative !important;
+  background: rgba(12,12,24,.22) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.66),
+    0 10px 26px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+/* 結果カード台座（はっきり見える） */
+#result .tcard::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 10% !important;
+  right: 10% !important;
+  bottom: -26px !important;
+  height: 38px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(70% 150% at 50% 30%,
+      rgba(0,0,0,.85),
+      rgba(0,0,0,0) 72%),
+    radial-gradient(60% 140% at 50% 55%,
+      rgba(72,86,200,.22),
+      rgba(0,0,0,0) 72%),
+    radial-gradient(55% 120% at 50% 55%,
+      rgba(249,224,138,.16),
+      rgba(0,0,0,0) 75%) !important;
+  filter: blur(14px) !important;
+  opacity: .92 !important;
+  pointer-events:none !important;
+  z-index:-1 !important;
+}
+
+/* 画像まわりの“額装”を見える強さに */
+#result .tcardVisual{
+  padding: 18px !important;
+  position: relative !important;
+}
+#result .tcardVisual::before{
+  content:"" !important;
+  position:absolute !important;
+  inset: 10px !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(120% 120% at 18% 12%, rgba(255,255,255,.16), rgba(0,0,0,0) 52%),
+    radial-gradient(120% 120% at 82% 90%, rgba(165,180,252,.14), rgba(0,0,0,0) 58%),
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,0)) !important;
+  border: 1px solid rgba(249,224,138,.22) !important;
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.52),
+    inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  pointer-events:none !important;
+  z-index: 0 !important;
+}
+#result .tcardVisual .cardImg{
+  position: relative !important;
+  z-index: 1 !important;
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.62),
+    0 0 0 1px rgba(255,255,255,.16) !important;
+}
+
+/* 結果カードでは裏面を絶対出さない（念押し） */
+#result .cardBackImg{ display:none !important; }
   </style>
 </head>
 
