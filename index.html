@@ -1037,76 +1037,33 @@ button{
   overflow: visible !important;
 }
 
-/* 2) 重なり順を固定（-1で裏へ消えないように） */
+/* =========================
+   Deck pedestal + glow (final)
+   ========================= */
+
+/* はみ出しOK（必要なら） */
+#shuffleArea{ overflow: visible !important; }
+
+/* deck本体 */
 #shuffleArea .deck{
   position: relative !important;
-  margin-inline: auto;
-  z-index: 1;              /* deck本体を上 */
-  isolation: isolate;      /* deck内で完結 */
-}
-
-
-
-
-/* 台座（透明なガラス板みたいなやつ） */
-#shuffleArea .deckWrap::before{
-  content:"";
-  position:absolute;
-  left: 50%;
-  bottom: -14px;
-  width: 128%;
-  height: 40px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: radial-gradient(closest-side,
-    rgba(255,226,160,.22),
-    rgba(255,226,160,.08) 45%,
-    rgba(0,0,0,0) 72%);
-  filter: blur(2px);
-  opacity: .9;
-  z-index: 1;
-}
-
-/* 呼吸する光（カードの周囲） */
-@keyframes haloBreathSoft {
-  0%   { opacity:.55; transform: translateX(-50%) scale(0.98); filter: blur(18px); }
-  50%  { opacity:.90; transform: translateX(-50%) scale(1.04); filter: blur(22px); }
-  100% { opacity:.55; transform: translateX(-50%) scale(0.98); filter: blur(18px); }
-}
-
-#shuffleArea .deckWrap::after{
-  content:"";
-  position:absolute;
-  left: 50%;
-  top: 50%;
-  width: 150%;
-  height: 150%;
-  transform: translate(-50%,-50%);
-  border-radius: 28px;
-  background:
-    radial-gradient(closest-side, rgba(255,226,160,.28), rgba(255,226,160,0) 70%),
-    radial-gradient(circle at 55% 40%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%);
-  animation: haloBreathSoft 4.8s ease-in-out infinite;
-  pointer-events:none;
-  z-index: 0;
-}
-#shuffleArea .deck{
-  position: relative;
   width: 220px;
   height: 340px;
   margin: 0 auto;
   border-radius: 22px;
+  overflow: visible !important;
 
-  /* 深い影 */
+  /* 立体感（本体） */
   box-shadow:
-    0 28px 70px rgba(0,0,0,.65),
+    0 28px 70px rgba(0,0,0,.60),
     0 2px 0 rgba(255,255,255,.10) inset,
     0 0 0 1px rgba(255,255,255,.06);
 
   transform: translateZ(0);
+  isolation: isolate; /* pseudoの重なりを安定させる */
 }
 
-/* 台座（柔らかい光の皿） */
+/* 台座（下の皿） */
 #shuffleArea .deck::before{
   content:"";
   position:absolute;
@@ -1116,25 +1073,17 @@ button{
   height:50px;
   transform:translateX(-50%);
   border-radius:999px;
-
-  background:
-    radial-gradient(closest-side,
-      rgba(255,220,150,.35),
-      rgba(255,220,150,.12) 45%,
-      rgba(0,0,0,0) 75%);
-
-  filter: blur(4px);
-  opacity:.95;
-  z-index:0;
+  background: radial-gradient(closest-side,
+    rgba(255,220,150,.26),
+    rgba(255,220,150,.10) 45%,
+    rgba(0,0,0,0) 75%);
+  filter: blur(6px);
+  opacity:.90;
+  pointer-events:none;
+  z-index:-2; /* deckの後ろ */
 }
 
-/* 呼吸する光 */
-@keyframes angelicBreath {
-  0%   { opacity:.55; transform: translate(-50%,-50%) scale(.96); }
-  50%  { opacity:1;   transform: translate(-50%,-50%) scale(1.05); }
-  100% { opacity:.55; transform: translate(-50%,-50%) scale(.96); }
-}
-
+/* 通常の呼吸（弱め） */
 #shuffleArea .deck::after{
   content:"";
   position:absolute;
@@ -1147,56 +1096,52 @@ button{
 
   background:
     radial-gradient(circle,
-      rgba(255,235,190,.40),
-      rgba(255,235,190,.14) 38%,
+      rgba(255,235,190,.28),
+      rgba(255,235,190,.10) 38%,
       rgba(0,0,0,0) 70%);
 
   filter: blur(18px);
+  opacity:.30;                /* ★普段は控えめ */
   mix-blend-mode: screen;
-
-  opacity:.55;
-
-  animation: angelicBreath 7.2s ease-in-out infinite;
   pointer-events:none;
-  z-index:0;
+  z-index:-1;                 /* deckの後ろ */
+
+  animation: deckBreath 7.2s ease-in-out infinite;
 }
-/* 呼吸（弱） */
-@keyframes angelicBreath{
+
+@keyframes deckBreath{
   0%,100%{
-    opacity:.38;
+    opacity:.26;
     transform:translate(-50%,-50%) scale(0.985);
     filter: blur(18px);
   }
   50%{
-    opacity:.50;
+    opacity:.34;
     transform:translate(-50%,-50%) scale(1.02);
     filter: blur(20px);
   }
 }
 
-/* ===== Click pulse (only when button pressed) ===== */
-/* 「押下時だけ強く光る」 */
+/* 押した時だけ “ぽわっ” */
 #shuffleArea.pulse .deck::after{
-  animation:
-    angelicBreath 7.2s ease-in-out infinite,
-    haloPulse 1.6s ease-in-out 1;
+  animation: deckPulse 1.8s ease-in-out 1;
 }
 
-@keyframes haloPulse{
+@keyframes deckPulse{
   0%{
-    opacity:.48;
+    opacity:.30;
     transform:translate(-50%,-50%) scale(0.99);
     filter: blur(18px);
   }
   35%{
-    opacity:.92;                 /* ★ここが“ぽわっ” */
+    opacity:.78; /* ★押した時だけちゃんと光る */
     transform:translate(-50%,-50%) scale(1.07);
     filter: blur(26px);
   }
   100%{
-    opacity:.46;                 /* ゆっくり戻る */
-    transform:translate(-50%,-50%) scale(1.01);
-    filter: blur(19px);
+    opacity:.34;
+    transform:translate(-50%,-50%) scale(1.02);
+    filter: blur(20px);
   }
 }
 
@@ -1959,7 +1904,7 @@ function pulseDeck(){
 
   setTimeout(() => {
     area.classList.remove("pulse");
-  }, 1700);
+  }, 1900);
 }
     async function onDraw() {
       pulseDeck();
