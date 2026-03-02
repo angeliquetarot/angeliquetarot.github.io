@@ -4439,7 +4439,7 @@ const reasonText = `このカードは、心の奥で「本当はどうしたい
 const todayText = `今日は、無理に答えを出すよりも、状況を整えるほど運が味方します。小さな違和感を丁寧に扱って。`;
 const stepText = `一歩だけでいいので、できる範囲をひとつ片づけて、あなたの呼吸が深くなる選択を。`;
 
-const globalSummaryHTML = `
+let globalSummaryHTML = `
   <section class="angel-summary">
     <div class="angel-block angel-conclusion">
       <div class="angel-label">結論</div>
@@ -4462,8 +4462,8 @@ const globalSummaryHTML = `
     </div>
   </section>
 `;
-const wrapUpHTML = "";
-const actionsHTML = "";
+let wrapUpHTML = "";
+let actionsHTML = "";
       
         // ======= DEEP READING DATA ========
         const cardDB = {
@@ -4969,23 +4969,23 @@ try {
 
 
 
-      let wrapUpHTML = "";
-      if (count === 3) {
-        wrapUpHTML = `
-          <div class="summaryCard line" style="margin-top:16px;">
-            <div style="font-size:14px; font-weight:800; color:var(--accent); margin-bottom:6px;">【3枚の結び】</div>
-            <div style="font-size:13px; line-height:1.7; color:rgba(255,255,255,.9);">
-              過去から導かれたあなたの軌跡は、現在の気づきを通して、確実に新しい未来へと繋がっています。焦らず、今の自分を信じて歩みを進めてください。
-            </div>
-          </div>
-        `;
-      }
+      wrapUpHTML = "";
+if (count === 3) {
+  wrapUpHTML = `
+    <div class="summaryCard line" style="margin-top:16px;">
+      <div style="font-size:14px; font-weight:800; color:var(--accent); margin-bottom:6px;">【3枚の結び】</div>
+      <div style="font-size:13px; line-height:1.7; color:rgba(255,255,255,.9);">
+        過去から導かれたあなたの軌跡は、現在の気づきを通して、確実に新しい未来へと繋がっています。焦らず、今の自分を信じて歩みを進めてください。
+      </div>
+    </div>
+  `;
+}
 
-      const actionsHTML = `
+      actionsHTML = `
   <div class="resultActions">
     <a class="numerologyCta" href="./numbers.html" target="_blank">
-  ✨ 数秘の数字の意味を詳しく見る
-</a>
+      ✨ 数秘の数字の意味を詳しく見る
+    </a>
 
     <div class="shareTitle">Share This Reading</div>
     <div class="shareRow">
