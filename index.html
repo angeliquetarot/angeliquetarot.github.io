@@ -1163,6 +1163,45 @@ button{
   pointer-events:none;
   z-index: 0;
 }
+/* ===== Deck pedestal (force visible) ===== */
+
+/* 1) はみ出しを許可（ここが一番多い原因） */
+#shuffleArea,
+#shuffleArea .shuffleArea,
+#shuffleArea .deck{
+  overflow: visible !important;
+}
+
+/* 2) 重なり順を固定（-1で裏へ消えないように） */
+#shuffleArea .deck{
+  position: relative !important;
+  margin-inline: auto;
+  z-index: 1;              /* deck本体を上 */
+  isolation: isolate;      /* deck内で完結 */
+}
+
+/* 3) 台座は “背面だけど消えない” 0番に置く */
+#shuffleArea .deck::after{
+  content: "" !important;
+  position: absolute;
+  inset: -22px;
+  border-radius: 32px;
+  pointer-events: none;
+  z-index: 0;              /* ←ここ重要（-1禁止） */
+
+  /* 目に見える台座 */
+  background:
+    radial-gradient(70% 55% at 50% 38%, rgba(255,244,214,.22), rgba(0,0,0,0) 62%),
+    radial-gradient(90% 70% at 50% 82%, rgba(165,180,252,.12), rgba(0,0,0,0) 66%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.65),
+    inset 0 0 0 1px rgba(255,255,255,.12);
+
+  opacity: .95;
+  filter: blur(.2px);
+}
   </style>
 </head>
 
