@@ -2808,13 +2808,14 @@ button, .drawBtn, .btnGhost, .btnDrawAgain{
 .angel-blueprint { padding: 12px 14px; display: grid; gap: 10px; }
 .angel-row { font-size: 13px; line-height: 1.7; opacity: .92; }
 .angel-links a.angel-link { display: inline-block; margin-top: 4px; opacity: .95; text-decoration: underline; }
-/* ===== 背景 強制復旧 ===== */
 body{
+  margin:0 !important;
+  min-height:100vh !important;
+  color:#fff !important;
   background:
-    linear-gradient(rgba(14,11,22,.62), rgba(14,11,22,.62)),
-    url("public/bg/angel_bg1.webp") center / cover no-repeat,
-    #11111d;
-  background-attachment: fixed;
+    radial-gradient(120% 100% at 50% 0%, rgba(249,224,138,.10), rgba(0,0,0,0) 60%),
+    radial-gradient(90% 80% at 85% 18%, rgba(165,180,252,.10), rgba(0,0,0,0) 62%),
+    linear-gradient(to bottom, #11111d 0%, #15152b 60%, #0c0c18 100%) !important;
 }
   </style>
 </head>
@@ -3340,14 +3341,7 @@ document.addEventListener("DOMContentLoaded", boot);
     ① CSVを読み込む → ② 1枚/3枚を選ぶ → ③「カードを引く」
   </div>`;
     }
-
-
-    function showReady() {
-      elResult.innerHTML = `<div class="empty">
-        準備OK。<br>
-        ② 1枚/3枚を選ぶ → ③「カードを引く」
-      </div>`;
-    }
+  
 
     function startShuffle() { elShuffleArea.classList.add("shuffling"); }
     function stopShuffle() { elShuffleArea.classList.remove("shuffling"); }
@@ -3395,6 +3389,8 @@ const isReversed = first.isReversed;
 const mainTheme =
   (primaryCard?.themes ?? "").toString().split("|")[0].trim() || "整える";
 
+    
+    let energyText = "";
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
@@ -3634,7 +3630,9 @@ requestAnimationFrame(() => elResult.classList.add("show"));
 
         const mainText = mainLines.join("\n");
 
-        const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
+        
+/* ===== TEMP OFF: old summary generator (will re-integrate later) =====
+const summaryConclusion = `【結論】${mood}、あなたの心は「${mainTheme}」へと向かっている。`;
         const summaryReason = `【理由】${mainText}`;
         // ===== actionSub をここで必ず作る（落ちない版） =====
 let actionSub = (typeof action === "string" && action.trim())
@@ -3735,6 +3733,7 @@ if (count === 3) {
   ${wrapUpHTML}
   ${actionsHTML}
 `;
+===== TEMP OFF END ===== */
 // ===== Float ON (must be after innerHTML) =====
 elResult.classList.remove("antigravity"); // 再描画時にアニメをリスタート
 void elResult.offsetWidth;               // reflow
