@@ -785,6 +785,44 @@ window.moneyActionsReversed ??= ["今日だけは守りを優先する。"];
 window.workActionsUpright ??= ["手元の一件を完了させる。"];
 window.workActionsReversed ??= ["優先順位を見直して一つ減らす。"];
 
+// =========================
+// Text helpers (global)
+// =========================
+function normalizeText(s, fallback=""){
+  const t = (s ?? "").toString().trim();
+  return t ? t : fallback;
+}
+
+// dbEntry を「カード＋正逆」で取ってくる関数（あなたの既存実装に寄せる）
+// ※あとでここだけ “本物” に差し替える
+function getDbEntryFor(card, isReversed){
+  return null; // ←いったん落ちないように
+}
+
+// actions配列が無い/足りない場合の保険
+function pickFirstAction(dbEntry){
+  const a0 = dbEntry?.actions?.[0];
+  if (typeof a0 === "string" && a0.trim()) return a0.trim();
+  return "呼吸が深くなる選択をひとつ";
+}
+
+// =========================
+// Step3: 五行不足を「一歩」に自然反映（global）
+// =========================
+function adjustStepByWeakElement(stepText, weakJP){
+  if (!weakJP) return stepText;
+
+  const map = {
+    "火": " ほんの少し勇気を足して。",
+    "水": " 感情を整えながら。",
+    "木": " まず一歩、動いて。",
+    "土": " 足場を固めてから。",
+    "金": " 境界線を意識して。"
+  };
+
+  return stepText + (map[weakJP] || "");
+}
+
     async function onDraw() {
   try {
     if (!cards.length) {
@@ -832,14 +870,18 @@ const cardKey = (primaryCard?.id || primaryCard?.name || cardName).toString();
 const dbEntry = getDbEntryFor(primaryCard, isReversed);
 
 // 2) 材料を安全に用意
-const basePoetic = normalizeText(dbEntry?.light, `${cardName}${revText}の流れが、静かにあなたを導いています。`);
-const baseExplain = normalizeText(dbEntry?.meaning, "いまは心の奥の声が少し強くなり、次の一手を整える時です。");
+const basePoetic = normalizeText(
+  dbEntry?.light,
+  `${cardName}${revText}の流れが、静かにあなたを導いています。`
+);
+const baseExplain = normalizeText(
+  dbEntry?.meaning,
+  "いまは心の奥の声が少し強くなり、次の一手を整える時です。"
+);
 const actionBase = pickFirstAction(dbEntry);
 
-// 3) 「理由」文章はあなたの“型”に任せる（おすすめA）
-let reasonText = "";
-// どの Stable を使うか：今はとりあえず work をデフォルト（後でUI選択に接続できる）
-reasonText = buildWorkReasonTextStable({
+// 3) 「理由」文章（workを仮採用）
+const reasonText = buildWorkReasonTextStable({
   basePoetic,
   baseExplain,
   isReversed,
@@ -847,69 +889,35 @@ reasonText = buildWorkReasonTextStable({
   ymdKey
 });
 
-// 4) 表示用の4ブロック（結論/今日は/一歩）
-// 結論は “一行の核心” として basePoetic を使うのが一番作品っぽい
+// 4) 表示用の4ブロック
 const conclusionText = basePoetic;
 
-// 「今日は」は軽く状況整理（長くしすぎない）
 const todayText = isReversed
   ? "今日は、結論を急がず「整える」を優先して。"
   : "今日は、整えるほど流れが味方します。";
 
-// 「一歩」は actionBase を芯に（Step3で五行補正をここに差し込む）
 let stepText = `今日の一歩：${actionBase}`;
-try {
-  let weakFromState = window.__gogyouState?.user?.weak?.[0];
-stepText = adjustStepByWeakElement(stepText, weakFromState);
-} catch(e){}
-function adjustStepByWeakElement(stepText, weakJP){
-  if (!weakJP) return stepText;
-// --- Step3: 五行不足を一歩に反映 ---
-let weakJP = null;
 
+// Step3: 五行不足を一歩に反映（あれば）
 try {
-  if (typeof getWeakElemFromInputs === "function") {
-    weakJP = getWeakElemFromInputs(); // 既にあるならそれを使う
+  const weakFromState = window.__gogyouState?.user?.weak?.[0] || null;
+
+  let weakFromFunc = null;
+  if (!weakFromState && typeof getWeakElemFromInputs === "function") {
+    weakFromFunc = getWeakElemFromInputs() || null;
   }
-} catch(e){}
 
-stepText = adjustStepByWeakElement(stepText, weakJP);
-  const map = {
-    "火": " ほんの少し勇気を足して。",
-    "水": " 感情を整えながら。",
-    "木": " まず一歩、動いて。",
-    "土": " 足場を固めてから。",
-    "金": " 境界線を意識して。"
-  };
-
-  return stepText + (map[weakJP] || "");
-}
-function normalizeText(s, fallback=""){
-  const t = (s ?? "").toString().trim();
-  return t ? t : fallback;
+  stepText = adjustStepByWeakElement(stepText, weakFromState || weakFromFunc);
+} catch(e){
+  console.warn("[Step3 adjust skipped]", e);
 }
 
-// dbEntry を「カード＋正逆」で取ってくる関数（あなたの既存実装に寄せる）
-function getDbEntryFor(card, isReversed){
-  // ここはあなたのDB構造に合わせて1行差し替えポイント
-  // 例1) card.id で引けるなら： return DB[card.id + (isReversed?"_R":"_U")];
-  // 例2) nameで検索なら： return deepDB.find(x=>x.name===card.name && x.rev===isReversed);
-  return null; // ←いったん落ちないように
-}
-
-// actions配列が無い/足りない場合の保険
-function pickFirstAction(dbEntry){
-  const a0 = dbEntry?.actions?.[0];
-  if (typeof a0 === "string" && a0.trim()) return a0.trim();
-  return "呼吸が深くなる選択をひとつ";
-}
 let globalSummaryHTML = buildStoryBlockHTML({
   conclusion: conclusionText,
   reason: reasonText,
   today: todayText,
   step: stepText
 });
-
 // Step1ではまだ空でOK（Step2/3で実装）
 // --- Step2: 折りたたみ「あなたの設計図」 ---
 // ※既存の五行スコア計算・数秘結果の変数名に合わせて差し替えてください
