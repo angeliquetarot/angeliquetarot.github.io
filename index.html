@@ -333,6 +333,14 @@ button{
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
+/* =========================
+   STEP A: 3枚引きは「カード名 + 画像」だけにする（情報過多を止める）
+   JS不変 / renderCard不変
+   ========================= */
+.cardsGrid.three .tcardBody,
+.cardsGrid.three .ynRow{
+  display:none;
+}
   </style>
 </head>
 
