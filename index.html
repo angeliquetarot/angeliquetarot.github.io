@@ -3402,7 +3402,6 @@ const mainTheme =
     // Step1: 本文は「結論→理由→今日は→一歩」だけ（情報過多を防ぐ）
 const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
 
-const first = picked?.[0];
 const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
 const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
 
