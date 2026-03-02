@@ -787,6 +787,93 @@ button{
   border-color: rgba(245,158,11,.28);
   background: rgba(245,158,11,.10);
 }
+/* =========================================
+   Result cards: NO back image (front only)
+   ========================================= */
+#result .cardBackImg{
+  display: none !important;
+}
+/* =========================================
+   Result cards: pedestal + gallery frame (lux)
+   ========================================= */
+
+/* カード全体を少し厚く見せる */
+#result .tcard{
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.12);
+  box-shadow: 0 26px 80px rgba(0,0,0,.55);
+}
+
+/* “展示台”（下に影＋うっすら反射） */
+#result .tcard::after{
+  content:"";
+  position:absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -16px;
+  height: 26px;
+  border-radius: 999px;
+  background:
+    radial-gradient(50% 120% at 50% 40%, rgba(0,0,0,.58), rgba(0,0,0,0) 70%);
+  filter: blur(11px);
+  opacity: .95;
+  pointer-events:none;
+}
+
+/* 透明フレーム（写真の額縁っぽい） */
+#result .tcardVisual{
+  padding: 16px;
+  position: relative;
+}
+
+#result .tcardVisual::before{
+  content:"";
+  position:absolute;
+  inset: 10px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,0)),
+    radial-gradient(120% 120% at 30% 20%, rgba(249,224,138,.10), rgba(0,0,0,0) 55%);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 14px 44px rgba(0,0,0,.42),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+  pointer-events:none;
+  z-index:0;
+}
+
+#result .tcardVisual .cardImg{
+  position: relative;
+  z-index:1;
+  border-radius: 16px;
+  box-shadow:
+    0 20px 58px rgba(0,0,0,.52),
+    0 0 0 1px rgba(255,255,255,.10);
+}
+/* =========================================
+   Deck: idle breathing glow + strong on shuffle
+   ========================================= */
+
+/* 通常時の“残光”を少し上げる（消えすぎ防止） */
+#shuffleArea .deck::before{
+  opacity: .22 !important; /* ←通常時の光。好みで .18〜.26 */
+}
+
+/* 通常時も呼吸（とても弱く・ゆっくり） */
+@keyframes idleHalo {
+  0%   { transform: scale(.992); }
+  50%  { transform: scale(1.004); }
+  100% { transform: scale(.992); }
+}
+#shuffleArea .deck::before{
+  animation: idleHalo 6.8s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+/* シャッフル中は“しっかり光る” */
+#shuffleArea.shuffling .deck::before{
+  opacity: .92 !important;
+  animation: haloBreathSoft 4.2s cubic-bezier(.45,0,.2,1) infinite; /* 既に入れてるやつ */
+}
   </style>
 </head>
 
