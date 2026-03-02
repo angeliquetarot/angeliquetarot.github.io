@@ -214,11 +214,8 @@ button{
   opacity: 0;
 }
 
-/* 逆位置は「画像だけ」回転（あなたの方針に一致） */
-.cardImg.reversed{
-  transform: rotate(180deg);
-  transform-origin: center;
-}
+.tcardVisual{ position:relative; }
+
 .cardBackImg{
   position:absolute;
   inset:0;
@@ -228,9 +225,13 @@ button{
   border-radius:16px;
   z-index:0;
 }
+
 .cardImg{
   position:relative;
   z-index:1;
+  width:100%;
+  height:auto;
+  border-radius:16px;
 }
   </style>
 </head>
@@ -942,6 +943,7 @@ function buildReadableReason({ basePoetic = "", baseExplain = "", closing = "", 
 
   return parts.join("\n");
 }
+const BACK_SRC = "./public/cards/back.png";
 
     async function onDraw() {
   try {
@@ -1433,6 +1435,7 @@ window.__gogyouState = window.__gogyouState || {
       const themes = (card.themes ?? "").toString().trim();
       const basePath = card.img.substring(0, card.img.lastIndexOf("/") + 1);
       const backSrc = basePath + "back.png";
+      const imgSrc = card.img || card.image || card.image_url || "";
 
       // --- 表示ブロック ---
       const coreHTML = strengthenCore(core, themes);
@@ -1502,12 +1505,13 @@ return `
     </div>
 
     <div class="tcardVisual">
-      <img class="cardImg ${isReversed ? "reversed" : ""}"
-        src="${cardImageUrl(card.image)}"
-        alt="${escapeHtml(card.name_ja)}"
-        onerror="handleCardImgError(this)"
-      />
-    </div>
+  <img class="cardBackImg" src="./public/cards/back.png" alt="" aria-hidden="true">
+
+  ${imgSrc
+    ? `<img class="cardImg ${isReversed ? "reversed" : ""}" src="${imgSrc}" alt="">`
+    : ""
+  }
+</div>
 
     ${yn ? `
       <div class="ynRow">
