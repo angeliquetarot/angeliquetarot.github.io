@@ -1421,6 +1421,7 @@ window.__gogyouState = window.__gogyouState || {
 
     // 逆位置の時は逆位置だけ表示（正位置は表示しない）
     function renderCard(card, isReversed, positionLabel) {
+      const backSrc = "./public/cards/back.png";
 
       // --- データ取得 ---
       const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
