@@ -1202,6 +1202,38 @@ button{
   opacity: .95;
   filter: blur(.2px);
 }
+/* ===== Deck pedestal debug fix ===== */
+#shuffleArea,
+#shuffleArea .shuffleArea,
+#shuffleArea .deck {
+  overflow: visible !important;
+}
+
+#shuffleArea .deck{
+  position: relative !important;
+  margin-inline: auto !important;
+  z-index: 1 !important;
+  isolation: isolate;
+}
+
+#shuffleArea .deck::after{
+  content:"" !important;
+  position:absolute !important;
+  inset:-26px !important;
+  border-radius:36px !important;
+  pointer-events:none;
+  z-index:0 !important;         /* -1は禁止。消える */
+
+  /* わかるくらい強くする */
+  background:
+    radial-gradient(70% 55% at 50% 35%, rgba(255,244,214,.32), rgba(0,0,0,0) 62%),
+    radial-gradient(95% 75% at 50% 86%, rgba(165,180,252,.18), rgba(0,0,0,0) 68%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.22));
+  box-shadow:
+    0 34px 90px rgba(0,0,0,.70),
+    inset 0 0 0 1px rgba(255,255,255,.14);
+  opacity: .95 !important;
+}
   </style>
 </head>
 
