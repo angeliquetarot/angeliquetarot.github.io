@@ -755,6 +755,35 @@ function buildStoryBlockHTML({ conclusion, reason, today, step }) {
     </section>
   `;
 }
+// =========================
+// Stable picker (seeded)
+// =========================
+function hash32(str){
+  // FNV-1a 32bit
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
+ * arr: 配列
+ * seed: 文字列（例 "2026-03-02|The World|U|work"）
+ */
+function pickStable(arr, seed){
+  if (!Array.isArray(arr) || arr.length === 0) return "";
+  const idx = hash32(String(seed || "seed")) % arr.length;
+  return arr[idx];
+}
+// Fallback arrays (in case they are missing)
+window.loveActionsUpright ??= ["深呼吸して、優しい言葉をひとつ。"];
+window.loveActionsReversed ??= ["急がず、距離感を整える。"];
+window.moneyActionsUpright ??= ["支出を一つだけ整える。"];
+window.moneyActionsReversed ??= ["今日だけは守りを優先する。"];
+window.workActionsUpright ??= ["手元の一件を完了させる。"];
+window.workActionsReversed ??= ["優先順位を見直して一つ減らす。"];
 
     async function onDraw() {
   try {
