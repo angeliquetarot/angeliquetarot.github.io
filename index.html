@@ -874,6 +874,108 @@ button{
   opacity: .92 !important;
   animation: haloBreathSoft 4.2s cubic-bezier(.45,0,.2,1) infinite; /* 既に入れてるやつ */
 }
+/* =========================================
+   VISUAL BOOST (Result cards): frame + pedestal (visible)
+   - 強めに効かせて「変わった」と分かる版
+   ========================================= */
+
+/* カード全体の“立体”を増やす */
+#result .tcard{
+  background: rgba(10,10,18,.26) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.66),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+/* 画像周りの余白を増やして「額装」感を出す */
+#result .tcardVisual{
+  padding: 18px !important;
+  position: relative !important;
+}
+
+/* 透明フレーム：見える強さに（角のハイライトも足す） */
+#result .tcardVisual::before{
+  content:"" !important;
+  position:absolute !important;
+  inset: 10px !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(120% 120% at 15% 10%, rgba(255,255,255,.14), rgba(0,0,0,0) 52%),
+    radial-gradient(120% 120% at 85% 90%, rgba(165,180,252,.12), rgba(0,0,0,0) 58%),
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(0,0,0,0)) !important;
+  border: 1px solid rgba(249,224,138,.22) !important;
+  box-shadow:
+    0 16px 52px rgba(0,0,0,.52),
+    inset 0 0 0 1px rgba(255,255,255,.08) !important;
+  pointer-events:none !important;
+  z-index: 0 !important;
+}
+
+/* 画像を“額縁の中の作品”に（影と輪郭を強める） */
+#result .tcardVisual .cardImg{
+  position: relative !important;
+  z-index: 1 !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 22px 62px rgba(0,0,0,.62),
+    0 0 0 1px rgba(255,255,255,.14) !important;
+}
+
+/* 台座：もっと分かりやすく（影＋うっすら光の受け） */
+#result .tcard::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 10% !important;
+  right: 10% !important;
+  bottom: -20px !important;
+  height: 30px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(55% 130% at 50% 30%, rgba(0,0,0,.72), rgba(0,0,0,0) 72%),
+    radial-gradient(45% 100% at 50% 60%, rgba(249,224,138,.12), rgba(0,0,0,0) 70%) !important;
+  filter: blur(12px) !important;
+  opacity: 1 !important;
+  pointer-events:none !important;
+}
+
+/* 結果カードに裏面は出さない（念押し） */
+#result .cardBackImg{ display:none !important; }
+/* =========================================
+   Deck pedestal + depth (top background card)
+   ========================================= */
+
+/* デッキ全体の立体感 */
+#shuffleArea .deck{
+  position: relative;
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.75),
+    0 0 0 1px rgba(255,255,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* デッキ下の台座（床影） */
+#shuffleArea .deck::after{
+  content:"";
+  position:absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -28px;
+  height: 38px;
+  border-radius: 999px;
+  background:
+    radial-gradient(60% 140% at 50% 30%,
+      rgba(0,0,0,.75),
+      rgba(0,0,0,0) 70%);
+  filter: blur(14px);
+  opacity: 1;
+  pointer-events:none;
+}
+
+/* 軽い透明フレーム効果 */
+#shuffleArea .deck::before{
+  border-radius: 20px;
+}
   </style>
 </head>
 
