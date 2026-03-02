@@ -4368,47 +4368,41 @@ const globalSummaryHTML = `
 // ※既存の五行スコア計算・数秘結果の変数名に合わせて差し替えてください
 // いったん安全に「無ければ出さない」設計にしてあります
 
-const numLabel = (() => {
-  // 例: numerologyResult = { lifePath: 1, name: "開拓者" } みたいなのがある想定
-  const n = numerologyResult?.lifePath ?? numerologyResult?.number ?? null;
-  const name = numerologyResult?.name ?? numerologyResult?.label ?? "";
-  if (n == null) return "";
-  return `数秘：${n}${name ? `（${name}）` : ""}`;
-})();
+// --- Step2: 折りたたみ「あなたの設計図」 ---
+// ※numerologyResult は未定義なので参照しない（存在する時だけ later 接続）
 
+const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
+
+// 数秘（いったん未接続：存在しない変数を触らない）
+const numLabel = ""; // ← ここは後であなたの実変数名に合わせて復活させる
+
+// 五行（あなたの実装変数名に合わせてここだけ調整が必要）
+// いまのプロジェクトで五行スコアがどの変数に入っているか不明なので、まずは「無ければ出さない」
 const gogyouLines = (() => {
-  // 例: gogyou = { wood: 2, fire: 1, earth: 4, metal: 6, water: 3 } のようなスコア想定
-  // 例: gogyouBalance = { strong: ["metal"], weak: ["fire"] } のような抽出結果があるならそれを優先
-  const strong = gogyouBalance?.strong?.[0] ?? null;
-  const weak = gogyouBalance?.weak?.[0] ?? null;
+  const lines = [];
 
-  // 表示名（あなたの ELEMENT_SOUL に合わせて差し替えOK）
+  // もし onDraw 内に既に gogyouBalance / gogyou があるならそれを拾う
+  const strong = (typeof gogyouBalance !== "undefined" && gogyouBalance?.strong?.[0]) ? gogyouBalance.strong[0] : null;
+  const weak   = (typeof gogyouBalance !== "undefined" && gogyouBalance?.weak?.[0]) ? gogyouBalance.weak[0] : null;
+
   const jp = (k) => ({ wood: "木", fire: "火", earth: "土", metal: "金", water: "水" }[k] || k);
 
-  const lines = [];
   if (strong) lines.push(`強く出ている：${jp(strong)}`);
   if (weak) lines.push(`不足しがち：${jp(weak)}`);
 
-  // スコア一覧も見せたい場合（折りたたみ内ならOK）
-  if (gogyou && typeof gogyou === "object") {
-    const scoreLine =
-      `スコア：木${gogyou.wood ?? "-"} / 火${gogyou.fire ?? "-"} / 土${gogyou.earth ?? "-"} / 金${gogyou.metal ?? "-"} / 水${gogyou.water ?? "-"}`;
-    lines.push(scoreLine);
+  if (typeof gogyou !== "undefined" && gogyou && typeof gogyou === "object") {
+    lines.push(`スコア：木${gogyou.wood ?? "-"} / 火${gogyou.fire ?? "-"} / 土${gogyou.earth ?? "-"} / 金${gogyou.metal ?? "-"} / 水${gogyou.water ?? "-"}`);
   }
 
   return lines;
 })();
 
-const linkFor = (elemKey, strength) => {
-  // strength: "strong" | "weak"
-  // ルーティングはあなたの構成に合わせて変更OK（例: /elements/fire-weak.html）
-  return `./elements/${elemKey}-${strength}.html`;
-};
+const linkFor = (elemKey, strength) => `./elements/${elemKey}-${strength}.html`;
 
-// 折りたたみ内のリンク（strong/weak があるときだけ出す）
 const gogyouLinks = (() => {
-  const strong = gogyouBalance?.strong?.[0] ?? null;
-  const weak = gogyouBalance?.weak?.[0] ?? null;
+  const strong = (typeof gogyouBalance !== "undefined" && gogyouBalance?.strong?.[0]) ? gogyouBalance.strong[0] : null;
+  const weak   = (typeof gogyouBalance !== "undefined" && gogyouBalance?.weak?.[0]) ? gogyouBalance.weak[0] : null;
+
   const jp = (k) => ({ wood: "木", fire: "火", earth: "土", metal: "金", water: "水" }[k] || k);
 
   const parts = [];
@@ -4417,54 +4411,66 @@ const gogyouLinks = (() => {
   return parts.join("<br>");
 })();
 
-const wrapUpHTML = `
-  <details class="angel-details">
-    <summary class="angel-summaryline">あなたの設計図を見る</summary>
+async function onDraw() {
+  try {
+    if (!cards.length) {
+      setStatus("デッキが未読み込みです（CSV読み込み待ち）");
+      showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
+      return;
+    }
 
-    <div class="angel-blueprint">
-      ${numLabel ? `<div class="angel-row">${numLabel}</div>` : ""}
+    const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+    const count = (String(drawMode) === "3") ? 3 : 1;
 
-      ${gogyouLines.length
-        ? `<div class="angel-row">五行：<br>${gogyouLines.map(x => `・${x}`).join("<br>")}</div>`
-        : ""
-      }
+    setStatus(`シャッフル中…（${count}枚引き）`);
+    startShuffle();
+    await new Promise(r => setTimeout(r, 1400));
+    stopShuffle();
 
-      ${gogyouLinks ? `<div class="angel-row angel-links">${gogyouLinks}</div>` : ""}
+    const picked = drawUnique(count);
+
+    const labels3 = ["過去", "現在", "未来"];
+    const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
+
+    
+    // Step1: 本文は「結論→理由→今日は→一歩」だけ（情報過多を防ぐ）
+const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
+
+const first = picked?.[0];
+const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
+const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
+
+// 仮ストーリー（Deep Reading 未接続でも落ちない）
+const conclusionText = `いまのあなたは、${cardName}${revText}が示す流れの中にいます。`;
+const reasonText = `このカードは、心の奥で「本当はどうしたい？」という問いが静かに強まっていることを伝えています。`;
+const todayText = `今日は、無理に答えを出すよりも、状況を整えるほど運が味方します。小さな違和感を丁寧に扱って。`;
+const stepText = `一歩だけでいいので、できる範囲をひとつ片づけて、あなたの呼吸が深くなる選択を。`;
+
+const globalSummaryHTML = `
+  <section class="angel-summary">
+    <div class="angel-block angel-conclusion">
+      <div class="angel-label">結論</div>
+      <div class="angel-text">${conclusionText}</div>
     </div>
-  </details>
+
+    <div class="angel-block angel-reason">
+      <div class="angel-label">理由</div>
+      <div class="angel-text">${reasonText}</div>
+    </div>
+
+    <div class="angel-block angel-today">
+      <div class="angel-label">今日は</div>
+      <div class="angel-text">${todayText}</div>
+    </div>
+
+    <div class="angel-block angel-step">
+      <div class="angel-label">一歩</div>
+      <div class="angel-text">${stepText}</div>
+    </div>
+  </section>
 `;
+const wrapUpHTML = "";
 const actionsHTML = "";
-
-    elResult.innerHTML = `
-      ${globalSummaryHTML}
-      <div class="${gridClass}">
-        ${picked.map((p, i) =>
-          renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
-        ).join("")}
-      </div>
-      ${wrapUpHTML}
-      ${actionsHTML}
-    `;
-
-    elResult.classList.remove("antigravity");
-    void elResult.offsetWidth;
-    elResult.classList.add("antigravity");
-
-    setStatus(`結果表示：${count}枚引き。`);
-    scrollToResultSmooth();
-
-    elResult.classList.remove("result-animate");
-    void elResult.offsetWidth;
-    elResult.classList.add("result-animate");
-    requestAnimationFrame(() => elResult.classList.add("show"));
-
-  } catch (e) {
-    console.error(e);
-    setStatus("エラーで停止しました（Console参照）");
-    showToast("エラーで停止しました（Console参照）", 5000);
-  }
-}
-
       
         // ======= DEEP READING DATA ========
         const cardDB = {
