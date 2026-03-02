@@ -209,48 +209,26 @@ button{
   z-index: 1;
 }
 
-/* 画像が無い/未読込のときだけ背面を見せる */
-.cardImg.isHidden{
-  opacity: 0;
-}
 
-.tcardVisual{ position:relative; }
 
-.cardBackImg{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:16px;
-  z-index:0;
-}
-
-.cardImg{
-  position:relative;
-  z-index:1;
-  width:100%;
-  height:auto;
-  border-radius:16px;
-}
+/* 表面・裏面を同じ枠で重ねる */
 .tcardVisual{
   position: relative;
 }
 
 .cardBackImg{
   position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:16px;
-  opacity: .95;
-  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  object-fit: cover;
+  opacity: 1;
 }
 
-.tcardVisual .cardImg{
+.cardImg{
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
   </style>
 </head>
@@ -1441,19 +1419,20 @@ window.__gogyouState = window.__gogyouState || {
 // =========================
 // 画像パス生成（これ1本に統一）
 // =========================
-const CARDS_BASE = "./public/cards/";  // ←実体のある場所に固定
+const CARDS_BASE = "./public/cards/";  // ← ここが重要（実体の場所）
 
 function ensureExt(path){
   const p = String(path || "").trim();
   if (!p) return "";
   if (/\.(webp|png|jpg|jpeg)$/i.test(p)) return p;
-  return p + ".webp"; // あなたの運用がwebpなので
+  return p + ".webp"; // webp運用
 }
 
 function normalizeCardRelPath(p){
   let s = String(p || "").trim();
   if (!s) return "";
-  // "major/00_Fool" のような相対パスを想定（CSVの値）
+
+  // CSVの値をきれいに
   s = s
     .replace(/^\uFEFF/, "")
     .replace(/^"+|"+$/g, "")
@@ -1465,12 +1444,12 @@ function normalizeCardRelPath(p){
 }
 
 function getBackSrc(){
-  // back.png が public/cards/back.png にある前提（あなたのログ的にこれが正しい）
+  // public/cards/back.png にある前提
   return CARDS_BASE + "back.png";
 }
 
 function getCardImageSrc(card){
-  const raw = String(card?.image || "").trim(); // CSVの image カラム（例: "cups/Cups_01_Ace"）
+  const raw = String(card?.image || "").trim(); // 例: "cups/Cups_09_Nine"
   const rel = raw ? normalizeCardRelPath(raw) : "";
   return rel ? encodeURI(CARDS_BASE + rel) : getBackSrc();
 }
@@ -1586,39 +1565,20 @@ function getCardImageSrc(card){
   `;
 }
 
-    function cardImageUrl(image) {
-  let raw = (image ?? "").toString().trim();
-  if (!raw) return "public/cards/back.png"; // back.pngしか無いなら back.png に
-
-  raw = raw
-    .replace(/^\uFEFF/, "")
-    .replace(/^"+|"+$/g, "")
-    .replace(/^'+|'+$/g, "")
-    .replace(/^\/+/, "")
-    .replace(/\\/g, "/");
-
-  // すでに絶対URLならそのまま
-  if (/^https?:\/\//i.test(raw)) return raw;
-
-  // 拡張子が無ければ webp を付ける（重要）
-  if (!/\.(webp|png|jpg|jpeg)$/i.test(raw)) raw += ".webp";
-
-  return encodeURI("public/cards/" + raw);
-}
-
 
    function handleCardImgError(img) {
   const tried = parseInt(img.dataset.tried || "0", 10);
 
-  // まず、元の src から「拡張子だけ」差し替えて試す
   const src = img.getAttribute("src") || "";
-  const base = src.replace(/\.(webp|png|jpg|jpeg)(\?.*)?$/i, ""); // 末尾拡張子を除去
+
+  // すでに裏面に到達してたら終了（無限ループ防止）
+  if (src.includes("back.")) return;
+
+  // 拡張子だけ差し替えて試す
+  const base = src.replace(/\.(webp|png|jpg|jpeg)(\?.*)?$/i, "");
   const query = (src.match(/(\?.*)$/) || [""])[0];
 
   const exts = ["webp", "png", "jpg", "jpeg"];
-
-  // すでに back.png なら終了（無限ループ防止）
-  if (src.includes("back.png")) return;
 
   if (tried < exts.length) {
     img.dataset.tried = String(tried + 1);
@@ -1626,16 +1586,11 @@ function getCardImageSrc(card){
     return;
   }
 
-  console.warn("[MISSING IMAGE]", {
-    alt: img.alt,
-    lastTried: src,
-    base
-  });
+  console.warn("[MISSING IMAGE]", { alt: img.alt, lastTried: src, base });
 
-  // 最後の砦：裏面
+  // 最後の砦：裏面にする
   img.src = getBackSrc();
 }
- if (src.includes("back.")) return;     
 
     /* =========================
    Four Pillars (Simplified) -> Five Elements
