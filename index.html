@@ -1438,9 +1438,11 @@ window.__gogyouState = window.__gogyouState || {
       return `\n${romance}${work}${intp}${money}`;
     }
 
-   // =========================
+// =========================
 // 画像パス生成（これ1本に統一）
 // =========================
+const CARDS_BASE = "./public/cards/";  // ←実体のある場所に固定
+
 function ensureExt(path){
   const p = String(path || "").trim();
   if (!p) return "";
@@ -1448,10 +1450,10 @@ function ensureExt(path){
   return p + ".webp"; // あなたの運用がwebpなので
 }
 
-function normalizePath(p){
+function normalizeCardRelPath(p){
   let s = String(p || "").trim();
   if (!s) return "";
-  // "major/00_Fool" のような相対パスを想定（サイト直下基準）
+  // "major/00_Fool" のような相対パスを想定（CSVの値）
   s = s
     .replace(/^\uFEFF/, "")
     .replace(/^"+|"+$/g, "")
@@ -1463,14 +1465,14 @@ function normalizePath(p){
 }
 
 function getBackSrc(){
-  // back.png が cups/major と同じ階層（=サイト直下）にある前提
-  // もし back.webp なら "back.webp" に変える
-  return "back.png";
+  // back.png が public/cards/back.png にある前提（あなたのログ的にこれが正しい）
+  return CARDS_BASE + "back.png";
 }
 
 function getCardImageSrc(card){
-  const raw = String(card?.image || "").trim(); // CSVの image カラム
-  return raw ? normalizePath(raw) : getBackSrc();
+  const raw = String(card?.image || "").trim(); // CSVの image カラム（例: "cups/Cups_01_Ace"）
+  const rel = raw ? normalizeCardRelPath(raw) : "";
+  return rel ? encodeURI(CARDS_BASE + rel) : getBackSrc();
 }
 
     function renderCard(card, isReversed, positionLabel) {
@@ -1633,7 +1635,7 @@ function getCardImageSrc(card){
   // 最後の砦：裏面
   img.src = getBackSrc();
 }
-      
+ if (src.includes("back.")) return;     
 
     /* =========================
    Four Pillars (Simplified) -> Five Elements
