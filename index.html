@@ -822,6 +822,24 @@ function adjustStepByWeakElement(stepText, weakJP){
 
   return stepText + (map[weakJP] || "");
 }
+// =========================
+// Short action formatter (global)
+// =========================
+function toShortAction(s, maxLen = 22){
+  const t = (s ?? "").toString().trim();
+  if (!t) return "呼吸が深くなる選択をひとつ";
+
+  // 先頭の記号や箇条書き記号を削る
+  let out = t.replace(/^[・●\-\*]\s*/g, "");
+
+  // 末尾の句点や余計な記号を軽く整理
+  out = out.replace(/[。．\.]+$/g, "");
+
+  // 長すぎる場合は省略
+  if (out.length > maxLen) out = out.slice(0, maxLen) + "…";
+
+  return out;
+}
 
     async function onDraw() {
   try {
