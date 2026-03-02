@@ -2817,6 +2817,65 @@ body{
     radial-gradient(90% 80% at 85% 18%, rgba(165,180,252,.10), rgba(0,0,0,0) 62%),
     linear-gradient(to bottom, #11111d 0%, #15152b 60%, #0c0c18 100%) !important;
 }
+/* =========================
+   ✅ LAYOUT RECOVERY: cardsGrid / tcard
+   - paste at VERY END of CSS
+   ========================= */
+
+/* グリッドの基本 */
+.cardsGrid{
+  width: min(1100px, 100%);
+  margin: 18px auto 0;
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+
+/* 1枚引き */
+.cardsGrid.single{
+  grid-template-columns: minmax(0, 420px);
+  justify-content: center;
+}
+
+/* 3枚引き：PCは3列、狭ければ2列→1列 */
+.cardsGrid.three{
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 980px){
+  .cardsGrid.three{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px){
+  .cardsGrid.three{ grid-template-columns: 1fr; }
+}
+
+/* カード自身が “でかくなりすぎる” のを止める */
+.cardsGrid .tcard{
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;       /* ← gridで超重要（はみ出し防止） */
+  box-sizing: border-box;
+}
+
+/* 画像まわりの額縁が太すぎると横幅を圧迫するので適正化 */
+.cardsGrid.three .tcardVisual{
+  padding: 10px !important;
+  border-radius: 18px !important;
+}
+
+/* 3枚のとき画像高さを抑える（縦に伸びすぎ対策） */
+.cardsGrid.three .cardImg{
+  width: 100% !important;
+  height: auto !important;
+  max-height: 360px;            /* ←必要なら 320〜420 で調整 */
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+/* 1枚引きは少し大きめOK */
+.cardsGrid.single .cardImg{
+  max-height: 520px;
+}
   </style>
 </head>
 
