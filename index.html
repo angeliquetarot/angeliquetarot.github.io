@@ -729,35 +729,32 @@ document.addEventListener("DOMContentLoaded", boot);
 // Step1-1: 4枠（結論→理由→今日は→一歩）を固定する
 // =========================
 function buildStoryBlockHTML({ conclusion, reason, today, step }) {
-
-  const safe = (s) =>
-    escapeHtml(String(s || "")).replace(/\n/g, "<br>");
+  const escBR = (s) => escapeHtml(String(s ?? "")).replace(/\n/g, "<br>");
 
   return `
     <section class="angel-summary">
       <div class="angel-block angel-conclusion">
         <div class="angel-label">結論</div>
-        <div class="angel-text">${safe(conclusion)}</div>
+        <div class="angel-text">${escBR(conclusion)}</div>
       </div>
 
       <div class="angel-block angel-reason">
         <div class="angel-label">理由</div>
-        <div class="angel-text">${safe(reason)}</div>
+        <div class="angel-text">${escBR(reason)}</div>
       </div>
 
       <div class="angel-block angel-today">
         <div class="angel-label">今日は</div>
-        <div class="angel-text">${safe(today)}</div>
+        <div class="angel-text">${escBR(today)}</div>
       </div>
 
       <div class="angel-block angel-step">
         <div class="angel-label">一歩</div>
-        <div class="angel-text">${safe(step)}</div>
+        <div class="angel-text">${escBR(step)}</div>
       </div>
     </section>
   `;
 }
-
 
     async function onDraw() {
   try {
@@ -832,6 +829,32 @@ const todayText = isReversed
 
 // 「一歩」は actionBase を芯に（Step3で五行補正をここに差し込む）
 let stepText = `今日の一歩：${actionBase}`;
+try {
+  const weakJP = window.__gogyouState?.user?.weak?.[0];
+  stepText = adjustStepByWeakElement(stepText, weakJP);
+} catch(e){}
+function adjustStepByWeakElement(stepText, weakJP){
+  if (!weakJP) return stepText;
+// --- Step3: 五行不足を一歩に反映 ---
+let weakJP = null;
+
+try {
+  if (typeof getWeakElemFromInputs === "function") {
+    weakJP = getWeakElemFromInputs(); // 既にあるならそれを使う
+  }
+} catch(e){}
+
+stepText = adjustStepByWeakElement(stepText, weakJP);
+  const map = {
+    "火": " ほんの少し勇気を足して。",
+    "水": " 感情を整えながら。",
+    "木": " まず一歩、動いて。",
+    "土": " 足場を固めてから。",
+    "金": " 境界線を意識して。"
+  };
+
+  return stepText + (map[weakJP] || "");
+}
 function normalizeText(s, fallback=""){
   const t = (s ?? "").toString().trim();
   return t ? t : fallback;
@@ -901,14 +924,17 @@ const gogyouLinks = (() => {
 // Step2はまだ表示しない（まず復旧優先）
 let wrapUpHTML = "";
 let actionsHTML = "";
-
+const energyHTML = buildBothGogyouHTML();
 elResult.innerHTML = `
   ${globalSummaryHTML}
+  ${energyHTML}
+
   <div class="${gridClass}">
     ${picked.map((p, i) =>
       renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
     ).join("")}
   </div>
+
   ${wrapUpHTML}
   ${actionsHTML}
 `;
@@ -1122,7 +1148,11 @@ if (count === 3) {
 `;
 ===== TEMP OFF END ===== */
 
-    
+    // === 五行の計算結果を保持する場所（ここが“答え”になる） ===
+window.__gogyouState = window.__gogyouState || {
+  user: null,
+  partner: null
+};
 
     // --- キーワード：| 区切りで最大10個 ---
     function splitKeywords(str, limit = 10) {
@@ -1684,6 +1714,15 @@ function buildEnergyDetailHTML(score){
     </div>
   `;
 }
+function elemKeyJPtoSlug(jp){
+  return {
+    "木":"wood",
+    "火":"fire",
+    "土":"earth",
+    "金":"metal",
+    "水":"water"
+  }[jp] || "";
+}
 function buildGogyouBlock(title, dateStr, timeStr){
   if (!dateStr) return "";
   const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
@@ -1706,11 +1745,38 @@ function buildGogyouBlock(title, dateStr, timeStr){
     dStem: dgz.stem, dBranch: dgz.branch,
     hStem, hBranch
   });
-  const energyHTML = buildEnergyDetailHTML(score);
-const ed = document.getElementById("energyDetailContent");
-if (ed) ed.innerHTML = energyHTML;
+  
 
   const { strong, weak } = pickStrongWeak(score);
+  const strongJP = strong?.[0];
+const weakJP = weak?.[0];
+// --- 五行結果を保持（Step3で使う） ---
+try {
+  const key =
+    title === "あなた" ? "user" :
+    title === "お相手" ? "partner" :
+    null;
+
+  if (key) {
+    window.__gogyouState[key] = {
+      score,
+      strong,
+      weak
+    };
+  }
+} catch (e) {
+  console.warn("[gogyouState save skipped]", e);
+}
+const strongSlug = elemKeyJPtoSlug(strongJP);
+const weakSlug = elemKeyJPtoSlug(weakJP);
+
+const strongHref = strongSlug
+  ? `./elements/${strongSlug}-strong.html`
+  : "./elements/index.html";
+
+const weakHref = weakSlug
+  ? `./elements/${weakSlug}-weak.html`
+  : "./elements/index.html";
 
   const lines = ["木","火","土","金","水"].map(e=>{
     return `${e}：${toDots(score[e])}　<span class="gogyouSub">${elemMeaning(e)}</span>`;
@@ -1730,8 +1796,13 @@ if (ed) ed.innerHTML = energyHTML;
     <div class="gogyouBody">${lines}</div>
 
     <div class="gogyouFocus">
-      <span class="gogyouTag weak">不足：${weak[0]}</span>
-      <span class="gogyouTag strong">強い：${strong[0]}</span>
+      <a class="gogyouTag weak" href="${weakHref}" target="_blank" rel="noopener">
+  不足：${weakJP}
+</a>
+
+<a class="gogyouTag strong" href="${strongHref}" target="_blank" rel="noopener">
+  強い：${strongJP}
+</a>
       <div class="gogyouHint">
         不足（${weak[0]}）を少し足すと、カードのメッセージが“あなた仕様”に整います。
       </div>
@@ -1739,38 +1810,51 @@ if (ed) ed.innerHTML = energyHTML;
   </div>`;
 }
 
+// =========================
+// Step2: Folded Energy Panel (Gogyou/Numerology gateway)
+// - safe: if gogyou functions don't exist, show links only
+// =========================
 function buildBothGogyouHTML(){
-  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
-  const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
+  // 入力取得（存在しない場合もあるので optional chaining）
+  const uDate = document.getElementById("userBirthdate")?.value || "";
+  const uTime = document.getElementById("userBirthtime")?.value || "";
+  const pDate = document.getElementById("partnerBirthdate")?.value || "";
+  const pTime = document.getElementById("partnerBirthtime")?.value || "";
 
-  const pDate = normalizeDateInput(document.getElementById("partnerBirthdate")?.value);
-  const pTime = normalizeTimeInput(document.getElementById("partnerBirthtime")?.value);
+  // 誕生日が1つも無いなら、設計図は出さない（カードだけで成立させる）
+  const hasAnyBirth = (uDate || uTime || pDate || pTime);
+  if (!hasAnyBirth) return "";
 
-  const u = buildGogyouBlock("あなた", uDate, uTime);
-  const p = buildGogyouBlock("お相手", pDate, pTime);
+  // 五行ブロック（存在するなら出す / 無いなら空）
+  let gogyouHTML = "";
+  try {
+    if (typeof buildGogyouBlock === "function") {
+      const u = buildGogyouBlock("あなた", uDate, uTime);
+      const p = buildGogyouBlock("お相手", pDate, pTime);
+      const wrap = [u, p].filter(Boolean).join("");
+      if (wrap) gogyouHTML = `<div class="gogyouWrap">${wrap}</div>`;
+    }
+  } catch (e) {
+    console.warn("[buildBothGogyouHTML] buildGogyouBlock failed:", e);
+  }
 
-  if (!u && !p) return "";
-
-  // ▼ 五行の「強い/不足」リンクは、buildGogyouBlockの中で strong/weak が出ているなら
-  // そこにリンクを足すのが理想だけど、まずは “五行ページへの入口” をここに置く（簡易でOK）
+  // 入口リンク（数秘ページは既にある前提）
   const links = `
     <div class="energyLinks">
-      <a href="./numbers.html" target="_blank">数秘を詳しく</a>
-      <a href="./elements/index.html" target="_blank">五行を詳しく</a>
+      <a href="./numbers.html" target="_blank" rel="noopener">数秘を詳しく</a>
+      <a href="./elements/index.html" target="_blank" rel="noopener">五行を詳しく</a>
     </div>
   `;
 
   return `
     <details class="energyDetails">
-      <summary>あなたの設計図を見る（数秘 / 九星 / 五行）</summary>
+      <summary>あなたの設計図を見る（数秘 / 五行）</summary>
       <div class="energyInner">
         <div class="energyMeta">
           ※ 深く知りたい人向け。本文はカードだけで成立するようにしています。
         </div>
         ${links}
-        <div style="margin-top:12px;">
-          <div class="gogyouWrap">${u}${p}</div>
-        </div>
+        ${gogyouHTML ? `<div style="margin-top:12px;">${gogyouHTML}</div>` : ""}
       </div>
     </details>
   `;
