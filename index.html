@@ -3145,11 +3145,14 @@ function boot() {
 
   loadBundledCsv();
 }
-
+function showReady() {
+  if (!elResult) return;
+  elResult.innerHTML = `<div class="empty">
+    準備OK。<br>
+    ② 1枚/3枚を選ぶ → ③「カードを引く」
+  </div>`;
+}
 document.addEventListener("DOMContentLoaded", boot);
-
-
-
 
     function pick(row, key) {
       // 完全一致
@@ -3916,27 +3919,24 @@ return `
     }
 
     function cardImageUrl(image) {
-      let raw = (image ?? "").toString().trim();
-      if (!raw) return "public/cards/back.png";
+  let raw = (image ?? "").toString().trim();
+  if (!raw) return "public/cards/back.webp"; // back.png しかないなら back.png に
 
-      raw = raw
-        .replace(/^\uFEFF/, "")
-        .replace(/^"+|"+$/g, "")
-        .replace(/^'+|'+$/g, "")
-        .replace(/^\/+/, "")
-        .replace(/\\/g, "/");
+  raw = raw
+    .replace(/^\uFEFF/, "")
+    .replace(/^"+|"+$/g, "")
+    .replace(/^'+|'+$/g, "")
+    .replace(/^\/+/, "")
+    .replace(/\\/g, "/");
 
-      // 拡張子が無いなら png を付ける（webp 等は onerror 側で差し替え）
-      if (!/\.(png|jpg|jpeg|webp)$/i.test(raw)) {
-        raw += ".png";
-      }
+  // 絶対URLならそのまま
+  if (/^https?:\/\//i.test(raw)) return raw;
 
-      // すでに絶対URLならそのまま
-      if (/^https?:\/\//i.test(raw)) return raw;
+  // 拡張子が無ければ webp を付ける（←ここが重要）
+  if (!/\.(webp|png|jpg|jpeg)$/i.test(raw)) raw += ".webp";
 
-      // raw が "wands/xxx.png" みたいに来る前提：必ず public/cards/ を付ける
-      return encodeURI("public/cards/" + raw);
-    }
+  return encodeURI("public/cards/" + raw);
+}
 
 
 
