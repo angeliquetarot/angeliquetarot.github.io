@@ -1417,41 +1417,31 @@ window.__gogyouState = window.__gogyouState || {
     }
 
 // =========================
-// 画像パス生成（これ1本に統一）
+// 画像パス生成（最終確定版）
 // =========================
-const CARDS_BASE = "./public/cards/";  // ← ここが重要（実体の場所）
+const CARDS_BASE = "/public/cards/";  // ← 先頭スラッシュが重要（絶対パス）
 
-function ensureExt(path){
-  const p = String(path || "").trim();
-  if (!p) return "";
-  if (/\.(webp|png|jpg|jpeg)$/i.test(p)) return p;
-  return p + ".webp"; // webp運用
+function getBackSrc(){
+  return CARDS_BASE + "back.png";
 }
 
-function normalizeCardRelPath(p){
-  let s = String(p || "").trim();
-  if (!s) return "";
+function getCardImageSrc(card){
+  let raw = String(card?.image || "").trim();
+  if (!raw) return getBackSrc();
 
-  // CSVの値をきれいに
-  s = s
+  raw = raw
     .replace(/^\uFEFF/, "")
     .replace(/^"+|"+$/g, "")
     .replace(/^'+|'+$/g, "")
     .replace(/^\/+/, "")
     .replace(/\\/g, "/");
 
-  return ensureExt(s);
-}
+  // 拡張子が無ければwebp
+  if (!/\.(webp|png|jpg|jpeg)$/i.test(raw)) {
+    raw += ".webp";
+  }
 
-function getBackSrc(){
-  // public/cards/back.png にある前提
-  return CARDS_BASE + "back.png";
-}
-
-function getCardImageSrc(card){
-  const raw = String(card?.image || "").trim(); // 例: "cups/Cups_09_Nine"
-  const rel = raw ? normalizeCardRelPath(raw) : "";
-  return rel ? encodeURI(CARDS_BASE + rel) : getBackSrc();
+  return CARDS_BASE + raw;
 }
 
     function renderCard(card, isReversed, positionLabel) {
@@ -1567,28 +1557,12 @@ function getCardImageSrc(card){
 
 
    function handleCardImgError(img) {
-  const tried = parseInt(img.dataset.tried || "0", 10);
-
   const src = img.getAttribute("src") || "";
 
-  // すでに裏面に到達してたら終了（無限ループ防止）
   if (src.includes("back.")) return;
 
-  // 拡張子だけ差し替えて試す
-  const base = src.replace(/\.(webp|png|jpg|jpeg)(\?.*)?$/i, "");
-  const query = (src.match(/(\?.*)$/) || [""])[0];
+  console.warn("[MISSING IMAGE]", src);
 
-  const exts = ["webp", "png", "jpg", "jpeg"];
-
-  if (tried < exts.length) {
-    img.dataset.tried = String(tried + 1);
-    img.src = `${base}.${exts[tried]}${query}`;
-    return;
-  }
-
-  console.warn("[MISSING IMAGE]", { alt: img.alt, lastTried: src, base });
-
-  // 最後の砦：裏面にする
   img.src = getBackSrc();
 }
 
