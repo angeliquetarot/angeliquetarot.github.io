@@ -1419,9 +1419,43 @@ window.__gogyouState = window.__gogyouState || {
       return `\n${romance}${work}${intp}${money}`;
     }
 
+    // =========================
+// 画像パス生成（ここに追加）
+// =========================
+function ensureExt(path){
+  const p = String(path || "").trim();
+  if (!p) return "";
+  if (/\.(webp|png|jpg|jpeg)$/i.test(p)) return p;
+  return p + ".webp";
+}
+
+function normalizePath(p){
+  let s = String(p || "").trim();
+  if (!s) return "";
+  if (!s.startsWith("./")) s = "./" + s.replace(/^\.?\//, "");
+  return ensureExt(s);
+}
+
+function getCardImageSrc(card){
+  const raw = String(card?.image || "").trim();
+  if (raw) return normalizePath(raw);
+  return normalizePath("back.png");
+}
+
+function getBackSrc(){
+  return normalizePath("back.png");
+}
+
     // 逆位置の時は逆位置だけ表示（正位置は表示しない）
     function renderCard(card, isReversed, positionLabel) {
       const backSrc = "./public/cards/back.png";
+      function ensureExt(name){
+  const s = String(name || "");
+  // すでに拡張子があるならそのまま
+  if (/\.(webp|png|jpg|jpeg)$/i.test(s)) return s;
+  // あなたの画像がwebp運用ならこれでOK（pngなら ".png" に変える）
+  return s + ".webp";
+}
 
       // --- データ取得 ---
       const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
@@ -1440,7 +1474,8 @@ window.__gogyouState = window.__gogyouState || {
   card?.image_url ||
   card?.img_url ||
   "";
-      
+      const frontSrc = getCardImageSrc(card);
+      const backSrc  = getBackSrc();
 
       // --- 表示ブロック ---
       const coreHTML = strengthenCore(core, themes);
@@ -1510,10 +1545,7 @@ return `
     </div>
 
     <div class="tcardVisual">
-  <img class="cardBackImg"
-       src="./public/cards/back.png"
-       alt=""
-       aria-hidden="true">
+  <img class="cardImg cardBack" src="${backSrc}" alt="">
 
   ${imgSrc
     ? `<img class="cardImg ${isReversed ? "reversed" : ""}"
