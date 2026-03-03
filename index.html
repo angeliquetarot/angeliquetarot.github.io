@@ -2793,17 +2793,16 @@ return `
     </div>
 
     <div class="tcardBody">
-      <div class="coreText">
-        ${escapeHtml(core)}
-      </div>
+  ${coreBlock}
+  ${interpretationBlock}
+  ${angelBlock}
+  ${actionBlock}
+</div>
 
       <div class="actionText">
         ${escapeHtml(action)}
       </div>
 
-      <div class="prayerText">
-        ${escapeHtml(prayer)}
-      </div>
     </div>
   </div>
 `;
