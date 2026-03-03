@@ -1509,7 +1509,37 @@ body{ font-size: var(--base); }
 .drawBar { padding: 10px; }
 .drawBtn { padding: 10px 14px; font-size: 14px; }
 .chip { padding: 8px 10px; }
+/* 全体を少し締める */
+section {
+  padding: 40px 20px;
+}
 
+/* メニュー余白を縮小 */
+.menuGrid {
+  gap: 16px;
+}
+
+.menuItem {
+  padding: 16px;
+}
+
+/* フォント少し大きく */
+.menuName {
+  font-size: 1rem;
+}
+
+.menuDesc {
+  font-size: 0.9rem;
+}
+
+/* Heroを小さく */
+.brandHero {
+  padding: 60px 20px 40px;
+}
+
+.brandTitle {
+  font-size: 2rem;
+}
   </style>
 </head>
 
@@ -1585,7 +1615,7 @@ font:12px/1.2 ui-sans-serif;">
       <a class="menuCta" href="https://example.com" target="_blank" rel="noopener noreferrer">詳細</a>
     </div>
   </div>
-  <p class="menuNote">https://lin.ee/Cm7TuLh</p>
+  
 </section>
 
 <div class="divider" id="appStart"></div>
@@ -2347,6 +2377,31 @@ function pulseDeck(){
     area.classList.remove("pulse");
   }, 1900);
 }
+function buildResultActionsHTML(){
+  return `
+    <div class="resultActions">
+      <a class="numerologyCta" href="./numbers.html" target="_blank" rel="noopener">
+        ✨ 数秘の意味を詳しく見る
+      </a>
+
+      <a class="numerologyCta" href="./elements.html" target="_blank" rel="noopener">
+        🌿 五行の意味を詳しく見る
+      </a>
+
+      <a class="numerologyCta" href="https://lin.ee/Cm7TuLh" target="_blank" rel="noopener noreferrer">
+        💬 LINE登録：無料ミニ鑑定へ
+      </a>
+
+      <div class="shareRow">
+        <button class="btnGhost" type="button" onclick="shareResultText()">Share</button>
+        <button class="btnGhost" type="button" onclick="copyResultText()">Copy</button>
+        <button class="btnGhost" type="button" onclick="shareResultImage()">Share Image</button>
+      </div>
+
+      <button class="btnDrawAgain" type="button" onclick="onDraw()">もう一度ひく</button>
+    </div>
+  `;
+}
     async function onDraw() {
       pulseDeck();
   try {
@@ -2394,25 +2449,36 @@ const cardKey = (primaryCard?.id || primaryCard?.name || cardName).toString();
 
 // 1) DB（材料）を取得
 const dbEntry = getDbEntryFor(primaryCard, isReversed);
-
-// =============================
-// 最終描画ブロック（安定版）
-// =============================
-
+// ===== Step4: ここで「結論＋（必要なら五行）＋カード」を描画する =====
 const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
-const energyHTML = buildBothGogyouHTML();
+
+// 五行ブロックは「生年月日が入ってる時だけ」出す（重さ対策）
+const energyHTML =
+  (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
+    ? buildBothGogyouHTML()
+    : "";
 
 elResult.innerHTML = `
   ${globalSummaryHTML}
   ${energyHTML}
-
   <div class="${gridClass}">
     ${picked.map((p, i) =>
       renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
     ).join("")}
   </div>
 `;
+const actionsHTML = (typeof buildResultActionsHTML === "function") ? buildResultActionsHTML() : "";
 
+elResult.innerHTML = `
+  ${globalSummaryHTML}
+  ${energyHTML}
+  <div class="${gridClass}">
+    ${picked.map((p, i) =>
+      renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
+    ).join("")}
+  </div>
+  ${actionsHTML}
+`;
 setTimeout(scrollToResultSmooth, 90);
 
 elResult.classList.remove("antigravity");
@@ -2425,6 +2491,91 @@ elResult.classList.add("result-animate");
 requestAnimationFrame(() => elResult.classList.add("show"));
 
 setStatus(`結果表示：${count}枚引き。`);
+function buildIntegratedStory({ picked, count }) {
+  // 今日の主カード（1枚ならそれ、3枚なら「現在」を主役に）
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const isReversed = main.isReversed;
+
+  const core = extractCoreSentence(card, isReversed);       // 引用素材（短い）
+  const action = extractAction(card, isReversed);           // 方向性
+  const themes = extractThemes(card);                       // テーマ（あれば）
+
+  // 五行：弱点だけ“物語の調律”として混ぜる（長くしない）
+  let weak = "";
+  try {
+    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
+  } catch(e){ weak = ""; }
+
+  const weakTune = weak
+    ? `いまのあなたは「${weak}（${elemMeaning(weak)}）」を足すほど、流れが整います。`
+    : "";
+
+  // 数秘：LPを一言で混ぜる（長い説明は別ページ）
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  let lpLine = "";
+  try{
+    if (uDate && typeof calculateLifePath === "function") {
+      const lp = calculateLifePath(uDate);
+      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+    }
+  } catch(e){ lpLine = ""; }
+
+  // 物語（1本）
+  const story = [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    weakTune,
+    lpLine,
+    `今日は「${action}」だけに絞って。`
+  ].filter(Boolean).join("\n");
+
+  return story;
+}
+function buildCardOnlyStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const isReversed = main.isReversed;
+
+  const core = extractCoreSentence(card, isReversed);
+  const action = extractAction(card, isReversed);
+  const themes = extractThemes(card);
+
+  const story = [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    `今日は「${action}」をひとつ。`
+  ].filter(Boolean).join("\n");
+
+  return story;
+}
+// =============================
+// 最終描画ブロック（安定版）
+// =============================
+
+function buildGlobalSummaryHTML(picked, count, labels3){
+  try{
+    const story = hasBirthInput()
+      ? buildIntegratedStory({ picked, count })
+      : buildCardOnlyStory({ picked, count });
+
+    const safeStory = (typeof escapeHtml === "function")
+      ? escapeHtml(story).replace(/\n/g,"<br>")
+      : String(story).replace(/\n/g,"<br>");
+
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">${safeStory}</div>
+        </div>
+      </section>
+    `;
+  } catch(e){
+    console.error("[buildGlobalSummaryHTML error]", e);
+    return `<section class="globalSummary"><div class="gsTitle">鑑定の結論</div><div class="gsLines"><div class="gsLine1">いまは静かに整える時間です。</div></div></section>`;
+  }
+}
 
   } catch (e) {
     console.error(e);
@@ -3186,6 +3337,12 @@ function normalizeTimeInput(v){
   const mm = String(m[2]).padStart(2,"0");
   return `${hh}:${mm}`;
 }
+function hasBirthInput(){
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  // パートナーは任意なら無視でOK
+  return !!uDate;
+}
+
 // 地支→（蔵干）を簡易配分（重み付き）
 // 例：子=癸(100)、丑=己60/癸30/辛10 など
 const BRANCH_HIDDEN = {
