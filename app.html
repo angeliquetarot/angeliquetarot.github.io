@@ -8,14 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
-<div class="topCtaRow">
-  <button class="primary" type="button" onclick="document.querySelector('#drawArea')?.scrollIntoView({behavior:'smooth', block:'start'})">
-    🔮 カードを引く（ここから）
-  </button>
-  <button class="ghost" type="button" onclick="document.querySelector('#aboutFold')?.scrollIntoView({behavior:'smooth', block:'start'})">
-    このサイトでできること
-  </button>
-</div>
+
   <style>
     :root{
   --bg: #0c0c18;
@@ -1509,36 +1502,76 @@ body{ font-size: var(--base); }
 .drawBar { padding: 10px; }
 .drawBtn { padding: 10px 14px; font-size: 14px; }
 .chip { padding: 8px 10px; }
-/* 全体を少し締める */
-section {
-  padding: 40px 20px;
+/* === Menu cards: tighter === */
+.menuGrid{
+  max-width: 980px;
+  margin: 18px auto;
+  display: grid;
+  gap: 12px;
 }
 
-/* メニュー余白を縮小 */
-.menuGrid {
-  gap: 16px;
+.menuItem{
+  padding: 12px 14px;
+  border-radius: 16px;
 }
 
-.menuItem {
-  padding: 16px;
+.menuName{
+  font-size: 14px;
+  font-weight: 800;
 }
 
-/* フォント少し大きく */
-.menuName {
-  font-size: 1rem;
+.menuDesc{
+  font-size: 12px;
+  opacity: .88;
+  margin-top: 4px;
+  line-height: 1.5;
 }
 
-.menuDesc {
-  font-size: 0.9rem;
+.menuCta{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 800;
+}
+/* === Draw UI: center & usable === */
+.drawBar{
+  max-width: 860px;
+  margin: 18px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
 }
 
-/* Heroを小さく */
-.brandHero {
-  padding: 60px 20px 40px;
+.drawModeInline{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.brandTitle {
-  font-size: 2rem;
+.chip{
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 8px 12px;
+  min-height: 44px;
+}
+
+.drawBtn{
+  min-height: 46px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .02em;
+  min-width: 160px;
 }
   </style>
 </head>
@@ -2403,99 +2436,100 @@ function buildResultActionsHTML(){
   `;
 }
     async function onDraw() {
-      pulseDeck();
+  pulseDeck();
+
   try {
+
     if (!cards.length) {
-      if (!elResult) elResult = document.getElementById("result");
-      setStatus("デッキが未読み込みです（CSV読み込み待ち）");
-      showToast("デッキが未読み込みです。少し待ってからもう一度押してください。", 4000);
+      setStatus("デッキが未読み込みです");
       return;
     }
 
     const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
     const count = (String(drawMode) === "3") ? 3 : 1;
 
-    setStatus(`シャッフル中…（${count}枚引き）`);
-    startShuffle();
-    await new Promise(r => setTimeout(r, 1400));
-    stopShuffle();
-
     const picked = drawUnique(count);
 
-// ★必ずここで first / primaryCard / isReversed を作る
-const first = picked[0];
-const primaryCard = first.card;
-const isReversed = first.isReversed;
-
-// ★mainTheme を安全に作る（themes が空でも落ちない）
-const mainTheme =
-  (primaryCard?.themes ?? "").toString().split("|")[0].trim() || "整える";
-
-    
-    let energyText = "";
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
-    
-    // Step1: 本文は「結論→理由→今日は→一歩」だけ（情報過多を防ぐ）
-const safe = (v, fallback = "") => (typeof v === "string" && v.trim() ? v.trim() : fallback);
+    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
 
-const cardName = safe(first?.card?.name || first?.card?.title, "このカード");
-const revText = first?.isReversed ? "（逆位置）" : "（正位置）";
+    const energyHTML =
+      (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
+        ? buildBothGogyouHTML()
+        : "";
 
-// --- Step1: DB×型で「結論→理由→今日は→一歩」を生成する ---
-const ymdKey = new Date().toISOString().slice(0, 10);
-const cardKey = (primaryCard?.id || primaryCard?.name || cardName).toString();
+    const actionsHTML =
+      (typeof buildResultActionsHTML === "function") ? buildResultActionsHTML() : "";
 
-// 1) DB（材料）を取得
-const dbEntry = getDbEntryFor(primaryCard, isReversed);
-// ===== Step4: ここで「結論＋（必要なら五行）＋カード」を描画する =====
-const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
+    elResult.innerHTML = `
+      ${globalSummaryHTML}
+      ${energyHTML}
+      <div class="${gridClass}">
+        ${picked.map((p, i) =>
+          renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
+        ).join("")}
+      </div>
+      ${actionsHTML}
+    `;
 
-// 五行ブロックは「生年月日が入ってる時だけ」出す（重さ対策）
-const energyHTML =
-  (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
-    ? buildBothGogyouHTML()
-    : "";
+    setTimeout(scrollToResultSmooth, 90);
+    setStatus(`結果表示：${count}枚引き。`);
 
-elResult.innerHTML = `
-  ${globalSummaryHTML}
-  ${energyHTML}
-  <div class="${gridClass}">
-    ${picked.map((p, i) =>
-      renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
-    ).join("")}
-  </div>
-`;
-const actionsHTML = (typeof buildResultActionsHTML === "function") ? buildResultActionsHTML() : "";
+  } catch (e) {
+    console.error(e);
+    setStatus("エラーで停止しました");
+  }
+}
+function buildCardOnlyStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const mainIsReversed = main.isReversed;
 
-elResult.innerHTML = `
-  ${globalSummaryHTML}
-  ${energyHTML}
-  <div class="${gridClass}">
-    ${picked.map((p, i) =>
-      renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
-    ).join("")}
-  </div>
-  ${actionsHTML}
-`;
-setTimeout(scrollToResultSmooth, 90);
+  const core = extractCoreSentence(card, mainIsReversed);
+  const action = extractAction(card, mainIsReversed);
+  const themes = extractThemes(card);
 
-elResult.classList.remove("antigravity");
-void elResult.offsetWidth;
-elResult.classList.add("antigravity");
+  return [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    `今日は「${action}」をひとつ。`
+  ].filter(Boolean).join("\n");
+}
 
-elResult.classList.remove("result-animate");
-void elResult.offsetWidth;
-elResult.classList.add("result-animate");
-requestAnimationFrame(() => elResult.classList.add("show"));
+function buildGlobalSummaryHTML(picked, count, labels3) {
+  try {
+    const story = (typeof hasBirthInput === "function" && hasBirthInput())
+      ? buildIntegratedStory({ picked, count })
+      : buildCardOnlyStory({ picked, count });
 
-setStatus(`結果表示：${count}枚引き。`);
-function buildIntegratedStory({ picked, count }) {
+    const safeStory = (typeof escapeHtml === "function")
+      ? escapeHtml(story).replace(/\n/g, "<br>")
+      : String(story).replace(/\n/g, "<br>");
+
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">${safeStory}</div>
+        </div>
+      </section>
+    `;
+  } catch (e) {
+    console.error("[buildGlobalSummaryHTML error]", e);
+    return `<section class="globalSummary">
+      <div class="gsTitle">鑑定の結論</div>
+      <div class="gsLines">
+        <div class="gsLine1">いまは静かに整える時間です。</div>
+      </div>
+    </section>`;
+  }
+}
   // 今日の主カード（1枚ならそれ、3枚なら「現在」を主役に）
   const main = (count === 3) ? picked[1] : picked[0];
   const card = main.card;
-  const isReversed = main.isReversed;
+  const mainIsReversed = main.isReversed;
 
   const core = extractCoreSentence(card, isReversed);       // 引用素材（短い）
   const action = extractAction(card, isReversed);           // 方向性
@@ -2531,7 +2565,7 @@ function buildIntegratedStory({ picked, count }) {
   ].filter(Boolean).join("\n");
 
   return story;
-}
+
 function buildCardOnlyStory({ picked, count }) {
   const main = (count === 3) ? picked[1] : picked[0];
   const card = main.card;
@@ -2577,12 +2611,7 @@ function buildGlobalSummaryHTML(picked, count, labels3){
   }
 }
 
-  } catch (e) {
-    console.error(e);
-    setStatus("エラーで停止しました（Console参照）");
-    showToast("エラーで停止しました（Console参照）", 5000);
-  }
-}
+
 
         /**
          * basePoetic: 詩的1文
@@ -4026,7 +4055,24 @@ function openImageFallbackFromBlob(blob) {
       }
       ctx.restore();
     }
+    function buildGlobalSummaryHTML(picked, count, labels3){
+  const story = (typeof hasBirthInput === "function" && hasBirthInput())
+    ? buildIntegratedStory({ picked, count })
+    : buildCardOnlyStory({ picked, count });
 
+  const safeStory = (typeof escapeHtml === "function")
+    ? escapeHtml(story).replace(/\n/g,"<br>")
+    : String(story).replace(/\n/g,"<br>");
+
+  return `
+    <section class="globalSummary">
+      <div class="gsTitle">鑑定の結論</div>
+      <div class="gsLines">
+        <div class="gsLine1">${safeStory}</div>
+      </div>
+    </section>
+  `;
+}
   </script>
   <!-- <script src="numerology_logic_pure.js"></script> -->
   <script src="assets/js/energy/energy_logic_clean.js"></script>
