@@ -2769,49 +2769,44 @@ const themes = (card.themes ?? "").toString().trim();
     mainMessageHTML = coreBlock + interpretationBlock + angelBlock + actionBlock;
   }
 
-  // --- HTML返却 ---
-  return `
-    <div class="tcard ${isReversed ? "reversed" : ""}">
-      <div class="tcardHeader">
-        <div class="tcardTitle">
-          <div class="pos">${escapeHtml(positionLabel)}</div>
-          <div class="name">${escapeHtml(card.name_ja)} <span class="sub">(${escapeHtml(card.name_en)})</span></div>
-          <div class="sub">${escapeHtml(meta)}</div>
-          ${themes ? `<div class="sub">テーマ：${escapeHtml(themes)}</div>` : ``}
+ // --- HTML返却 ---
+return `
+  <div class="tcard ${isReversed ? "reversed" : ""}">
+    <div class="tcardHeader">
+      <div class="tcardTitle">
+        <div class="pos">${escapeHtml(positionLabel)}</div>
+        <div class="name">
+          ${escapeHtml(card.name_ja)} 
+          <span class="sub">(${escapeHtml(card.name_en)})</span>
         </div>
-        <div class="badge ${isReversed ? "rev" : "up"}">${isReversed ? "逆位置" : "正位置"}</div>
+      </div>
+      <div class="badge ${isReversed ? "rev" : "up"}">
+        ${isReversed ? "逆位置" : "正位置"}
+      </div>
+    </div>
+
+    <div class="tcardVisual">
+      <img class="cardImg ${isReversed ? "reversed" : ""}"
+        src="${frontSrc}"
+        alt="${escapeHtml(card.name_ja || card.name_en || "カード")}"
+        onerror="handleCardImgError(this)">
+    </div>
+
+    <div class="tcardBody">
+      <div class="coreText">
+        ${escapeHtml(core)}
       </div>
 
-      <div class="tcardVisual">
-  <img class="cardImg ${isReversed ? "reversed" : ""}"
-       src="${frontSrc}"
-       alt="${escapeHtml(card.name_ja || card.name_en || "カード")}"
-       onerror="handleCardImgError(this)">
-</div>
+      <div class="actionText">
+        ${escapeHtml(action)}
+      </div>
 
-      ${yn ? `
-        <div class="ynRow">
-          <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${escapeHtml(yn)}</div>
-        </div>` : ``}
-
-      <div class="tcardBody">
-        <div class="line">
-          <span class="k">キーワード（${isReversed ? "逆" : "正"}）：</span>
-          <div class="kwWrap">
-            ${kw.length
-              ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${escapeHtml(w)}</span>`).join("")
-              : `<span class="small">（なし）</span>`
-            }
-          </div>
-        </div>
-
-       <div class="tcardBody">
-  <div class="line">
-    <span class="k">キーワード：</span>
-    <div class="kwWrap"> ... </div>
+      <div class="prayerText">
+        ${escapeHtml(prayer)}
+      </div>
+    </div>
   </div>
-</div>
-  `;
+`;
 }
 
 
