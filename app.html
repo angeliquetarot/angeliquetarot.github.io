@@ -1498,6 +1498,18 @@ body{ font-size: var(--base); }
   font-weight: 700;
   padding: 6px 4px;
 }
+/* 入口UIをコンパクトに */
+.brandHero { padding: 18px 0; }
+.brandTitle { font-size: 28px; line-height: 1.2; }
+.brandLead { font-size: 13px; }
+
+.birthPanel { padding: 14px; }
+.birthGrid { gap: 10px; }
+
+.drawBar { padding: 10px; }
+.drawBtn { padding: 10px 14px; font-size: 14px; }
+.chip { padding: 8px 10px; }
+
   </style>
 </head>
 
@@ -1526,8 +1538,7 @@ font:12px/1.2 ui-sans-serif;">
 
       <div class="brandCtas">
         <a class="btnPrimary" href="#appStart">無料でカードを引く</a>
-        <a class="btnGhost" href="#menu">メニューを見る</a>
-      </div>
+    </div>
 
       <div class="brandMini">
         <span>📩 LINE登録で無料ミニ鑑定</span>
@@ -1566,12 +1577,12 @@ font:12px/1.2 ui-sans-serif;">
     <div class="menuItem">
       <div class="menuName">LINE登録：無料ミニ鑑定</div>
       <div class="menuDesc">状況に合わせた短文アドバイス</div>
-      <a class="menuCta" href="https://example.com" target="_blank" rel="noopener">LINEへ</a>
+      <a class="menuCta" href="https://lin.ee/Cm7TuLh" target="_blank" rel="noopener noreferrer">LINEへ</a>
     </div>
     <div class="menuItem">
       <div class="menuName">個別鑑定（PDF）</div>
       <div class="menuDesc">恋愛/仕事/人生の流れを総合整理</div>
-      <a class="menuCta" href="https://example.com" target="_blank" rel="noopener">詳細</a>
+      <a class="menuCta" href="https://example.com" target="_blank" rel="noopener noreferrer">詳細</a>
     </div>
   </div>
   <p class="menuNote">https://lin.ee/Cm7TuLh</p>
@@ -1614,8 +1625,9 @@ font:12px/1.2 ui-sans-serif;">
   <h2 style="text-align:center;margin:18px 0 8px;">
   🔮 まずはカードを引いてみる
 </h2>
-       <div id="shuffleArea" class="shuffleArea"></div>
-
+       <div id="shuffleArea" class="shuffleArea">
+  <img class="deck" src="/public/cards/back.png" alt="Tarot deck">
+</div>
   <p class="birthHint">
     ※ 任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。
   </p>
