@@ -2192,8 +2192,22 @@ const gogyouLinks = (() => {
 let wrapUpHTML = "";
 let actionsHTML = "";
 const energyHTML = buildBothGogyouHTML();
+let readingHTML = "";
+
+if (count === 1) {
+  readingHTML = `
+    <div class="readingStory">
+      <div class="conclusion">
+        ${extractCoreSentence(picked[0].card, picked[0].isReversed)}
+      </div>
+      <div class="actionLine">
+        ${extractAction(picked[0].card, picked[0].isReversed)}
+      </div>
+    </div>
+  `;
+}
 elResult.innerHTML = `
-  ${globalSummaryHTML}
+  ${readingHTML}
   ${energyHTML}
 
   <div class="${gridClass}">
@@ -2201,9 +2215,6 @@ elResult.innerHTML = `
       renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
     ).join("")}
   </div>
-
-  ${wrapUpHTML}
-  ${actionsHTML}
 `;
 
 // ステータス表示（これは残す）
@@ -2493,7 +2504,133 @@ window.__gogyouState = window.__gogyouState || {
       return parts.join(" / ");
     }
 
+    function pickTextByOrientation(card, isReversed, keyBase){
+  const k = isReversed ? `${keyBase}_reversed` : `${keyBase}_upright`;
+  return (card[k] ?? "").toString().trim();
+}
 
+function extractCoreSentence(card, isReversed){
+  // ① core優先
+  const core = pickTextByOrientation(card, isReversed, "core");
+  if (core) return core;
+
+  // ② interpretationから最初の一文だけ
+  const interp = pickTextByOrientation(card, isReversed, "interpretation");
+  if (interp) return interp.split("。")[0] + "。";
+
+  // ③ angelから最初の一文
+  const angel = pickTextByOrientation(card, isReversed, "angel");
+  if (angel) return angel.split("。")[0] + "。";
+
+  return "いまは静かに整える時間です。";
+}
+
+function extractAction(card, isReversed){
+  const action = pickTextByOrientation(card, isReversed, "action");
+  if (action) return action;
+  // actionが空なら、coreを“行動形”に軽く変換（雑に増やさない）
+  const core = extractCoreSentence(card, isReversed);
+  return core.replace(/です。$/, "を、ひとつだけ試してみて。");
+}
+
+function extractPrayer(card, isReversed){
+  // 祈りは固定テンプレでもOK（後でカード別に拡張）
+  const theme = ((card.themes ?? "") + "").trim();
+  if (theme.includes("癒")) return "あなたの心が、ゆっくりほどけますように。";
+  if (theme.includes("決")) return "あなたの選ぶ道が、光に守られますように。";
+  return "あなたの灯す光が、静かに広がりますように。";
+}
+function buildSingleReadingStory({ card, isReversed, energyProfile }){
+  const core = extractCoreSentence(card, isReversed);
+  const action = extractAction(card, isReversed);
+  const prayer = extractPrayer(card, isReversed);
+
+  // 物語テンプレ（短く、でも“芯がある”）
+  let body =
+`${core}
+
+ひとつの流れが静かに切り替わっています。
+今日は、焦らず「整う方」を選んでください。
+
+${action}`;
+
+  // 五行/数秘は“文章を増やさず”、語尾やニュアンスだけ調律
+  if (energyProfile?.tone === "soft") {
+    body = body.replace(/ください。/g, "みて。");
+  }
+
+  return { body, prayer };
+}
+
+function buildSingleReadingHTML({ card, isReversed, energyProfile }){
+  const { body, prayer } = buildSingleReadingStory({ card, isReversed, energyProfile });
+
+  return `
+  <section class="angel-story">
+    <div class="angel-cardname">
+      ${escapeHtml(card.name_ja)}（${escapeHtml(card.name_en)}）
+      <span class="mini">${isReversed ? "逆位置" : "正位置"}</span>
+    </div>
+
+    <div class="angel-body">${escapeHtml(body).replace(/\n/g,"<br>")}</div>
+
+    ${energyProfile ? `<div class="angel-tune">${escapeHtml(energyProfile.oneLine)}</div>` : ""}
+
+    <div class="angel-prayer">${escapeHtml(prayer)}</div>
+
+    <details class="angel-details">
+      <summary>カード詳細</summary>
+      ${buildCardDetailHTML(card, isReversed)}
+    </details>
+  </section>`;
+}
+function buildThreeReadingStory({ past, present, future, energyProfile }){
+  const p = extractCoreSentence(past.card, past.isReversed);
+  const n = extractCoreSentence(present.card, present.isReversed);
+  const f = extractCoreSentence(future.card, future.isReversed);
+
+  let story =
+`過去、あなたは「${p}」という流れを通ってきました。
+
+いま、その経験は「${n}」へと形を変えています。
+
+そして未来は、「${f}」へ向かうでしょう。
+焦らず、いまの一歩を信じて。`;
+
+  if (energyProfile?.tone === "direct"){
+    story = story.replace("焦らず、", "迷ったら、");
+  }
+
+  return story;
+}
+
+function buildThreeReadingHTML({ past, present, future, energyProfile }){
+  const story = buildThreeReadingStory({ past, present, future, energyProfile });
+
+  return `
+  <section class="angel-story">
+    <div class="angel-cardrow">
+      <span>過去：${escapeHtml(past.card.name_ja)}</span>
+      <span>現在：${escapeHtml(present.card.name_ja)}</span>
+      <span>未来：${escapeHtml(future.card.name_ja)}</span>
+    </div>
+
+    <div class="angel-body">${escapeHtml(story).replace(/\n/g,"<br>")}</div>
+
+    ${energyProfile ? `<div class="angel-tune">${escapeHtml(energyProfile.oneLine)}</div>` : ""}
+
+    <div class="angel-prayer">すべては、ちゃんと繋がっています。</div>
+
+    <details class="angel-details">
+      <summary>カード詳細</summary>
+      <div class="detailGrid">
+        ${buildCardDetailMiniHTML(past.card, past.isReversed, "過去")}
+        ${buildCardDetailMiniHTML(present.card, present.isReversed, "現在")}
+        ${buildCardDetailMiniHTML(future.card, future.isReversed, "未来")}
+      </div>
+    </details>
+  </section>`;
+}
     // --- 4つのエネルギー分類テキスト生成 ---
     function generateEnergyCategories(uDate, pDate) {
       if (!uDate) return "";
@@ -2575,14 +2712,9 @@ function getCardImageSrc(card){
   const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
   const kwLimit = isThree ? 6 : 10;
 
-  const kw = splitKeywords(isReversed ? card.keywords_reversed : card.keywords_upright, kwLimit);
-  const core = (isReversed ? card.core_reversed : card.core_upright) || "";
-  const interpretation = (isReversed ? card.interpretation_reversed : card.interpretation_upright) || "";
-  const angel = (isReversed ? card.angel_reversed : card.angel_upright) || "";
-  const action = (isReversed ? card.action_reversed : card.action_upright) || "";
-  const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
-  const meta = metaLine(card);
-  const themes = (card.themes ?? "").toString().trim();
+ const core = extractCoreSentence(card, isReversed);
+const action = extractAction(card, isReversed);
+const prayer = extractPrayer(card, isReversed);
 
   // --- 表示ブロック ---
   const coreHTML = strengthenCore(core, themes);
@@ -2669,9 +2801,12 @@ function getCardImageSrc(card){
           </div>
         </div>
 
-        ${mainMessageHTML}
-      </div>
-    </div>
+       <div class="tcardBody">
+  <div class="line">
+    <span class="k">キーワード：</span>
+    <div class="kwWrap"> ... </div>
+  </div>
+</div>
   `;
 }
 
