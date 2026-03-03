@@ -1740,6 +1740,8 @@ font:12px/1.2 ui-sans-serif;">
   <script>
     const VERSION = "2026.03.01.1";
 
+    const CARDS_BASE = "/public/cards/";  // ← 先頭スラッシュが重要（絶対パス）
+
     function showToast(message, duration = 3000) {
   const container = document.getElementById("toastContainer");
   if (!container) return;
@@ -3113,7 +3115,7 @@ function buildThreeReadingHTML({ past, present, future, energyProfile }){
 // =========================
 // 画像パス生成（最終確定版）
 // =========================
-const CARDS_BASE = "/public/cards/";  // ← 先頭スラッシュが重要（絶対パス）
+
 
 function getBackSrc(){
   return CARDS_BASE + "back.png";
