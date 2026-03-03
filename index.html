@@ -1280,6 +1280,84 @@ button{
       0 0 0 1px rgba(255,255,255,.06);
   }
 }
+/* ===== Global Summary (結果の最上段) ===== */
+.globalSummary{
+  max-width: 980px;
+  margin: 18px auto 14px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(16,16,24,.65), rgba(10,10,16,.45));
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 18px 60px rgba(0,0,0,.45), 0 1px 0 rgba(255,255,255,.08) inset;
+}
+.gsTitle{
+  font-size: 12px;
+  letter-spacing: .16em;
+  color: rgba(255,235,190,.85);
+  margin-bottom: 10px;
+}
+.gsLines{ display:flex; flex-direction:column; gap:8px; }
+.gsLine1{
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.92);
+}
+.gsLine2{
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255,255,255,.80);
+}
+.gsAction{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.86);
+  line-height: 1.7;
+}
+.gsActionLabel{
+  display:inline-block;
+  margin-right: 10px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255,226,160,.10);
+  border: 1px solid rgba(255,226,160,.18);
+  color: rgba(255,226,160,.95);
+  font-size: 12px;
+}
+
+/* ===== Card: “刺さる短文”の見せ方 ===== */
+.corePunch{
+  margin-top: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,235,190,.06), rgba(255,235,190,.02));
+  border: 1px solid rgba(255,235,190,.10);
+}
+
+/* ===== Deep Read accordion ===== */
+.deepRead{
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.14);
+  overflow: hidden;
+}
+.deepRead > summary{
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 12px;
+  color: rgba(255,255,255,.82);
+  font-size: 13px;
+  letter-spacing: .06em;
+}
+.deepRead > summary::-webkit-details-marker{ display:none; }
+.deepRead[open] > summary{
+  background: rgba(255,226,160,.06);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.deepRead .cardSection{
+  padding: 10px 12px;
+}
   </style>
 </head>
 
@@ -2099,115 +2177,15 @@ const cardKey = (primaryCard?.id || primaryCard?.name || cardName).toString();
 // 1) DB（材料）を取得
 const dbEntry = getDbEntryFor(primaryCard, isReversed);
 
-// 2) 材料を安全に用意
-const basePoetic = normalizeText(
-  dbEntry?.light,
-  `${cardName}${revText}の流れが、静かにあなたを導いています。`
-);
-const baseExplain = normalizeText(
-  dbEntry?.meaning,
-  "いまは心の奥の声が少し強くなり、次の一手を整える時です。"
-);
-const actionBase = pickFirstAction(dbEntry);
+// =============================
+// 最終描画ブロック（安定版）
+// =============================
 
-// 3) 「理由」文章（workを仮採用）
-const reasonText = buildWorkReasonTextStable({
-  basePoetic,
-  baseExplain,
-  isReversed,
-  cardKey,
-  ymdKey
-});
-
-// 4) 表示用の4ブロック
-const conclusionText = basePoetic;
-
-const todayText = isReversed
-  ? "今日は、結論を急がず「整える」を優先して。"
-  : "今日は、整えるほど流れが味方します。";
-
-let stepText = `今日の一歩：${actionBase}`;
-
-// Step3: 五行不足を一歩に反映（あれば）
-try {
-  const weakFromState = window.__gogyouState?.user?.weak?.[0] || null;
-
-  let weakFromFunc = null;
-  if (!weakFromState && typeof getWeakElemFromInputs === "function") {
-    weakFromFunc = getWeakElemFromInputs() || null;
-  }
-
-  stepText = adjustStepByWeakElement(stepText, weakFromState || weakFromFunc);
-} catch(e){
-  console.warn("[Step3 adjust skipped]", e);
-}
-
-let globalSummaryHTML = buildStoryBlockHTML({
-  conclusion: conclusionText,
-  reason: reasonText,
-  today: todayText,
-  step: stepText
-});
-// Step1ではまだ空でOK（Step2/3で実装）
-// --- Step2: 折りたたみ「あなたの設計図」 ---
-// ※既存の五行スコア計算・数秘結果の変数名に合わせて差し替えてください
-// いったん安全に「無ければ出さない」設計にしてあります
-
-
-// 五行（あなたの実装変数名に合わせてここだけ調整が必要）
-// いまのプロジェクトで五行スコアがどの変数に入っているか不明なので、まずは「無ければ出さない」
-const gogyouLines = (() => {
-  const lines = [];
-
-  // もし onDraw 内に既に gogyouBalance / gogyou があるならそれを拾う
-  const strong = (typeof gogyouBalance !== "undefined" && gogyouBalance?.strong?.[0]) ? gogyouBalance.strong[0] : null;
-  const weak   = (typeof gogyouBalance !== "undefined" && gogyouBalance?.weak?.[0]) ? gogyouBalance.weak[0] : null;
-
-  const jp = (k) => ({ wood: "木", fire: "火", earth: "土", metal: "金", water: "水" }[k] || k);
-
-  if (strong) lines.push(`強く出ている：${jp(strong)}`);
-  if (weak) lines.push(`不足しがち：${jp(weak)}`);
-
-  if (typeof gogyou !== "undefined" && gogyou && typeof gogyou === "object") {
-    lines.push(`スコア：木${gogyou.wood ?? "-"} / 火${gogyou.fire ?? "-"} / 土${gogyou.earth ?? "-"} / 金${gogyou.metal ?? "-"} / 水${gogyou.water ?? "-"}`);
-  }
-
-  return lines;
-})();
-
-const linkFor = (elemKey, strength) => `./elements/${elemKey}-${strength}.html`;
-
-const gogyouLinks = (() => {
-  const strong = (typeof gogyouBalance !== "undefined" && gogyouBalance?.strong?.[0]) ? gogyouBalance.strong[0] : null;
-  const weak   = (typeof gogyouBalance !== "undefined" && gogyouBalance?.weak?.[0]) ? gogyouBalance.weak[0] : null;
-
-  const jp = (k) => ({ wood: "木", fire: "火", earth: "土", metal: "金", water: "水" }[k] || k);
-
-  const parts = [];
-  if (strong) parts.push(`<a class="angel-link" href="${linkFor(strong, "strong")}">「${jp(strong)}が強い人」について読む</a>`);
-  if (weak) parts.push(`<a class="angel-link" href="${linkFor(weak, "weak")}">「${jp(weak)}が不足しがちな人」について読む</a>`);
-  return parts.join("<br>");
-})();
-// Step2はまだ表示しない（まず復旧優先）
-let wrapUpHTML = "";
-let actionsHTML = "";
+const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
 const energyHTML = buildBothGogyouHTML();
-let readingHTML = "";
 
-if (count === 1) {
-  readingHTML = `
-    <div class="readingStory">
-      <div class="conclusion">
-        ${extractCoreSentence(picked[0].card, picked[0].isReversed)}
-      </div>
-      <div class="actionLine">
-        ${extractAction(picked[0].card, picked[0].isReversed)}
-      </div>
-    </div>
-  `;
-}
 elResult.innerHTML = `
-  ${readingHTML}
+  ${globalSummaryHTML}
   ${energyHTML}
 
   <div class="${gridClass}">
@@ -2217,27 +2195,18 @@ elResult.innerHTML = `
   </div>
 `;
 
-// ステータス表示（これは残す）
-setStatus(`結果表示：${count}枚引き。`);
+setTimeout(scrollToResultSmooth, 90);
 
-// 既存の浮遊アニメ（そのまま）
 elResult.classList.remove("antigravity");
 void elResult.offsetWidth;
 elResult.classList.add("antigravity");
 
-// 結果が「出た瞬間」の演出（既存クラスを使うならこれで統一）
-elResult.classList.remove("result-animate", "show");
+elResult.classList.remove("result-animate");
 void elResult.offsetWidth;
 elResult.classList.add("result-animate");
+requestAnimationFrame(() => elResult.classList.add("show"));
 
-// レイアウト確定後に「ゆっくりスクロール」
-// setTimeout と 直呼び scrollToResultSmooth() を両方やるとブレるので、これ一本にする
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    scrollToResultSmooth();
-    elResult.classList.add("show");
-  });
-});
+setStatus(`結果表示：${count}枚引き。`);
 
   } catch (e) {
     console.error(e);
@@ -2701,6 +2670,160 @@ function getCardImageSrc(card){
 
   return CARDS_BASE + raw;
 }
+/* =========================================================
+   CORE TEXT ENGINE v1 （刺さる核文・結論生成）
+   ========================================================= */
+
+function pickTextByOrientation(card, isReversed, keyBase){
+  const k = isReversed ? `${keyBase}_reversed` : `${keyBase}_upright`;
+  return (card && card[k] != null) ? String(card[k]).trim() : "";
+}
+
+function firstSentenceJP(text){
+  const t = (text ?? "").toString().trim();
+  if (!t) return "";
+  // 「。」が無ければそのまま
+  const idx = t.indexOf("。");
+  if (idx === -1) return t;
+  return t.slice(0, idx + 1);
+}
+
+function normalizeJP(text){
+  return (text ?? "").toString().replace(/\s+/g, " ").trim();
+}
+
+function extractThemes(card){
+  return normalizeJP(card?.themes ?? "");
+}
+
+function extractCoreSentence(card, isReversed){
+  // ① core優先
+  const core = pickTextByOrientation(card, isReversed, "core");
+  if (core) return normalizeJP(core);
+
+  // ② interpretationの最初の一文
+  const interp = pickTextByOrientation(card, isReversed, "interpretation");
+  if (interp) return normalizeJP(firstSentenceJP(interp));
+
+  // ③ angelの最初の一文
+  const angel = pickTextByOrientation(card, isReversed, "angel");
+  if (angel) return normalizeJP(firstSentenceJP(angel));
+
+  return "いまは静かに整える時間です。";
+}
+
+function extractInterpretation(card, isReversed){
+  return normalizeJP(pickTextByOrientation(card, isReversed, "interpretation"));
+}
+function extractAngel(card, isReversed){
+  return normalizeJP(pickTextByOrientation(card, isReversed, "angel"));
+}
+function extractAction(card, isReversed){
+  const action = normalizeJP(pickTextByOrientation(card, isReversed, "action"));
+  if (action) return action;
+
+  // actionが空なら、coreを軽く行動化（増やしすぎない）
+  const core = extractCoreSentence(card, isReversed);
+  return core.replace(/です。$/, "を、ひとつだけ試してみて。");
+}
+
+function extractKeywords(card, isReversed, limit){
+  const raw = isReversed ? card?.keywords_reversed : card?.keywords_upright;
+  if (!raw) return [];
+  // 既存 splitKeywords があるならそれを優先
+  if (typeof splitKeywords === "function") return splitKeywords(raw, limit);
+  return String(raw).split(/[,、|]/).map(s => s.trim()).filter(Boolean).slice(0, limit);
+}
+
+/* ---- 刺さる2行に整形する（核心：言い切り + 次の一手） ---- */
+function makeTwoLineConclusion({ coreNow, coreFlow, themes }){
+  // 1行目：状況の言い切り（短い）
+  const line1 = coreFlow || coreNow || "いまは流れが切り替わる前夜です。";
+
+  // 2行目：方向性（テーマがあれば寄せる）
+  let line2 = "";
+  if (themes) {
+    line2 = `テーマは「${themes}」。そこに意識を寄せて、行動をひとつに絞って。`;
+  } else {
+    line2 = "焦らず、行動をひとつに絞って進めて。";
+  }
+
+  return { line1, line2 };
+}
+
+/* ---- 3枚の“流れ”を作る：過去→現在→未来を一言でつなぐ ---- */
+function buildFlowSentence(pastCore, nowCore, futureCore){
+  const p = pastCore ? pastCore.replace(/。$/, "") : "";
+  const n = nowCore ? nowCore.replace(/。$/, "") : "";
+  const f = futureCore ? futureCore.replace(/。$/, "") : "";
+  if (!p && !n && !f) return "";
+
+  // 例：「過去：〜。いま：〜。この先：〜。」
+  const parts = [];
+  if (p) parts.push(`過去：${p}`);
+  if (n) parts.push(`いま：${n}`);
+  if (f) parts.push(`この先：${f}`);
+  return parts.join("。") + "。";
+}
+
+/* ---- 結果上部の“鑑定の結論ブロック”を生成（HTML） ---- */
+function buildGlobalSummaryHTML(picked, count, labels3){
+  try{
+    const isThree = count === 3;
+
+    let themesAll = "";
+    let actionOne = "";
+    let flow = "";
+    let coreNow = "";
+
+    if (isThree){
+      const past = picked[0], now = picked[1], future = picked[2];
+      const pastCore = extractCoreSentence(past.card, past.isReversed);
+      const nowCore  = extractCoreSentence(now.card,  now.isReversed);
+      const futCore  = extractCoreSentence(future.card, future.isReversed);
+
+      flow = buildFlowSentence(pastCore, nowCore, futCore);
+      coreNow = nowCore;
+
+      const t = [extractThemes(past.card), extractThemes(now.card), extractThemes(future.card)]
+        .filter(Boolean).join(" / ");
+      themesAll = t;
+
+      // 行動は「現在」を優先（無ければ未来）
+      actionOne = extractAction(now.card, now.isReversed) || extractAction(future.card, future.isReversed);
+    } else {
+      const one = picked[0];
+      coreNow = extractCoreSentence(one.card, one.isReversed);
+      themesAll = extractThemes(one.card);
+      actionOne = extractAction(one.card, one.isReversed);
+      flow = ""; // 1枚引きは流れ不要
+    }
+
+    const { line1, line2 } = makeTwoLineConclusion({
+      coreNow,
+      coreFlow: flow || coreNow,
+      themes: themesAll
+    });
+
+    const safeLine1 = (typeof escapeHtml === "function") ? escapeHtml(line1) : line1;
+    const safeLine2 = (typeof escapeHtml === "function") ? escapeHtml(line2) : line2;
+    const safeAct   = (typeof escapeHtml === "function") ? escapeHtml(actionOne) : actionOne;
+
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">${safeLine1}</div>
+          <div class="gsLine2">${safeLine2}</div>
+        </div>
+        ${actionOne ? `<div class="gsAction"><span class="gsActionLabel">今日の一歩</span>${safeAct}</div>` : ``}
+      </section>
+    `;
+  } catch(e){
+    console.error("[buildGlobalSummaryHTML error]", e);
+    return `<section class="globalSummary"><div class="gsTitle">鑑定の結論</div><div class="gsLines"><div class="gsLine1">いまは静かに整える時間です。</div></div></section>`;
+  }
+}
 
     function renderCard(card, isReversed, positionLabel) {
   const frontSrc = getCardImageSrc(card);
@@ -2708,73 +2831,35 @@ function getCardImageSrc(card){
   const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
   const kwLimit = isThree ? 6 : 10;
 
-  const kw = splitKeywords(isReversed ? card.keywords_reversed : card.keywords_upright, kwLimit);
-  const core = (isReversed ? card.core_reversed : card.core_upright) || "";
-  const interpretation = (isReversed ? card.interpretation_reversed : card.interpretation_upright) || "";
-  const angel = (isReversed ? card.angel_reversed : card.angel_upright) || "";
-  const action = (isReversed ? card.action_reversed : card.action_upright) || "";
-  const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
+  const themes = extractThemes(card);
+  const kw = extractKeywords(card, isReversed, kwLimit);
+
+  // “刺さる核文”：必ず取れる
+  const core = extractCoreSentence(card, isReversed);
+
+  // 詳細（開いたとき用）
+  const interpretation = extractInterpretation(card, isReversed);
+  const angel = extractAngel(card, isReversed);
+  const action = extractAction(card, isReversed);
+
+  const yn = pickTextByOrientation(card, isReversed, "yes_no");
   const meta = metaLine(card);
-  const themes = (card.themes ?? "").toString().trim();
 
-  // --- 表示ブロック（ここは“中身だけ”を作る。divの入れ子を増やさない） ---
-  const coreHTML = strengthenCore(core, themes);
-  const coreBlock = coreHTML.includes('<div class="cardSection">')
-    ? `
-      <div class="cardSection">
-        <h4>要点</h4>
-        ${coreHTML}
-      </div>
-    `
-    : `
-      <div class="cardSection">
-        <h4>要点</h4>
-        <div class="coreText">${escapeHtml(coreHTML)}</div>
-      </div>
-    `;
+  // coreを既存の strengthenCore に通す（themesも渡す）
+  const coreHTML = (typeof strengthenCore === "function")
+    ? strengthenCore(core, themes)
+    : ((typeof escapeHtml === "function") ? escapeHtml(core) : core);
 
-  const interpretationBlock = interpretation ? `
-    <div class="cardSection">
-      <h4>読み解き</h4>
-      <div>${escapeHtml(interpretation)}</div>
-    </div>
-  ` : "";
+  const safe = (s) => (typeof escapeHtml === "function") ? escapeHtml(s) : s;
 
-  const angelBlock = angel ? `
-    <div class="cardSection">
-      <h4>天使からの言葉</h4>
-      <div>${escapeHtml(angel)}</div>
-    </div>
-  ` : "";
-
-  const actionBlock = action ? `
-    <div class="cardSection">
-      <h4>今日の一歩</h4>
-      <div>${escapeHtml(action)}</div>
-    </div>
-  ` : "";
-
-  // --- 位置別出し分け（中身だけ結合。tcardBodyはここでは作らない） ---
-  let mainMessageHTML = "";
-  if (positionLabel === "過去") {
-    mainMessageHTML = coreBlock;
-  } else if (positionLabel === "現在") {
-    mainMessageHTML = coreBlock + interpretationBlock;
-  } else if (positionLabel === "未来") {
-    mainMessageHTML = coreBlock + angelBlock + actionBlock;
-  } else {
-    mainMessageHTML = coreBlock + interpretationBlock + angelBlock + actionBlock;
-  }
-
-  // --- HTML返却（tcardBody はここで1回だけ） ---
   return `
     <div class="tcard ${isReversed ? "reversed" : ""}">
       <div class="tcardHeader">
         <div class="tcardTitle">
-          ${positionLabel ? `<div class="pos">${escapeHtml(positionLabel)}</div>` : ""}
-          <div class="name">${escapeHtml(card.name_ja)} <span class="sub">(${escapeHtml(card.name_en)})</span></div>
-          <div class="sub">${escapeHtml(meta)}</div>
-          ${themes ? `<div class="sub">テーマ：${escapeHtml(themes)}</div>` : ``}
+          <div class="pos">${safe(positionLabel || "")}</div>
+          <div class="name">${safe(card.name_ja)} <span class="sub">(${safe(card.name_en)})</span></div>
+          <div class="sub">${safe(meta)}</div>
+          ${themes ? `<div class="sub">テーマ：${safe(themes)}</div>` : ``}
         </div>
         <div class="badge ${isReversed ? "rev" : "up"}">${isReversed ? "逆位置" : "正位置"}</div>
       </div>
@@ -2782,13 +2867,13 @@ function getCardImageSrc(card){
       <div class="tcardVisual">
         <img class="cardImg ${isReversed ? "reversed" : ""}"
              src="${frontSrc}"
-             alt="${escapeHtml(card.name_ja || card.name_en || "カード")}"
+             alt="${safe(card.name_ja || card.name_en || "カード")}"
              onerror="handleCardImgError(this)">
       </div>
 
       ${yn ? `
         <div class="ynRow">
-          <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${escapeHtml(yn)}</div>
+          <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${safe(yn)}</div>
         </div>` : ``}
 
       <div class="tcardBody">
@@ -2796,18 +2881,43 @@ function getCardImageSrc(card){
           <span class="k">キーワード（${isReversed ? "逆" : "正"}）：</span>
           <div class="kwWrap">
             ${kw.length
-              ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${escapeHtml(w)}</span>`).join("")
+              ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${safe(w)}</span>`).join("")
               : `<span class="small">（なし）</span>`
             }
           </div>
         </div>
 
-        ${mainMessageHTML}
+        <!-- ここが“刺さる”短文（初期表示） -->
+        <div class="corePunch">
+          ${coreHTML.includes('<div class="cardSection">') ? coreHTML : `<div class="coreText">${safe(coreHTML)}</div>`}
+        </div>
+
+        <!-- 深読み（折りたたみ） -->
+        <details class="deepRead">
+          <summary>深読みをひらく</summary>
+
+          ${interpretation ? `
+            <div class="cardSection">
+              <h4>読み解き</h4>
+              <div>${safe(interpretation)}</div>
+            </div>` : ``}
+
+          ${angel ? `
+            <div class="cardSection">
+              <h4>天使からの言葉</h4>
+              <div>${safe(angel)}</div>
+            </div>` : ``}
+
+          ${action ? `
+            <div class="cardSection">
+              <h4>今日の一歩</h4>
+              <div>${safe(action)}</div>
+            </div>` : ``}
+        </details>
       </div>
     </div>
   `;
 }
-
    function handleCardImgError(img) {
   const src = img.getAttribute("src") || "";
 
