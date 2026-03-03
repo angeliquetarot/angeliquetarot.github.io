@@ -2703,24 +2703,21 @@ function getCardImageSrc(card){
 }
 
     function renderCard(card, isReversed, positionLabel) {
-
-  // 画像URL（front/back）
-  const backSrc  = getBackSrc();
   const frontSrc = getCardImageSrc(card);
 
-  // --- データ取得 ---
   const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
   const kwLimit = isThree ? 6 : 10;
 
- const kw = splitKeywords(isReversed ? card.keywords_reversed : card.keywords_upright, kwLimit);
-const core = (isReversed ? card.core_reversed : card.core_upright) || "";
-const interpretation = (isReversed ? card.interpretation_reversed : card.interpretation_upright) || "";
-const angel = (isReversed ? card.angel_reversed : card.angel_upright) || "";
-const action = (isReversed ? card.action_reversed : card.action_upright) || "";
-const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
-const meta = metaLine(card);
-const themes = (card.themes ?? "").toString().trim();
-  // --- 表示ブロック ---
+  const kw = splitKeywords(isReversed ? card.keywords_reversed : card.keywords_upright, kwLimit);
+  const core = (isReversed ? card.core_reversed : card.core_upright) || "";
+  const interpretation = (isReversed ? card.interpretation_reversed : card.interpretation_upright) || "";
+  const angel = (isReversed ? card.angel_reversed : card.angel_upright) || "";
+  const action = (isReversed ? card.action_reversed : card.action_upright) || "";
+  const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
+  const meta = metaLine(card);
+  const themes = (card.themes ?? "").toString().trim();
+
+  // --- 表示ブロック（ここは“中身だけ”を作る。divの入れ子を増やさない） ---
   const coreHTML = strengthenCore(core, themes);
   const coreBlock = coreHTML.includes('<div class="cardSection">')
     ? `
@@ -2736,28 +2733,28 @@ const themes = (card.themes ?? "").toString().trim();
       </div>
     `;
 
-  const interpretationBlock = `
+  const interpretationBlock = interpretation ? `
     <div class="cardSection">
       <h4>読み解き</h4>
       <div>${escapeHtml(interpretation)}</div>
     </div>
-  `;
+  ` : "";
 
-  const angelBlock = `
+  const angelBlock = angel ? `
     <div class="cardSection">
       <h4>天使からの言葉</h4>
       <div>${escapeHtml(angel)}</div>
     </div>
-  `;
+  ` : "";
 
-  const actionBlock = `
+  const actionBlock = action ? `
     <div class="cardSection">
       <h4>今日の一歩</h4>
       <div>${escapeHtml(action)}</div>
     </div>
-  `;
+  ` : "";
 
-  // --- 位置別出し分け ---
+  // --- 位置別出し分け（中身だけ結合。tcardBodyはここでは作らない） ---
   let mainMessageHTML = "";
   if (positionLabel === "過去") {
     mainMessageHTML = coreBlock;
@@ -2769,45 +2766,47 @@ const themes = (card.themes ?? "").toString().trim();
     mainMessageHTML = coreBlock + interpretationBlock + angelBlock + actionBlock;
   }
 
- // --- HTML返却 ---
-return `
-  <div class="tcard ${isReversed ? "reversed" : ""}">
-    <div class="tcardHeader">
-      <div class="tcardTitle">
-        <div class="pos">${escapeHtml(positionLabel)}</div>
-        <div class="name">
-          ${escapeHtml(card.name_ja)} 
-          <span class="sub">(${escapeHtml(card.name_en)})</span>
+  // --- HTML返却（tcardBody はここで1回だけ） ---
+  return `
+    <div class="tcard ${isReversed ? "reversed" : ""}">
+      <div class="tcardHeader">
+        <div class="tcardTitle">
+          ${positionLabel ? `<div class="pos">${escapeHtml(positionLabel)}</div>` : ""}
+          <div class="name">${escapeHtml(card.name_ja)} <span class="sub">(${escapeHtml(card.name_en)})</span></div>
+          <div class="sub">${escapeHtml(meta)}</div>
+          ${themes ? `<div class="sub">テーマ：${escapeHtml(themes)}</div>` : ``}
         </div>
-      </div>
-      <div class="badge ${isReversed ? "rev" : "up"}">
-        ${isReversed ? "逆位置" : "正位置"}
-      </div>
-    </div>
-
-    <div class="tcardVisual">
-      <img class="cardImg ${isReversed ? "reversed" : ""}"
-        src="${frontSrc}"
-        alt="${escapeHtml(card.name_ja || card.name_en || "カード")}"
-        onerror="handleCardImgError(this)">
-    </div>
-
-    <div class="tcardBody">
-  ${coreBlock}
-  ${interpretationBlock}
-  ${angelBlock}
-  ${actionBlock}
-</div>
-
-      <div class="actionText">
-        ${escapeHtml(action)}
+        <div class="badge ${isReversed ? "rev" : "up"}">${isReversed ? "逆位置" : "正位置"}</div>
       </div>
 
+      <div class="tcardVisual">
+        <img class="cardImg ${isReversed ? "reversed" : ""}"
+             src="${frontSrc}"
+             alt="${escapeHtml(card.name_ja || card.name_en || "カード")}"
+             onerror="handleCardImgError(this)">
+      </div>
+
+      ${yn ? `
+        <div class="ynRow">
+          <div class="yn ${isReversed ? "rev" : "up"}">YES / NO：${escapeHtml(yn)}</div>
+        </div>` : ``}
+
+      <div class="tcardBody">
+        <div class="line">
+          <span class="k">キーワード（${isReversed ? "逆" : "正"}）：</span>
+          <div class="kwWrap">
+            ${kw.length
+              ? kw.map(w => `<span class="kw ${isReversed ? "rev" : "up"}">${escapeHtml(w)}</span>`).join("")
+              : `<span class="small">（なし）</span>`
+            }
+          </div>
+        </div>
+
+        ${mainMessageHTML}
+      </div>
     </div>
-  </div>
-`;
+  `;
 }
-
 
    function handleCardImgError(img) {
   const src = img.getAttribute("src") || "";
