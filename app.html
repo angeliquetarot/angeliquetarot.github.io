@@ -2453,7 +2453,7 @@ function buildResultActionsHTML(){
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
-    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
+    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count);
 
 const energyHTML =
   (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
@@ -2484,13 +2484,14 @@ elResult.innerHTML = `
     setStatus("エラーで停止しました");
   }
 }
-function buildCardOnlyStory({ picked, count }) {
-  
-  const card = main.card;
-  const mainIsReversed = main.isReversed;
 
-  const core = extractCoreSentence(card, mainIsReversed);
-  const action = extractAction(card, mainIsReversed);
+function buildCardOnlyStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const isRev = main.isReversed;
+
+  const core   = extractCoreSentence(card, isRev);
+  const action = extractAction(card, isRev);
   const themes = extractThemes(card);
 
   return [
@@ -2500,6 +2501,75 @@ function buildCardOnlyStory({ picked, count }) {
   ].filter(Boolean).join("\n");
 }
 
+function buildIntegratedStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const isRev = main.isReversed;
+
+  const core   = extractCoreSentence(card, isRev);
+  const action = extractAction(card, isRev);
+  const themes = extractThemes(card);
+
+  // 五行（弱点だけ短く）
+  let weak = "";
+  try {
+    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
+  } catch(e){ weak = ""; }
+
+  const weakTune = weak
+    ? `いまのあなたは「${weak}（${elemMeaning(weak)}）」を足すほど、流れが整います。`
+    : "";
+
+  // 数秘（LPを短く）
+  let lpLine = "";
+  try {
+    const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+    if (uDate && typeof calculateLifePath === "function") {
+      const lp = calculateLifePath(uDate);
+      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+    }
+  } catch(e){ lpLine = ""; }
+
+  return [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    weakTune,
+    lpLine,
+    `今日は「${action}」だけに絞って。`
+  ].filter(Boolean).join("\n");
+}
+
+function buildGlobalSummaryHTML(picked, count) {
+  try {
+    const story =
+      (typeof hasBirthInput === "function" && hasBirthInput())
+        ? buildIntegratedStory({ picked, count })
+        : buildCardOnlyStory({ picked, count });
+
+    const safeStory = (typeof escapeHtml === "function")
+      ? escapeHtml(story).replace(/\n/g, "<br>")
+      : String(story).replace(/\n/g, "<br>");
+
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">${safeStory}</div>
+        </div>
+      </section>
+    `;
+  } catch (e) {
+    console.error("[buildGlobalSummaryHTML error]", e);
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">いまは静かに整える時間です。</div>
+        </div>
+      </section>
+    `;
+  }
+}
   // 今日の主カード（1枚ならそれ、3枚なら「現在」を主役に）
  
   const card = main.card;
