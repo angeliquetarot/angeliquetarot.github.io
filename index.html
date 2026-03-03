@@ -2712,10 +2712,14 @@ function getCardImageSrc(card){
   const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
   const kwLimit = isThree ? 6 : 10;
 
- const core = extractCoreSentence(card, isReversed);
-const action = extractAction(card, isReversed);
-const prayer = extractPrayer(card, isReversed);
-
+ const kw = splitKeywords(isReversed ? card.keywords_reversed : card.keywords_upright, kwLimit);
+const core = (isReversed ? card.core_reversed : card.core_upright) || "";
+const interpretation = (isReversed ? card.interpretation_reversed : card.interpretation_upright) || "";
+const angel = (isReversed ? card.angel_reversed : card.angel_upright) || "";
+const action = (isReversed ? card.action_reversed : card.action_upright) || "";
+const yn = (isReversed ? card.yes_no_reversed : card.yes_no_upright) || "";
+const meta = metaLine(card);
+const themes = (card.themes ?? "").toString().trim();
   // --- 表示ブロック ---
   const coreHTML = strengthenCore(core, themes);
   const coreBlock = coreHTML.includes('<div class="cardSection">')
