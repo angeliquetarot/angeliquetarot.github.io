@@ -2455,24 +2455,26 @@ function buildResultActionsHTML(){
 
     const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
 
-    const energyHTML =
-      (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
-        ? buildBothGogyouHTML()
-        : "";
+const energyHTML =
+  (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
+    ? buildBothGogyouHTML()
+    : "";
 
-    const actionsHTML =
-      (typeof buildResultActionsHTML === "function") ? buildResultActionsHTML() : "";
+const actionsHTML =
+  (typeof buildResultActionsHTML === "function")
+    ? buildResultActionsHTML()
+    : "";
 
-    elResult.innerHTML = `
-      ${globalSummaryHTML}
-      ${energyHTML}
-      <div class="${gridClass}">
-        ${picked.map((p, i) =>
-          renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
-        ).join("")}
-      </div>
-      ${actionsHTML}
-    `;
+elResult.innerHTML = `
+  ${globalSummaryHTML}
+  ${energyHTML}
+  <div class="${gridClass}">
+    ${picked.map((p, i) =>
+      renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
+    ).join("")}
+  </div>
+  ${actionsHTML}
+`;
 
     setTimeout(scrollToResultSmooth, 90);
     setStatus(`結果表示：${count}枚引き。`);
@@ -2483,7 +2485,7 @@ function buildResultActionsHTML(){
   }
 }
 function buildCardOnlyStory({ picked, count }) {
-  const main = (count === 3) ? picked[1] : picked[0];
+  
   const card = main.card;
   const mainIsReversed = main.isReversed;
 
@@ -2497,10 +2499,60 @@ function buildCardOnlyStory({ picked, count }) {
     `今日は「${action}」をひとつ。`
   ].filter(Boolean).join("\n");
 }
+function buildIntegratedStory({ picked, count }) {
+  // 今日の主カード（1枚ならそれ、3枚なら「現在」を主役に）
+ 
+  const card = main.card;
+  const isReversed = main.isReversed;
+
+  const core = extractCoreSentence(card, isReversed); // 引用素材（短い）
+  const action = extractAction(card, isReversed);     // 方向性
+  const themes = extractThemes(card);                 // テーマ（あれば）
+
+  // 五行：弱点だけ“物語の調律”として混ぜる（長くしない）
+  let weak = "";
+  try {
+    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
+  } catch (e) { weak = ""; }
+
+  const weakTune = weak
+    ? `いまのあなたは「${weak}（${elemMeaning(weak)}）」を足すほど、流れが整います。`
+    : "";
+
+  // 数秘：LPを一言で混ぜる（長い説明は別ページ）
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  let lpLine = "";
+  try {
+    if (uDate && typeof calculateLifePath === "function") {
+      const lp = calculateLifePath(uDate);
+      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+    }
+  } catch (e) { lpLine = ""; }
+
+
+ 
+function buildCardOnlyStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const isReversed = main.isReversed;
+
+  const core = extractCoreSentence(card, isReversed);
+  const action = extractAction(card, isReversed);
+  const themes = extractThemes(card);
+
+  const story = [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    `今日は「${action}」をひとつ。`
+  ].filter(Boolean).join("\n");
+
+  return story;
+}
 
 function buildGlobalSummaryHTML(picked, count, labels3) {
   try {
-    const story = (typeof hasBirthInput === "function" && hasBirthInput())
+    const hasBirth = (typeof hasBirthInput === "function" && hasBirthInput());
+    const story = hasBirth
       ? buildIntegratedStory({ picked, count })
       : buildCardOnlyStory({ picked, count });
 
@@ -2518,70 +2570,15 @@ function buildGlobalSummaryHTML(picked, count, labels3) {
     `;
   } catch (e) {
     console.error("[buildGlobalSummaryHTML error]", e);
-    return `<section class="globalSummary">
-      <div class="gsTitle">鑑定の結論</div>
-      <div class="gsLines">
-        <div class="gsLine1">いまは静かに整える時間です。</div>
-      </div>
-    </section>`;
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">いまは静かに整える時間です。</div>
+        </div>
+      </section>
+    `;
   }
-}
-  // 今日の主カード（1枚ならそれ、3枚なら「現在」を主役に）
-  const main = (count === 3) ? picked[1] : picked[0];
-  const card = main.card;
-  const mainIsReversed = main.isReversed;
-
-  const core = extractCoreSentence(card, isReversed);       // 引用素材（短い）
-  const action = extractAction(card, isReversed);           // 方向性
-  const themes = extractThemes(card);                       // テーマ（あれば）
-
-  // 五行：弱点だけ“物語の調律”として混ぜる（長くしない）
-  let weak = "";
-  try {
-    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
-  } catch(e){ weak = ""; }
-
-  const weakTune = weak
-    ? `いまのあなたは「${weak}（${elemMeaning(weak)}）」を足すほど、流れが整います。`
-    : "";
-
-  // 数秘：LPを一言で混ぜる（長い説明は別ページ）
-  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
-  let lpLine = "";
-  try{
-    if (uDate && typeof calculateLifePath === "function") {
-      const lp = calculateLifePath(uDate);
-      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
-    }
-  } catch(e){ lpLine = ""; }
-
-  // 物語（1本）
-  const story = [
-    core,
-    themes ? `テーマは「${themes}」。` : "",
-    weakTune,
-    lpLine,
-    `今日は「${action}」だけに絞って。`
-  ].filter(Boolean).join("\n");
-
-  return story;
-
-function buildCardOnlyStory({ picked, count }) {
-  const main = (count === 3) ? picked[1] : picked[0];
-  const card = main.card;
-  const isReversed = main.isReversed;
-
-  const core = extractCoreSentence(card, isReversed);
-  const action = extractAction(card, isReversed);
-  const themes = extractThemes(card);
-
-  const story = [
-    core,
-    themes ? `テーマは「${themes}」。` : "",
-    `今日は「${action}」をひとつ。`
-  ].filter(Boolean).join("\n");
-
-  return story;
 }
 // =============================
 // 最終描画ブロック（安定版）
