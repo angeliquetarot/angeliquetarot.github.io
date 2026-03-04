@@ -3341,71 +3341,71 @@ window.__gogyouState = window.__gogyouState || {
       return raw.split("|").map(s => s.trim()).filter(Boolean).slice(0, limit);
     }
     function strengthenCore(core, themes) {
-      let c = (core ?? "").toString().trim();
-      const t = (themes ?? "").toString().trim();
+  let c = (core ?? "").toString().trim();
+  const t = (themes ?? "").toString().trim();
 
-      // 末尾の句点を整える（すでに「。」や「！」「？」で終わってるなら足さない）
-const ensureEndPunc = (s) => {
-  const t = String(s || "").trim();
-  if (!t) return "";
-  return /[。！？!?\)]$/.test(t) ? t : (t + "。");
-};
+  // 末尾の句点を整える（すでに「。」や「！」「？」で終わってるなら足さない）
+  const ensureEndPunc = (s) => {
+    const t = String(s || "").trim();
+    if (!t) return "";
+    return /[。！？!?\)]$/.test(t) ? t : (t + "。");
+  };
 
-// カードDBによっては、すでにコアテキスト内に「焦点：〜」「方向性：〜」が含まれている場合があるため分離する
-let baseText = c;
-let focusText = "";
-let directionText = "";
+  // カードDBによっては、すでにコアテキスト内に「焦点：〜」「方向性：〜」が含まれている場合があるため分離する
+  let baseText = c;
+  let focusText = "";
+  let directionText = "";
 
-// t が "焦点|方向性" 形式なら優先的に採用
-if (t) {
-  const partsT = String(t).split("|").map(v => v.trim()).filter(Boolean);
-  if (partsT[0]) focusText = partsT[0];
-  if (partsT[1]) directionText = partsT[1];
-}
-
-// c に埋め込まれた「焦点：」「方向性：」があれば上書き分離
-if (String(c || "").includes("焦点：")) {
-  const parts = String(c).split("焦点：");
-  baseText = parts[0].trim();
-  const remain = (parts[1] || "").trim();
-
-  if (remain.includes("方向性：")) {
-    const sub = remain.split("方向性：");
-    focusText = sub[0].trim();
-    directionText = (sub[1] || "").trim();
-  } else {
-    focusText = remain.trim();
+  // t が "焦点|方向性" 形式なら優先的に採用
+  if (t) {
+    const partsT = String(t).split("|").map(v => v.trim()).filter(Boolean);
+    if (partsT[0]) focusText = partsT[0];
+    if (partsT[1]) directionText = partsT[1];
   }
-}
 
-// フォールバック
-if (!baseText) baseText = "いまは流れの節目にいます。";
-if (!focusText) focusText = "いま大切な感覚に気づくこと。";
-if (!directionText) directionText = "焦らず、できる一歩を選びましょう。";
+  // c に埋め込まれた「焦点：」「方向性：」があれば上書き分離
+  if (String(c || "").includes("焦点：")) {
+    const parts = String(c).split("焦点：");
+    baseText = parts[0].trim();
+    const remain = (parts[1] || "").trim();
 
-// 句点を統一（短文が並んでも段落の切れ目が見える）
-focusText = ensureEndPunc(focusText);
-directionText = ensureEndPunc(directionText);
+    if (remain.includes("方向性：")) {
+      const sub = remain.split("方向性：");
+      focusText = sub[0].trim();
+      directionText = (sub[1] || "").trim();
+    } else {
+      focusText = remain.trim();
+    }
+  }
 
-// 独立したセクションHTMLとして返す（ラベル1行形式）
-return `
-  <div class="cardCore">
-    <div class="coreText">${escapeHtml(baseText)}</div>
+  // フォールバック
+  if (!baseText) baseText = "いまは流れの節目にいます。";
+  if (!focusText) focusText = "いま大切な感覚に気づくこと。";
+  if (!directionText) directionText = "焦らず、できる一歩を選びましょう。";
 
-    <div class="metaLines">
-      <div class="metaLine">
-        <span class="metaLabel">焦点</span>
-        <span class="metaValue">${escapeHtml(focusText)}</span>
-      </div>
+  // 句点を統一（短文が並んでも段落の切れ目が見える）
+  focusText = ensureEndPunc(focusText);
+  directionText = ensureEndPunc(directionText);
 
-      <div class="metaLine">
-        <span class="metaLabel">方向性</span>
-        <span class="metaValue">${escapeHtml(directionText)}</span>
+  // 独立したセクションHTMLとして返す（ラベル1行形式）
+  return `
+    <div class="cardCore">
+      <div class="coreText">${escapeHtml(baseText)}</div>
+
+      <div class="metaLines">
+        <div class="metaLine">
+          <span class="metaLabel">焦点</span>
+          <span class="metaValue">${escapeHtml(focusText)}</span>
+        </div>
+
+        <div class="metaLine">
+          <span class="metaLabel">方向性</span>
+          <span class="metaValue">${escapeHtml(directionText)}</span>
+        </div>
       </div>
     </div>
-  </div>
-`;
-
+  `;
+} // ← ★これが抜けてると終わります
 
 
     function metaLine(card) {
