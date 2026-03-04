@@ -1,1 +1,129 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>五行（木火土金水）とは｜Angelique Tarot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0c0c18; --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.72);
+      --gold: rgba(245,228,170,.95);
+      --panel: rgba(20,16,30,.62);
+      --border: rgba(255,255,255,.14);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; color:var(--text);
+      font-family:"Shippori Mincho",serif; padding:16px;
+      background:
+        radial-gradient(1200px 700px at 50% -10%, rgba(249,224,138,.14), rgba(0,0,0,0) 60%),
+        radial-gradient(900px 700px at 85% 18%, rgba(165,180,252,.10), rgba(0,0,0,0) 62%),
+        linear-gradient(to bottom, #0b0b14 0%, #111129 55%, #07070f 100%);
+    }
+    a{color:var(--gold); text-decoration:none}
+    a:hover{color:rgba(255,245,210,1)}
+    .app{width:min(980px,100%); margin:0 auto}
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px; padding:14px;
+      box-shadow: 0 22px 64px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.10);
+      backdrop-filter: blur(8px);
+    }
+    h1,h2{font-family:"Cinzel","Shippori Mincho",serif; letter-spacing:.04em}
+    h1{font-size:28px; margin:6px 0 10px}
+    p{margin:8px 0; color:var(--muted); line-height:1.85}
+    .grid{display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; margin-top:12px}
+    @media (max-width:720px){ .grid{grid-template-columns:1fr} }
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.12);
+      border-radius:16px; padding:12px;
+    }
+    .tag{display:inline-block; font-size:12px; letter-spacing:.08em; opacity:.9}
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.90);
+      min-height:42px;
+    }
+    .btnPrimary{
+      color: rgba(40,28,10,.92);
+      background: linear-gradient(135deg,#f6e7c6 0%,#efd39a 28%,#d7b36a 55%,#f3e0b8 100%);
+      border:0;
+      font-weight:900;
+      letter-spacing:.06em;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel">
+      <div class="tag">Angelique Tarot</div>
+      <h1>五行（木火土金水）とは</h1>
+      <p>
+        五行は「いまのあなたの流れ」を整えるための、シンプルな“調律の地図”です。<br>
+        このサイトでは <b>不足している要素</b> を少し足すことで、カードのメッセージを「あなた仕様」に寄せます。
+      </p>
 
+      <div class="row">
+        <a class="btn btnPrimary" href="../index.html#appStart">カードに戻る</a>
+        <a class="btn" href="../numbers.html">数秘を見る</a>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:14px;">
+      <h2 style="margin:0 0 8px;">各要素のページ</h2>
+      <p>「強い（出ている）」と「不足（足すと整う）」で、ページを分けています。</p>
+
+      <div class="grid">
+        <div class="card">
+          <h3 style="margin:0 0 6px;">木（育つ・つながる）</h3>
+          <div class="row">
+            <a class="btn" href="./wood-strong.html">強い：木</a>
+            <a class="btn" href="./wood-weak.html">不足：木</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin:0 0 6px;">火（情熱・表現）</h3>
+          <div class="row">
+            <a class="btn" href="./fire-strong.html">強い：火</a>
+            <a class="btn" href="./fire-weak.html">不足：火</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin:0 0 6px;">土（安定・現実化）</h3>
+          <div class="row">
+            <a class="btn" href="./earth-strong.html">強い：土</a>
+            <a class="btn" href="./earth-weak.html">不足：土</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin:0 0 6px;">金（決断・境界線）</h3>
+          <div class="row">
+            <a class="btn" href="./metal-strong.html">強い：金</a>
+            <a class="btn" href="./metal-weak.html">不足：金</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin:0 0 6px;">水（感受性・回復）</h3>
+          <div class="row">
+            <a class="btn" href="./water-strong.html">強い：水</a>
+            <a class="btn" href="./water-weak.html">不足：水</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
