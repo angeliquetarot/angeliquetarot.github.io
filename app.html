@@ -1573,6 +1573,70 @@ body{ font-size: var(--base); }
   letter-spacing: .02em;
   min-width: 160px;
 }
+/* ===== カード操作バー ===== */
+.drawBar{
+  position: sticky;
+  top: 14px;
+  z-index: 50;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:14px;
+
+  width:min(720px, calc(100% - 24px));
+  margin:12px auto 16px;
+  padding:12px 16px;
+
+  border-radius:16px;
+  background:rgba(12,14,25,.55);
+  backdrop-filter:blur(10px);
+
+  border:1px solid rgba(255,255,255,.10);
+}
+
+/* 1枚/3枚の選択 */
+.drawBar .chip{
+  transform:scale(1.05);
+}
+
+/* 引くボタン */
+.drawBtn{
+  font-size:16px;
+  padding:12px 20px;
+  min-width:160px;
+  border-radius:999px;
+
+  background:linear-gradient(135deg,#d9b97a,#f2e2b0);
+  color:#1a1a1a;
+  font-weight:600;
+}
+.resultActions{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:14px;
+}
+.foldSection{
+  width:min(960px, calc(100% - 24px));
+  margin:12px auto;
+}
+
+.foldSection summary{
+  cursor:pointer;
+
+  padding:12px 16px;
+  border-radius:12px;
+
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+
+  font-weight:600;
+}
+
+.foldSection[open] summary{
+  margin-bottom:12px;
+}
   </style>
 </head>
 
@@ -1612,44 +1676,64 @@ font:12px/1.2 ui-sans-serif;">
   </div>
 </section>
 
+<details class="foldSection">
+
+  <summary>このサイトでできること</summary>
+
 <section class="panel brandAbout" id="about">
-  <h2 class="panelTitle">このサイトでできること</h2>
+
   <div class="brandGrid">
     <div class="brandCard">
       <h3>① 今のメッセージ</h3>
       <p>迷いの中心を「結論」→「理由」→「今日は」→「一歩」で整理します。</p>
     </div>
+
     <div class="brandCard">
       <h3>② エネルギー調律</h3>
       <p>五行（木火土金水）の偏りを見て、無理なく整う行動へ。</p>
     </div>
+
     <div class="brandCard">
       <h3>③ 恋愛/仕事/金運</h3>
       <p>テーマに合わせて読み筋を変え、現実に落ちる言葉にします。</p>
     </div>
   </div>
+
 </section>
 
+</details>
+<details class="foldSection">
+
+  <summary>メニュー</summary>
+
 <section class="panel brandMenu" id="menu">
+
   <h2 class="panelTitle">メニュー</h2>
+
   <div class="menuGrid">
+
     <div class="menuItem">
       <div class="menuName">無料：1枚引き / 3枚引き</div>
       <div class="menuDesc">今日の結論と一歩を確認</div>
     </div>
+
     <div class="menuItem">
       <div class="menuName">LINE登録：無料ミニ鑑定</div>
       <div class="menuDesc">状況に合わせた短文アドバイス</div>
-      <a class="menuCta" href="https://lin.ee/Cm7TuLh" target="_blank" rel="noopener noreferrer">LINEへ</a>
+      <a class="menuCta" href="https://lin.ee/Cm7TuLh" target="_blank">LINEへ</a>
     </div>
+
     <div class="menuItem">
       <div class="menuName">個別鑑定（PDF）</div>
       <div class="menuDesc">恋愛/仕事/人生の流れを総合整理</div>
-      <a class="menuCta" href="https://example.com" target="_blank" rel="noopener noreferrer">詳細</a>
+      <a class="menuCta" href="https://example.com" target="_blank">詳細</a>
     </div>
+
   </div>
-  
+
 </section>
+
+</details>
 
 <div class="divider" id="appStart"></div>
 <!-- ===== /Brand LP ===== -->
@@ -1659,88 +1743,75 @@ font:12px/1.2 ui-sans-serif;">
   <h2 class="panelTitle">生年月日</h2>
 
   <div class="birthGrid">
-    <!-- あなた：生年月日 -->
     <div class="birthBlock">
       <label class="birthLabel" for="userBirthdate">あなた</label>
       <input type="date" id="userBirthdate" class="birthInput" />
     </div>
 
-    <!-- あなた：出生時刻（任意） -->
     <div class="birthBlock">
       <label class="birthLabel" for="userBirthtime">あなた（任意：出生時刻）</label>
       <input id="userBirthtime" class="birthInput" type="time" step="60" />
     </div>
-    
 
-    <!-- お相手：生年月日 -->
     <div class="birthBlock">
       <label class="birthLabel" for="partnerBirthdate">お相手（任意）</label>
       <input type="date" id="partnerBirthdate" class="birthInput" />
     </div>
 
-    <!-- お相手：出生時刻（任意） -->
     <div class="birthBlock">
       <label class="birthLabel" for="partnerBirthtime">お相手（任意：出生時刻）</label>
       <input id="partnerBirthtime" class="birthInput" type="time" step="60" />
     </div>
   </div>
 
-  <h2 style="text-align:center;margin:18px 0 8px;">
-  🔮 まずはカードを引いてみる
-</h2>
-       <div id="shuffleArea" class="shuffleArea">
-  <img class="deck" src="/public/cards/back.png" alt="Tarot deck">
-</div>
-  <p class="birthHint">
-    ※ 任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。
-  </p>
-  <p class="birthHint">
-    ※ 生年月日を入れると、読み解きがよりパーソナルになります
-  </p>
+  <h2 class="panelTitle" style="text-align:center;margin:18px 0 8px;">
+    🔮 まずはカードを引いてみる
+  </h2>
+
+  <!-- 操作バー：ここに移動（導線を上へ） -->
+  <div class="drawBar">
+    <div class="drawModeInline" aria-label="引き方を選ぶ">
+      <label class="chip">
+        <input type="radio" name="drawMode" value="1" checked>
+        <div><strong>1枚</strong> <span>今のメッセージ</span></div>
+      </label>
+
+      <label class="chip">
+        <input type="radio" name="drawMode" value="3">
+        <div><strong>3枚</strong> <span>過去/現在/未来</span></div>
+      </label>
+    </div>
+
+    <button id="btnDraw" class="drawBtn" type="button">カードを引く</button>
+  </div>
+
+  <!-- シャッフル表示：shuffleAreaだけ残す（余計なdeck/flyを削除） -->
+  <div id="shuffleArea" class="shuffleArea">
+    <img class="deck" src="/public/cards/back.png" alt="Tarot deck">
+  </div>
+
+  <p class="birthHint">※ 任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。</p>
+  <p class="birthHint">※ 生年月日を入れると、読み解きがよりパーソナルになります</p>
 </section>
 
-    <div class="divider"></div>
+<div class="divider"></div>
 
-    <!-- ステータス（JSが参照するid） -->
-    <div id="status" class="status" aria-live="polite"></div>
-    <div id="deckInfo" class="status"></div>
+<!-- ステータス（JSが参照するid） -->
+<div id="status" class="status" aria-live="polite"></div>
+<div id="deckInfo" class="status"></div>
 
-    <!-- シャッフル -->
- 
-      <div class="deck" aria-hidden="true"></div>
-      <div class="fly" aria-hidden="true"></div>
-      <div class="fly" aria-hidden="true"></div>
-      <div class="fly" aria-hidden="true"></div>
-    </div>
+<!-- 結果は1つだけ（JSがここに描画） -->
+<div id="result" class="result-animate"></div>
 
-    <!-- 操作バー -->
-    <div class="drawBar">
-      <div class="drawModeInline" aria-label="引き方を選ぶ">
-        <label class="chip">
-          <input type="radio" name="drawMode" value="1" checked>
-          <div><strong>1枚</strong> <span>今のメッセージ</span></div>
-        </label>
-
-        <label class="chip">
-          <input type="radio" name="drawMode" value="3">
-          <div><strong>3枚</strong> <span>過去/現在/未来</span></div>
-        </label>
-      </div>
-
-      <button id="btnDraw" class="drawBtn" type="button">カードを引く</button>
-    </div>
-
-    <!-- 結果は1つだけ（JSがここに描画） -->
-    <div id="result" class="result-animate"></div>
-
-    <!-- 共有用Canvas（JSが参照する） -->
-    <canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
+<!-- 共有用Canvas（JSが参照する） -->
+<canvas id="shareCanvas" width="1080" height="1080" style="display:none;"></canvas>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const VERSION = "2026.03.01.1";
 
-    const CARDS_BASE = "/public/cards/";  // ← 先頭スラッシュが重要（絶対パス）
+    window.CARDS_BASE = "/public/cards/"; // ←あなたの実際のベースパスに合わせる
+    const CARDS_BASE = window.CARDS_BASE;
 
     function showToast(message, duration = 3000) {
   const container = document.getElementById("toastContainer");
@@ -2436,6 +2507,95 @@ function buildResultActionsHTML(){
       <button class="btnDrawAgain" type="button" onclick="onDraw()">もう一度ひく</button>
     </div>
   `;
+}
+// ① 物語（生年月日あり）
+function buildIntegratedStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const mainIsReversed = main.isReversed;
+
+  const core   = extractCoreSentence(card, mainIsReversed);
+  const action = extractAction(card, mainIsReversed);
+  const themes = extractThemes(card);
+
+  // 五行（弱点だけ）
+  let weak = "";
+  try {
+    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
+  } catch(e){ weak = ""; }
+
+  const weakTune = weak
+    ? `いまのあなたは「${weak}（${elemMeaning(weak)}）」を足すほど、流れが整います。`
+    : "";
+
+  // 数秘（LP一言）
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  let lpLine = "";
+  try{
+    if (uDate && typeof calculateLifePath === "function") {
+      const lp = calculateLifePath(uDate);
+      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+    }
+  } catch(e){ lpLine = ""; }
+
+  return [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    weakTune,
+    lpLine,
+    `今日は「${action}」だけに絞って。`
+  ].filter(Boolean).join("\n");
+}
+
+// ② 物語（生年月日なし）
+function buildCardOnlyStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const mainIsReversed = main.isReversed;
+
+  const core   = extractCoreSentence(card, mainIsReversed);
+  const action = extractAction(card, mainIsReversed);
+  const themes = extractThemes(card);
+
+  return [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    `今日は「${action}」をひとつ。`
+    `無理に答えを出さず、いま出来る一歩を丁寧に。`
+  ].filter(Boolean).join("\n");
+}
+
+// ③ グローバルサマリHTML
+function buildGlobalSummaryHTML(picked, count) {
+  try {
+    const hasBirth = (typeof hasBirthInput === "function" && hasBirthInput());
+    const story = hasBirth
+      ? buildIntegratedStory({ picked, count })
+      : buildCardOnlyStory({ picked, count });
+
+    const safeStory = (typeof escapeHtml === "function")
+      ? escapeHtml(story).replace(/\n/g, "<br>")
+      : String(story).replace(/\n/g, "<br>");
+
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">${safeStory}</div>
+        </div>
+      </section>
+    `;
+  } catch (e) {
+    console.error("[buildGlobalSummaryHTML error]", e);
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">いまは静かに整える時間です。</div>
+        </div>
+      </section>
+    `;
+  }
 }
     async function onDraw() {
   pulseDeck();
@@ -3137,7 +3297,8 @@ function getCardImageSrc(card){
     raw += ".webp";
   }
 
-  return CARDS_BASE + raw;
+   const base = (window.CARDS_BASE || "/public/cards/");
+  return base + raw;
 }
 
 
