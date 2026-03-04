@@ -1694,6 +1694,101 @@ body{ font-size: var(--base); }
   animation: deckBreath 1.1s ease-in-out infinite;
   filter: drop-shadow(0 26px 90px rgba(235,220,170,.28));
 }
+/* デッキの呼吸（通常時） */
+#shuffleArea .deck{
+  animation: deckBreath 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 18px 44px rgba(0,0,0,.55));
+}
+
+/* シャッフル中だけ“強い発光” */
+#shuffleArea.shuffling .deck{
+  animation: deckGlow 1.1s ease-in-out infinite;
+  filter: drop-shadow(0 22px 72px rgba(255,220,140,.28))
+          drop-shadow(0 10px 40px rgba(0,0,0,.65));
+}
+
+@keyframes deckBreath{
+  0%,100%{ transform: translateY(0); opacity: .98; }
+  50%{ transform: translateY(-3px); opacity: 1; }
+}
+@keyframes deckGlow{
+  0%,100%{ transform: translateY(0) scale(1); }
+  50%{ transform: translateY(-2px) scale(1.01); }
+}
+a, .menuCta, .brandCard a{
+  color: rgba(245, 228, 170, .95);
+}
+a:hover, .menuCta:hover{
+  color: rgba(255, 245, 210, 1);
+}
+/* 導線リンク */
+
+.readingLinks{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin:18px 0;
+}
+
+.readingLink{
+  display:block;
+  padding:10px 14px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  color:#e9dfb2;
+  text-decoration:none;
+  font-size:14px;
+  transition:all .2s ease;
+}
+
+.readingLink:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,215,120,0.4);
+}
+
+/* LINEだけ少し強調 */
+
+.readingLink.highlight{
+  background:rgba(255,215,120,0.12);
+  border-color:rgba(255,215,120,0.5);
+}
+
+/* シェア */
+
+.shareRow{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:10px;
+}
+.cardCore .metaLines{
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.cardCore .metaLine{
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.cardCore .metaLabel{
+  font-size: 12px;
+  letter-spacing: .08em;
+  opacity: .85;
+}
+
+.cardCore .metaValue{
+  font-size: 14px;
+  line-height: 1.6;
+}
   </style>
 </head>
 
@@ -1715,7 +1810,7 @@ font:12px/1.2 ui-sans-serif;">
   <div class="brandHeroInner">
     <div class="brandCopy">
       <div class="brandTag">Angelique Tarot</div>
-      <h2 class="brandTitle">光の導きで、<br>心をほどく。</h2>
+      <h1 class="brandTitle">光の導きで、心をほどく。</h1>
       <p class="brandLead">
         タロット × 数秘 × 九星 × 五行で、いま必要な「結論」と「一歩」を短く、やさしく。
       </p>
@@ -2546,17 +2641,20 @@ function pulseDeck(){
 function buildResultActionsHTML(){
   return `
     <div class="resultActions">
-      <a class="numerologyCta" href="./numbers.html" target="_blank" rel="noopener">
-        ✨ 数秘の意味を詳しく見る
-      </a>
 
-      <a class="numerologyCta" href="./elements.html" target="_blank" rel="noopener">
-        🌿 五行の意味を詳しく見る
-      </a>
+      <div class="readingLinks">
+        <a class="readingLink" href="./numbers.html" target="_blank" rel="noopener">
+          ✨ 数秘（ライフパスナンバー）の意味を見る
+        </a>
 
-      <a class="numerologyCta" href="https://lin.ee/Cm7TuLh" target="_blank" rel="noopener noreferrer">
-        💬 LINE登録：無料ミニ鑑定へ
-      </a>
+        <a class="readingLink" href="./elements.html" target="_blank" rel="noopener">
+          🌿 五行（木火土金水）の意味を見る
+        </a>
+
+        <a class="readingLink highlight" href="https://lin.ee/Cm7TuLh" target="_blank" rel="noopener noreferrer">
+          💬 LINE登録：無料ミニ鑑定へ
+        </a>
+      </div>
 
       <div class="shareRow">
         <button class="btnGhost" type="button" onclick="shareResultText()">Share</button>
@@ -2564,7 +2662,8 @@ function buildResultActionsHTML(){
         <button class="btnGhost" type="button" onclick="shareResultImage()">Share Image</button>
       </div>
 
-      <button class="btnDrawAgain" type="button" onclick="onDraw()">もう一度ひく</button>
+      <button class="btnDrawAgain" type="button" onclick="onDraw()">もう一度カードを引く</button>
+
     </div>
   `;
 }
@@ -2594,7 +2693,7 @@ function buildIntegratedStory({ picked, count }) {
   try{
     if (uDate && typeof calculateLifePath === "function") {
       const lp = calculateLifePath(uDate);
-      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+      lpLine = `数秘の軸（ライフパスナンバー${lp}）は「自分のリズムを信じて進む」サイン。`;
     }
   } catch(e){ lpLine = ""; }
 
@@ -2655,6 +2754,143 @@ function buildGlobalSummaryHTML(picked, count) {
         </div>
       </section>
     `;
+  }
+}
+function buildIntegratedStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const mainIsReversed = main.isReversed;
+
+  const core   = extractCoreSentence(card, mainIsReversed);
+  const action = extractAction(card, mainIsReversed);
+  const themes = extractThemes(card);
+
+  // 五行：弱点だけ“調律”として1行で混ぜる
+  let weak = "";
+  try {
+    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
+  } catch (e) { weak = ""; }
+
+  const weakTune = weak
+    ? `いまは「${weak}（${elemMeaning(weak)}）」を少し足すほど、流れが整います。`
+    : "";
+
+  // 数秘：LP表記をやめて「ライフパスナンバー」にする
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  let lpLine = "";
+  try {
+    if (uDate && typeof calculateLifePath === "function") {
+      const lp = calculateLifePath(uDate);
+      lpLine = `数秘の軸（ライフパスナンバー${lp}）は「自分のリズムを信じて進む」サイン。`;
+    }
+  } catch (e) { lpLine = ""; }
+
+  return [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    weakTune,
+    lpLine,
+    `今日は「${action}」だけに絞って。`
+  ].filter(Boolean).join("\n");
+}
+
+function buildCardOnlyStory({ picked, count }) {
+  const main = (count === 3) ? picked[1] : picked[0];
+  const card = main.card;
+  const mainIsReversed = main.isReversed;
+
+  const core   = extractCoreSentence(card, mainIsReversed);
+  const action = extractAction(card, mainIsReversed);
+  const themes = extractThemes(card);
+
+  return [
+    core,
+    themes ? `テーマは「${themes}」。` : "",
+    `今日は「${action}」をひとつ。`
+  ].filter(Boolean).join("\n");
+}
+
+function buildGlobalSummaryHTML(picked, count) {
+  try {
+    const story = (typeof hasBirthInput === "function" && hasBirthInput())
+      ? buildIntegratedStory({ picked, count })
+      : buildCardOnlyStory({ picked, count });
+
+    const safeStory = (typeof escapeHtml === "function")
+      ? escapeHtml(story).replace(/\n/g, "<br>")
+      : String(story).replace(/\n/g, "<br>");
+
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">${safeStory}</div>
+      </section>
+    `;
+  } catch (e) {
+    console.error("[buildGlobalSummaryHTML error]", e);
+    return `
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">いまは静かに整える時間です。</div>
+      </section>
+    `;
+  }
+}
+
+async function onDraw() {
+  pulseDeck();
+
+  try {
+    if (!cards.length) {
+      setStatus("デッキが未読み込みです");
+      showToast("デッキ読み込み待ちです。少し待ってからもう一度。", 3500);
+      return;
+    }
+
+    const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
+    const count = (String(drawMode) === "3") ? 3 : 1;
+
+    // ✅ 演出（呼吸/発光）を復活させたいので戻す
+    setStatus(`シャッフル中…（${count}枚）`);
+    if (typeof startShuffle === "function") startShuffle();
+    await new Promise(r => setTimeout(r, 900));
+    if (typeof stopShuffle === "function") stopShuffle();
+
+    const picked = drawUnique(count);
+
+    const labels3 = ["過去", "現在", "未来"];
+    const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
+
+    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count);
+
+    const energyHTML =
+      (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
+        ? buildBothGogyouHTML()
+        : "";
+
+    const actionsHTML =
+      (typeof buildResultActionsHTML === "function")
+        ? buildResultActionsHTML()
+        : "";
+
+    elResult.innerHTML = `
+      ${globalSummaryHTML}
+      ${energyHTML}
+      <div class="${gridClass}">
+        ${picked.map((p, i) =>
+          renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
+        ).join("")}
+      </div>
+      ${actionsHTML}
+    `;
+
+    setTimeout(scrollToResultSmooth, 90);
+    setStatus(`結果表示：${count}枚引き。`);
+
+  } catch (e) {
+    console.error(e);
+    setStatus("エラーで停止しました");
+    showToast("エラーで停止しました（Console参照）", 4500);
   }
 }
     async function onDraw() {
@@ -3108,44 +3344,67 @@ window.__gogyouState = window.__gogyouState || {
       let c = (core ?? "").toString().trim();
       const t = (themes ?? "").toString().trim();
 
-      // カードDBによっては、すでにコアテキスト内に「焦点：〜」「方向性：〜」が含まれている場合があるため分離する
-      let baseText = c;
-      let focusText = t ? t.split("|")[0].trim() + "。" : "";
-      let directionText = "焦らず、できる一歩を選びましょう。";
+      // 末尾の句点を整える（すでに「。」や「！」「？」で終わってるなら足さない）
+const ensureEndPunc = (s) => {
+  const t = String(s || "").trim();
+  if (!t) return "";
+  return /[。！？!?\)]$/.test(t) ? t : (t + "。");
+};
 
-      if (c.includes("焦点：")) {
-        const parts = c.split("焦点：");
-        baseText = parts[0].trim();
-        const remain = parts[1];
-        if (remain.includes("方向性：")) {
-          const subParts = remain.split("方向性：");
-          focusText = subParts[0].trim();
-          directionText = subParts[1].trim();
-        } else {
-          focusText = remain.trim();
-        }
-      }
+// カードDBによっては、すでにコアテキスト内に「焦点：〜」「方向性：〜」が含まれている場合があるため分離する
+let baseText = c;
+let focusText = "";
+let directionText = "";
 
-      if (!baseText) {
-        baseText = "いまは流れの節目にいます。";
-      }
-      if (!focusText) {
-        focusText = "いま大切な感覚に気づくこと。";
-      }
+// t が "焦点|方向性" 形式なら優先的に採用
+if (t) {
+  const partsT = String(t).split("|").map(v => v.trim()).filter(Boolean);
+  if (partsT[0]) focusText = partsT[0];
+  if (partsT[1]) directionText = partsT[1];
+}
 
-      // 独立したセクションHTMLとして返す
-      return `
-      <div class="coreText">${escapeHtml(baseText)}</div>
+// c に埋め込まれた「焦点：」「方向性：」があれば上書き分離
+if (String(c || "").includes("焦点：")) {
+  const parts = String(c).split("焦点：");
+  baseText = parts[0].trim();
+  const remain = (parts[1] || "").trim();
+
+  if (remain.includes("方向性：")) {
+    const sub = remain.split("方向性：");
+    focusText = sub[0].trim();
+    directionText = (sub[1] || "").trim();
+  } else {
+    focusText = remain.trim();
+  }
+}
+
+// フォールバック
+if (!baseText) baseText = "いまは流れの節目にいます。";
+if (!focusText) focusText = "いま大切な感覚に気づくこと。";
+if (!directionText) directionText = "焦らず、できる一歩を選びましょう。";
+
+// 句点を統一（短文が並んでも段落の切れ目が見える）
+focusText = ensureEndPunc(focusText);
+directionText = ensureEndPunc(directionText);
+
+// 独立したセクションHTMLとして返す（ラベル1行形式）
+return `
+  <div class="cardCore">
+    <div class="coreText">${escapeHtml(baseText)}</div>
+
+    <div class="metaLines">
+      <div class="metaLine">
+        <span class="metaLabel">焦点</span>
+        <span class="metaValue">${escapeHtml(focusText)}</span>
+      </div>
+
+      <div class="metaLine">
+        <span class="metaLabel">方向性</span>
+        <span class="metaValue">${escapeHtml(directionText)}</span>
+      </div>
     </div>
-    <div class="cardSection">
-      <h4>焦点</h4>
-      <div>${escapeHtml(focusText)}</div>
-    </div>
-    <div class="cardSection">
-      <h4>方向性</h4>
-      <div>${escapeHtml(directionText)}</div>
+  </div>
 `;
-    }
 
 
 
@@ -3358,7 +3617,7 @@ function getCardImageSrc(card){
   }
 
    const base = (window.CARDS_BASE || "/public/cards/");
-  return base + raw;
+  return (window.CARDS_BASE || "/public/cards/") + raw;
 }
 
 
