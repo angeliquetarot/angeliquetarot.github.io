@@ -1932,6 +1932,77 @@ a:hover, .menuCta:hover{
 .cardsGrid.three .ynRow{
   display:none !important;
 }
+/* =========================
+   Deep Read: readable typography
+   ========================= */
+
+.deepRead{
+  margin-top: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.16);
+  overflow: hidden;
+}
+
+.deepRead > summary{
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 12px;
+  color: rgba(255,255,255,.86);
+  font-size: 13px;
+  letter-spacing: .06em;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,0));
+}
+
+.deepRead > summary::-webkit-details-marker{ display:none; }
+
+.deepRead[open] > summary{
+  background: rgba(255,226,160,.07);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+/* セクションを「段落」に見せる */
+.deepRead .cardSection{
+  padding: 12px 12px 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+/* タイトルを“色とサイズ”で差をつける */
+.deepRead .cardSection h4{
+  margin: 0 0 8px;
+  font-family: "Cinzel","Shippori Mincho",serif;
+  font-size: 12px;
+  letter-spacing: .10em;
+  color: rgba(245,228,170,.92);
+}
+
+/* 本文：行間・色・段落の見え方 */
+.deepRead .deepText{
+  color: rgba(255,255,255,.84);
+  font-size: 13px;
+  line-height: 1.95;
+  white-space: pre-line;          /* ← 改行を段落として反映 */
+}
+
+/* セクションごとに“帯”を付けて区切りを強く */
+.deepRead .cardSection{
+  position: relative;
+}
+.deepRead .cardSection::before{
+  content:"";
+  position:absolute;
+  left: 10px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(245,228,170,.18);
+}
+
+/* 本文を左の帯から少し離す */
+.deepRead .deepText{
+  padding-left: 12px;
+}
   </style>
 </head>
 
@@ -3905,22 +3976,22 @@ function buildGlobalSummaryHTML(picked, count, labels3){
       <summary>深読みをひらく</summary>
 
       ${interpretation ? `
-        <div class="cardSection">
-          <h4>読み解き</h4>
-          <div>${safe(interpretation)}</div>
-        </div>` : ``}
+  <div class="cardSection">
+    <h4>読み解き</h4>
+    <div class="deepText">${safe(interpretation).replace(/\n/g,"<br>")}</div>
+  </div>` : ``}
 
-      ${angel ? `
-        <div class="cardSection">
-          <h4>天使からの言葉</h4>
-          <div>${safe(angel)}</div>
-        </div>` : ``}
+${angel ? `
+  <div class="cardSection">
+    <h4>天使からの言葉</h4>
+    <div class="deepText">${safe(angel).replace(/\n/g,"<br>")}</div>
+  </div>` : ``}
 
-      ${action ? `
-        <div class="cardSection">
-          <h4>今日の一歩</h4>
-          <div>${safe(action)}</div>
-        </div>` : ``}
+${action ? `
+  <div class="cardSection">
+    <h4>今日の一歩</h4>
+    <div class="deepText">${safe(action).replace(/\n/g,"<br>")}</div>
+  </div>` : ``}
     </details>
   ` : ``;
 
