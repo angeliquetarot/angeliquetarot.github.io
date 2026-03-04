@@ -2003,6 +2003,85 @@ a:hover, .menuCta:hover{
 .deepRead .deepText{
   padding-left: 12px;
 }
+/* =========================
+   Gogyou Quick Nav (result top)
+   ========================= */
+.gogyouQuickNav{
+  max-width: 980px;
+  margin: 12px auto 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(12,14,20,.50);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 18px 60px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.08) inset;
+}
+.gqTitle{
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: rgba(245,228,170,.92);
+  margin-bottom: 6px;
+  font-family:"Cinzel","Shippori Mincho",serif;
+}
+.gqNote{
+  font-size: 13px;
+  color: rgba(255,255,255,.72);
+  margin-bottom: 10px;
+}
+.gqRow{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  margin-top: 10px;
+}
+.gqWho{
+  min-width: 52px;
+  font-size: 12px;
+  color: rgba(255,255,255,.70);
+  padding-top: 10px;
+}
+.gqChips{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  flex:1;
+}
+.gqChip{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  text-decoration:none;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  min-width: 220px;
+}
+.gqChip:hover{
+  border-color: rgba(245,228,170,.25);
+  background: rgba(255,255,255,.06);
+}
+.gqChip.weak{
+  border-color: rgba(245,158,11,.22);
+  background: rgba(245,158,11,.06);
+}
+.gqChip.strong{
+  border-color: rgba(34,197,94,.22);
+  background: rgba(34,197,94,.06);
+}
+.gqLabel{
+  font-size: 11px;
+  letter-spacing:.12em;
+  color: rgba(255,255,255,.70);
+}
+.gqMain{
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+}
+.gqSub{
+  font-size: 12px;
+  color: rgba(255,255,255,.74);
+}
   </style>
 </head>
 
@@ -3079,6 +3158,8 @@ async function onDraw() {
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
     const globalSummaryHTML = buildGlobalSummaryHTML(picked, count);
+    const gogyouNavHTML =
+  (typeof buildGogyouQuickNavHTML === "function") ? buildGogyouQuickNavHTML() : "";
 
     const energyHTML =
       (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
@@ -3092,6 +3173,7 @@ async function onDraw() {
 
     elResult.innerHTML = `
       ${globalSummaryHTML}
+      ${gogyouNavHTML}
       ${energyHTML}
       <div class="${gridClass}">
         ${picked.map((p, i) =>
@@ -4384,6 +4466,63 @@ function buildGogyouBlock(title, dateStr, timeStr){
   const { strong, weak } = pickStrongWeak(score);
   const strongJP = strong?.[0];
 const weakJP = weak?.[0];
+
+function buildGogyouQuickNavHTML(){
+  const u = window.__gogyouState?.user;
+  const p = window.__gogyouState?.partner;
+
+  // userが無ければ出さない
+  if (!u?.weak?.[0] && !u?.strong?.[0]) return "";
+
+  const linkFor = (jp, kind) => {
+    const slug = elemKeyJPtoSlug(jp);
+    if (!slug) return "./elements/index.html";
+    return `./elements/${slug}-${kind}.html`; // kind = "weak" or "strong"
+  };
+
+  const chip = (label, jp, kind) => {
+    if (!jp) return "";
+    const href = linkFor(jp, kind);
+    const sub = elemMeaning(jp);
+    const cls = kind === "weak" ? "weak" : "strong";
+    return `
+      <a class="gqChip ${cls}" href="${href}" target="_blank" rel="noopener">
+        <span class="gqLabel">${label}</span>
+        <span class="gqMain">${jp}</span>
+        <span class="gqSub">${sub}</span>
+      </a>
+    `;
+  };
+
+  const userRow = `
+    <div class="gqRow">
+      <div class="gqWho">あなた</div>
+      <div class="gqChips">
+        ${chip("不足", u.weak?.[0], "weak")}
+        ${chip("強い", u.strong?.[0], "strong")}
+      </div>
+    </div>
+  `;
+
+  const partnerRow = (p?.weak?.[0] || p?.strong?.[0]) ? `
+    <div class="gqRow">
+      <div class="gqWho">お相手</div>
+      <div class="gqChips">
+        ${chip("不足", p.weak?.[0], "weak")}
+        ${chip("強い", p.strong?.[0], "strong")}
+      </div>
+    </div>
+  ` : "";
+
+  return `
+    <section class="gogyouQuickNav">
+      <div class="gqTitle">五行の案内（あなたの“不足/強い”）</div>
+      <div class="gqNote">迷ったら「不足」から読むのがおすすめ。</div>
+      ${userRow}
+      ${partnerRow}
+    </section>
+  `;
+}
 // --- 五行結果を保持（Step3で使う） ---
 try {
   const key =
