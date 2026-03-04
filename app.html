@@ -2306,6 +2306,9 @@ font:12px/1.2 ui-sans-serif;">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const VERSION = "2026.03.01.1";
+    // ===== FIX: ensure STEMS/BRANCHES exist globally (no overwrite) =====
+window.STEMS = window.STEMS || ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+window.BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
 
     window.CARDS_BASE = "/public/cards/"; // ←あなたの実際のベースパスに合わせる
       window.__shareOneLine = "";
@@ -4339,24 +4342,30 @@ function dayGanzhi(y,m,d){
 
 // 年干支（簡易）：1984=甲子を基準に
 function yearGanzhi(y){
+  const STEMS = window.STEMS;
+  const BRANCHES = window.BRANCHES;
+
+  // guard
+  if (!Array.isArray(STEMS) || !Array.isArray(BRANCHES)) {
+    console.warn("[yearGanzhi] STEMS/BRANCHES missing", { STEMS, BRANCHES });
+    return { stem: "甲", branch: "子" }; // 落とさない保険
+  }
+
   const base = 1984; // 甲子
-  const diff = y - base;
+  const Y = parseInt(y, 10);
+  if (!Number.isFinite(Y)) {
+    console.warn("[yearGanzhi] invalid year:", y);
+    return { stem: "甲", branch: "子" };
+  }
+
+  const diff = Y - base;
   const idx = (diff % 60 + 60) % 60;
-  return { stem: STEMS[idx % 10], branch: BRANCHES[idx % 12] };
-}
 
-// 時支（任意）
-function hourBranchFromTime(timeStr){
-  if (!timeStr) return null;
-  const [hh, mm] = timeStr.split(":").map(n => parseInt(n,10));
-  if (Number.isNaN(hh)) return null;
-  // 子=23-0, 丑=1-2, ... 2時間刻み
-  // 23:00-00:59 => 子
-  const h = hh;
-  const index = Math.floor(((h + 1) % 24) / 2); // 23->0, 0->0, 1->1...
-  return BRANCHES[index];
+  return {
+    stem: STEMS[idx % 10],
+    branch: BRANCHES[idx % 12]
+  };
 }
-
 // 日干から時干を出す（五鼠遁の起点）
 function hourStemFromDayStem(dayStem, hourBranch){
   if (!hourBranch) return null;
