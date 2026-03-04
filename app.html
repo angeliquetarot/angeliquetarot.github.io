@@ -1835,6 +1835,42 @@ a:hover, .menuCta:hover{
   width:auto;              /* ← 100% になってたら解除 */
   flex: 0 0 auto;          /* ← 伸びすぎ防止 */
 }
+.resultActions .shareRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.resultActions .shareRow .btnGhost{
+  flex: 1 1 120px;
+  min-width: 120px;
+}
+
+.resultActions .btnDrawAgain{
+  display:block;
+  width:100%;
+  margin-top:10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+.shuffleArea .deck{
+  display:block;
+  width: 220px; /* 好みで */
+  margin: 14px auto 0;
+  filter: drop-shadow(0 20px 55px rgba(0,0,0,.45));
+  animation: deckBreath 3.6s ease-in-out infinite;
+}
+
+@keyframes deckBreath{
+  0%,100%{
+    transform: translateY(0);
+    filter: drop-shadow(0 20px 55px rgba(0,0,0,.45)) drop-shadow(0 0 0 rgba(255,215,140,0));
+  }
+  50%{
+    transform: translateY(-6px);
+    filter: drop-shadow(0 26px 70px rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(255,215,140,.35));
+  }
+}
   </style>
 </head>
 
@@ -2007,7 +2043,9 @@ font:12px/1.2 ui-sans-serif;">
     const VERSION = "2026.03.01.1";
 
     window.CARDS_BASE = "/public/cards/"; // ←あなたの実際のベースパスに合わせる
+      window.__shareOneLine = "";
     const CARDS_BASE = window.CARDS_BASE;
+    
 
     function showToast(message, duration = 3000) {
   const container = document.getElementById("toastContainer");
@@ -2748,7 +2786,7 @@ function buildIntegratedStory({ picked, count }) {
     themes ? `テーマは「${themes}」。` : "",
     weakTune,
     lpLine,
-    `今日は「${action}」だけに絞って。`
+    `今日は「${action}」`
   ].filter(Boolean).join("\n");
 }
 
@@ -2836,7 +2874,7 @@ function buildIntegratedStory({ picked, count }) {
     themes ? `テーマは「${themes}」。` : "",
     weakTune,
     lpLine,
-    `今日は「${action}」だけに絞って。`
+    `今日は「${action}」`
   ].filter(Boolean).join("\n");
 }
 
@@ -2884,6 +2922,7 @@ function buildGlobalSummaryHTML(picked, count) {
 }
 
 async function onDraw() {
+  const elResult = document.getElementById("result");
   pulseDeck();
 
   try {
@@ -2929,6 +2968,15 @@ async function onDraw() {
       </div>
       ${actionsHTML}
     `;
+    // --- share用の「鑑定の一文」を保存（HTMLタグじゃなく文字だけ取る） ---
+window.__shareOneLine =
+  (document.querySelector("#result .coreText")?.textContent || "").trim();
+
+if (!window.__shareOneLine) {
+  // 予備：サマリーが別クラスならここで拾う
+  window.__shareOneLine =
+    (document.querySelector("#result .globalSummary")?.textContent || "").trim();
+}
 
     setTimeout(scrollToResultSmooth, 90);
     setStatus(`結果表示：${count}枚引き。`);
@@ -2939,55 +2987,9 @@ async function onDraw() {
     showToast("エラーで停止しました（Console参照）", 4500);
   }
 }
-    async function onDraw() {
-  pulseDeck();
+    
 
-  try {
-
-    if (!cards.length) {
-      setStatus("デッキが未読み込みです");
-      return;
-    }
-
-    const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
-    const count = (String(drawMode) === "3") ? 3 : 1;
-
-    const picked = drawUnique(count);
-
-    const labels3 = ["過去", "現在", "未来"];
-    const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
-
-    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count);
-
-const energyHTML =
-  (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
-    ? buildBothGogyouHTML()
-    : "";
-
-const actionsHTML =
-  (typeof buildResultActionsHTML === "function")
-    ? buildResultActionsHTML()
-    : "";
-
-elResult.innerHTML = `
-  ${globalSummaryHTML}
-  ${energyHTML}
-  <div class="${gridClass}">
-    ${picked.map((p, i) =>
-      renderCard(p.card, p.isReversed, count === 3 ? labels3[i] : "")
-    ).join("")}
-  </div>
-  ${actionsHTML}
-`;
-
-    setTimeout(scrollToResultSmooth, 90);
-    setStatus(`結果表示：${count}枚引き。`);
-
-  } catch (e) {
-    console.error(e);
-    setStatus("エラーで停止しました");
-  }
-}
+    
 
 function buildCardOnlyStory({ picked, count }) {
   const main = (count === 3) ? picked[1] : picked[0];
@@ -3030,7 +3032,7 @@ function buildIntegratedStory({ picked, count }) {
     const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
     if (uDate && typeof calculateLifePath === "function") {
       const lp = calculateLifePath(uDate);
-      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+      lpLine = `数秘の軸（ライフパスナンバー${lp}）は「自分のリズムを信じて進む」サイン。`;
     }
   } catch(e){ lpLine = ""; }
 
@@ -3099,7 +3101,7 @@ function buildGlobalSummaryHTML(picked, count) {
   try {
     if (uDate && typeof calculateLifePath === "function") {
       const lp = calculateLifePath(uDate);
-      lpLine = `数秘の軸（LP${lp}）は「自分のリズムを信じて進む」サイン。`;
+      lpLine = `数秘の軸（ライフパスナンバー${lp}）は「自分のリズムを信じて進む」サイン。`;
     }
   } catch (e) { lpLine = ""; }
 
@@ -3390,37 +3392,37 @@ window.__gogyouState = window.__gogyouState || {
   let c = (core ?? "").toString().trim();
   const t = (themes ?? "").toString().trim();
 
-  // 末尾の句点を整える（すでに「。」や「！」「？」で終わってるなら足さない）
+  // 末尾句点を整える（短文が並んでも切れ目が見える）
   const ensureEndPunc = (s) => {
-    const t = String(s || "").trim();
-    if (!t) return "";
-    return /[。！？!?\)]$/.test(t) ? t : (t + "。");
+    const tt = String(s || "").trim();
+    if (!tt) return "";
+    return /[。！？!?\)]$/.test(tt) ? tt : (tt + "。");
   };
 
-  // カードDBによっては、すでにコアテキスト内に「焦点：〜」「方向性：〜」が含まれている場合があるため分離する
+  // 分離先
   let baseText = c;
   let focusText = "";
   let directionText = "";
 
-  // t が "焦点|方向性" 形式なら優先的に採用
+  // themes が "焦点|方向性" 形式なら優先
   if (t) {
     const partsT = String(t).split("|").map(v => v.trim()).filter(Boolean);
     if (partsT[0]) focusText = partsT[0];
     if (partsT[1]) directionText = partsT[1];
   }
 
-  // c に埋め込まれた「焦点：」「方向性：」があれば上書き分離
+  // core に「焦点：」「方向性：」が入ってたら上書き分離
   if (String(c || "").includes("焦点：")) {
     const parts = String(c).split("焦点：");
-    baseText = parts[0].trim();
+    baseText = (parts[0] || "").trim();
     const remain = (parts[1] || "").trim();
 
     if (remain.includes("方向性：")) {
       const sub = remain.split("方向性：");
-      focusText = sub[0].trim();
+      focusText = (sub[0] || "").trim();
       directionText = (sub[1] || "").trim();
     } else {
-      focusText = remain.trim();
+      focusText = remain;
     }
   }
 
@@ -3429,11 +3431,11 @@ window.__gogyouState = window.__gogyouState || {
   if (!focusText) focusText = "いま大切な感覚に気づくこと。";
   if (!directionText) directionText = "焦らず、できる一歩を選びましょう。";
 
-  // 句点を統一（短文が並んでも段落の切れ目が見える）
+  // 句点統一
   focusText = ensureEndPunc(focusText);
   directionText = ensureEndPunc(directionText);
 
-  // 独立したセクションHTMLとして返す（ラベル1行形式）
+  // “1枚引きの短文”として見せる（深読みは details 側へ）
   return `
     <div class="cardCore">
       <div class="coreText">${escapeHtml(baseText)}</div>
@@ -3443,7 +3445,6 @@ window.__gogyouState = window.__gogyouState || {
           <span class="metaLabel">焦点</span>
           <span class="metaValue">${escapeHtml(focusText)}</span>
         </div>
-
         <div class="metaLine">
           <span class="metaLabel">方向性</span>
           <span class="metaValue">${escapeHtml(directionText)}</span>
@@ -3451,7 +3452,7 @@ window.__gogyouState = window.__gogyouState || {
       </div>
     </div>
   `;
-} // ← ★これが抜けてると終わります
+}// ← ★これが抜けてると終わります
 
 
     function metaLine(card) {
@@ -4550,6 +4551,21 @@ const ELEMENT_SOUL = {
     ctx.fillStyle = "rgba(255,255,255,0.95)";
     ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
   }
+  // --- 1行要約（鑑定の一文）を描画 ---
+const one = String(window.__shareOneLine || "").trim();
+if (one) {
+  ctx.save();
+  ctx.globalAlpha = 0.92;
+  ctx.font = "28px serif";         // 既存のフォントと合わせてOK
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255,255,255,0.90)";
+
+  // 長すぎる時は省略（安全策）
+  const text = one.length > 40 ? (one.slice(0, 40) + "…") : one;
+
+  ctx.fillText(text, canvas.width / 2, canvas.height - 140);
+  ctx.restore();
+}
 
   // Footer
   ctx.font = "20px 'Noto Serif JP', serif";
