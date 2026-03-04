@@ -2305,6 +2305,27 @@ font:12px/1.2 ui-sans-serif;">
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+    // ===== Five Elements constants (global safe) =====
+
+window.STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+
+window.BRANCHES = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+
+window.YEAR_STEM_TO_TIGER_MONTH_STEM = {
+  "甲":"丙","己":"丙",
+  "乙":"戊","庚":"戊",
+  "丙":"庚","辛":"庚",
+  "丁":"壬","壬":"壬",
+  "戊":"甲","癸":"甲"
+};
+
+window.DAY_STEM_TO_HOUR_STEM = {
+  "甲":"甲","己":"甲",
+  "乙":"丙","庚":"丙",
+  "丙":"戊","辛":"戊",
+  "丁":"庚","壬":"庚",
+  "戊":"壬","癸":"壬"
+};
     const VERSION = "2026.03.01.1";
     // ===== FIX: ensure STEMS/BRANCHES exist globally (no overwrite) =====
 window.STEMS = window.STEMS || ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
@@ -4267,12 +4288,22 @@ const YEAR_STEM_TO_TIGER_MONTH_STEM = {
 
 // 月支（寅=1）を得たら、寅月の月干から順に進める
 function monthStemFrom(yearStem, monthBranch){
-  const startStem = YEAR_STEM_TO_TIGER_MONTH_STEM[yearStem] || "丙"; // 寅月の月干
-  const startIndex = STEMS.indexOf(startStem);
-  const mIndex = BRANCHES.indexOf(monthBranch);
-  const tigerIndex = BRANCHES.indexOf("寅");
-  const offset = (mIndex - tigerIndex + 12) % 12; // 寅から何ヶ月進んだか
-  return STEMS[(startIndex + offset) % 10];
+
+  const map = window.YEAR_STEM_TO_TIGER_MONTH_STEM;
+  const STEMS = window.STEMS;
+  const BRANCHES = window.BRANCHES;
+
+  if(!map || !STEMS || !BRANCHES){
+    console.warn("Five elements constants missing");
+    return "甲";
+  }
+
+  const tigerStem = map[yearStem];
+
+  const monthIndex = BRANCHES.indexOf(monthBranch);
+  const stemIndex = (STEMS.indexOf(tigerStem) + monthIndex) % 10;
+
+  return STEMS[stemIndex];
 }
 
 // 簡易：節入りの厳密計算はせず、月の範囲で月支を推定（立春＝2/4起点）
@@ -4368,21 +4399,17 @@ function yearGanzhi(y){
 }
 // 日干から時干を出す（五鼠遁の起点）
 function hourStemFromDayStem(dayStem, hourBranch){
-  if (!hourBranch) return null;
-  // 甲己日: 甲子, 乙庚日: 丙子, 丙辛日: 戊子, 丁壬日: 庚子, 戊癸日: 壬子
-  const startMap = {
-    "甲":"甲","己":"甲",
-    "乙":"丙","庚":"丙",
-    "丙":"戊","辛":"戊",
-    "丁":"庚","壬":"庚",
-    "戊":"壬","癸":"壬",
-  };
-  const startStem = startMap[dayStem] || "甲"; // 子時の時干
-  const startIndex = STEMS.indexOf(startStem);
-  const bIndex = BRANCHES.indexOf(hourBranch);
-  const ziIndex = BRANCHES.indexOf("子");
-  const offset = (bIndex - ziIndex + 12) % 12;
-  return STEMS[(startIndex + offset) % 10];
+
+  const map = window.DAY_STEM_TO_HOUR_STEM;
+  const STEMS = window.STEMS;
+  const BRANCHES = window.BRANCHES;
+
+  const startStem = map[dayStem];
+
+  const hourIndex = BRANCHES.indexOf(hourBranch);
+  const stemIndex = (STEMS.indexOf(startStem) + hourIndex) % 10;
+
+  return STEMS[stemIndex];
 }
 
 // 五行スコア（天干=強め、地支蔵干=合算）
