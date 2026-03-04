@@ -2553,6 +2553,17 @@ showReady();
   showToast("同梱CSVの読み込みに失敗しました。Consoleを確認してください。", 5000);
 }
 }
+// ===== SAFE: Five elements constants (global) =====
+window.STEMS = window.STEMS || ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+window.BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+
+window.STEM_TO_ELEM = window.STEM_TO_ELEM || {
+  "甲":"木","乙":"木",
+  "丙":"火","丁":"火",
+  "戊":"土","己":"土",
+  "庚":"金","辛":"金",
+  "壬":"水","癸":"水",
+};
 // ===== SAFE: hour helpers (global) =====
 window.hourBranchFromTime = window.hourBranchFromTime || function(timeStr){
   if (!timeStr) return null;
@@ -4468,10 +4479,11 @@ function calcFiveElements({ yStem,yBranch, mStem,mBranch, dStem,dBranch, hStem,h
   const score = { "木":0, "火":0, "土":0, "金":0, "水":0 };
 
   const addStem = (s, w=1.0)=>{
-    if (!s) return;
-    const e = STEM_TO_ELEM[s];
-    if (e) score[e] += w;
-  };
+  if (!s) return;
+  const map = window.STEM_TO_ELEM || {};
+  const e = map[s];
+  if (e) score[e] += w;
+};
   const addBranch = (b, w=1.0)=>{
     if (!b) return;
     const hidden = BRANCH_HIDDEN[b];
