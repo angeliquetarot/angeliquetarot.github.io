@@ -2326,6 +2326,9 @@ window.DAY_STEM_TO_HOUR_STEM = {
   "丁":"庚","壬":"庚",
   "戊":"壬","癸":"壬"
 };
+// ===== Day offset (global safe) =====
+// まずは固定で動かす（あとで精度を上げたければ再調整する）
+window.DAY_OFFSET = window.DAY_OFFSET ?? 49;
     const VERSION = "2026.03.01.1";
     // ===== FIX: ensure STEMS/BRANCHES exist globally (no overwrite) =====
 window.STEMS = window.STEMS || ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
@@ -4363,9 +4366,16 @@ const DAY_OFFSET = (()=>{
 })();
 
 // 日干支（60干支）: JDN基準から算出
-function dayGanzhi(y,m,d){
-  const jdn = toJdn(y,m,d);
-  const idx = (jdn + DAY_OFFSET) % 60;
+function dayGanzhi(y, m, d){
+  const jdn = toJdn(y, m, d);
+
+  const STEMS = window.STEMS;
+  const BRANCHES = window.BRANCHES;
+
+  // 念のため保険
+  const off = Number.isFinite(window.DAY_OFFSET) ? window.DAY_OFFSET : 49;
+
+  const idx = (jdn + off) % 60;
   const stem = STEMS[idx % 10];
   const branch = BRANCHES[idx % 12];
   return { stem, branch };
