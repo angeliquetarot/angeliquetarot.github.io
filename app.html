@@ -2305,6 +2305,8 @@ font:12px/1.2 ui-sans-serif;">
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
+    // ===== MUST: global state (place near top of script) =====
+window.__gogyouState = window.__gogyouState || { user: null, partner: null };
     // ===== Five Elements constants (global safe) =====
 
 window.STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
@@ -4722,17 +4724,16 @@ function buildGogyouQuickNavHTML(){
 }
 // --- 五行結果を保持（Step3で使う） ---
 try {
+  // ここで必ず初期化してから保存する
+  window.__gogyouState = window.__gogyouState || { user: null, partner: null };
+
   const key =
     title === "あなた" ? "user" :
     title === "お相手" ? "partner" :
     null;
 
   if (key) {
-    window.__gogyouState[key] = {
-      score,
-      strong,
-      weak
-    };
+    window.__gogyouState[key] = { score, strong, weak };
   }
 } catch (e) {
   console.warn("[gogyouState save skipped]", e);
@@ -4800,7 +4801,10 @@ function buildBothGogyouHTML(){
   try {
     if (typeof buildGogyouBlock === "function") {
       const u = buildGogyouBlock("あなた", uDate, uTime);
-      const p = buildGogyouBlock("お相手", pDate, pTime);
+      const p = pDate
+  ? buildGogyouBlock("お相手", pDate, pTime)
+  : `<div class="gogyouCard"><div class="gogyouHead"><div class="gogyouTitle">お相手の五行</div></div>
+     <div class="gogyouBody">※ お相手の生年月日を入れると表示されます</div></div>`;
       const wrap = [u, p].filter(Boolean).join("");
       if (wrap) gogyouHTML = `<div class="gogyouWrap">${wrap}</div>`;
     }
