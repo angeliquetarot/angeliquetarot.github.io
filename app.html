@@ -4790,39 +4790,52 @@ const weakHref = weakSlug
 // - safe: if gogyou functions don't exist, show links only
 // =========================
 function buildBothGogyouHTML(){
-  // 入力取得（存在しない場合もあるので optional chaining）
   const uDateRaw = document.getElementById("userBirthdate")?.value || "";
-const uTimeRaw = document.getElementById("userBirthtime")?.value || "";
-const pDateRaw = document.getElementById("partnerBirthdate")?.value || "";
-const pTimeRaw = document.getElementById("partnerBirthtime")?.value || "";
+  const uTimeRaw = document.getElementById("userBirthtime")?.value || "";
+  const pDateRaw = document.getElementById("partnerBirthdate")?.value || "";
+  const pTimeRaw = document.getElementById("partnerBirthtime")?.value || "";
 
-// ★ ここが重要：相手も必ず normalize
-const uDate = normalizeDateInput(uDateRaw);
-const uTime = normalizeTimeInput(uTimeRaw);
-const pDate = normalizeDateInput(pDateRaw);
-const pTime = normalizeTimeInput(pTimeRaw);
+  // 必ず normalize
+  const uDate = normalizeDateInput(uDateRaw);
+  const uTime = normalizeTimeInput(uTimeRaw);
+  const pDate = normalizeDateInput(pDateRaw);
+  const pTime = normalizeTimeInput(pTimeRaw);
 
-  // 誕生日が1つも無いなら、設計図は出さない（カードだけで成立させる）
-  const hasAnyBirth = (uDate || uTime || pDate || pTime);
-  if (!hasAnyBirth) return "";
+  // 誕生日が両方ないなら表示しない
+  if (!uDate && !pDate) return "";
 
-  // 五行ブロック（存在するなら出す / 無いなら空）
+  // 五行ブロックを作る
   let gogyouHTML = "";
-  try {
+
+  try{
     if (typeof buildGogyouBlock === "function") {
-      const u = buildGogyouBlock("あなた", uDate, uTime);
-      const p = pDate
-  ? buildGogyouBlock("お相手", pDate, pTime)
-  : `<div class="gogyouCard"><div class="gogyouHead"><div class="gogyouTitle">お相手の五行</div></div>
-     <div class="gogyouBody">※ お相手の生年月日を入れると表示されます</div></div>`;
+      let u = "";
+      let p = "";
+
+      if (uDate) u = buildGogyouBlock("あなた", uDate, uTime);
+
+      if (pDate) {
+        p = buildGogyouBlock("お相手", pDate, pTime);
+      } else {
+        p = `
+          <div class="gogyouCard">
+            <div class="gogyouHead">
+              <div class="gogyouTitle">お相手の五行</div>
+              <div class="gogyouNote">任意</div>
+            </div>
+            <div class="gogyouBody">※ お相手の生年月日を入れると表示されます</div>
+          </div>
+        `;
+      }
+
       const wrap = [u, p].filter(Boolean).join("");
       if (wrap) gogyouHTML = `<div class="gogyouWrap">${wrap}</div>`;
     }
-  } catch (e) {
-    console.warn("[buildBothGogyouHTML] buildGogyouBlock failed:", e);
+  } catch(e){
+    console.warn("[buildBothGogyouHTML] failed:", e);
   }
 
-  // 入口リンク（数秘ページは既にある前提）
+  // 入口リンク
   const links = `
     <div class="energyLinks">
       <a href="./numbers.html" target="_blank" rel="noopener">数秘を詳しく</a>
@@ -4830,6 +4843,7 @@ const pTime = normalizeTimeInput(pTimeRaw);
     </div>
   `;
 
+  // 折りたたみで返す（ここが最終return）
   return `
     <details class="energyDetails">
       <summary>あなたの設計図を見る（数秘 / 五行）</summary>
