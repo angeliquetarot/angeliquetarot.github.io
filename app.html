@@ -2553,7 +2553,47 @@ showReady();
   showToast("同梱CSVの読み込みに失敗しました。Consoleを確認してください。", 5000);
 }
 }
+// ===== SAFE: hour helpers (global) =====
+window.hourBranchFromTime = window.hourBranchFromTime || function(timeStr){
+  if (!timeStr) return null;
+  const s = String(timeStr).trim();
+  if (!s) return null;
 
+  const m = s.match(/^(\d{1,2}):?(\d{2})$/);
+  if (!m) return null;
+
+  const hh = parseInt(m[1], 10);
+  if (!Number.isFinite(hh)) return null;
+
+  const BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+  // 子=23-0, 丑=1-2 ... の2時間刻み（23:00-00:59 が子）
+  const idx = Math.floor(((hh + 1) % 24) / 2);
+  return BRANCHES[idx];
+};
+
+window.hourStemFromDayStem = window.hourStemFromDayStem || function(dayStem, hourBranch){
+  if (!dayStem || !hourBranch) return null;
+
+  const STEMS = window.STEMS || ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+  const BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+
+  // 五鼠遁：子時の時干
+  const startMap = {
+    "甲":"甲","己":"甲",
+    "乙":"丙","庚":"丙",
+    "丙":"戊","辛":"戊",
+    "丁":"庚","壬":"庚",
+    "戊":"壬","癸":"壬",
+  };
+  const startStem = startMap[dayStem] || "甲";
+  const startIndex = STEMS.indexOf(startStem);
+
+  const bIndex = BRANCHES.indexOf(hourBranch);
+  const ziIndex = BRANCHES.indexOf("子");
+  const offset = (bIndex - ziIndex + 12) % 12;
+
+  return STEMS[(startIndex + offset) % 10];
+};
 
     // =====================
 // DOM refs (declare once)
@@ -4481,8 +4521,8 @@ function getWeakElemFromInputs(){
 
   const dgz = dayGanzhi(y,m,d);
 
-  const hBranch = hourBranchFromTime(uTime);
-  const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
+ const hBranch = window.hourBranchFromTime ? window.hourBranchFromTime(uTime) : null;
+ const hStem   = (hBranch && window.hourStemFromDayStem) ? window.hourStemFromDayStem(dgz.stem, hBranch) : null;
 
   const score = calcFiveElements({
     yStem: ygz.stem, yBranch: ygz.branch,
