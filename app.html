@@ -4639,6 +4639,10 @@ function elemKeyJPtoSlug(jp){
   }[jp] || "";
 }
 function buildGogyouBlock(title, dateStr, timeStr){
+  // ★保険：ここでも正規化しておく
+  dateStr = normalizeDateInput(dateStr);
+  timeStr = normalizeTimeInput(timeStr);
+
   if (!dateStr) return "";
   const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
   if (!y || !m || !d) return "";
@@ -4787,10 +4791,16 @@ const weakHref = weakSlug
 // =========================
 function buildBothGogyouHTML(){
   // 入力取得（存在しない場合もあるので optional chaining）
-  const uDate = document.getElementById("userBirthdate")?.value || "";
-  const uTime = document.getElementById("userBirthtime")?.value || "";
-  const pDate = document.getElementById("partnerBirthdate")?.value || "";
-  const pTime = document.getElementById("partnerBirthtime")?.value || "";
+  const uDateRaw = document.getElementById("userBirthdate")?.value || "";
+const uTimeRaw = document.getElementById("userBirthtime")?.value || "";
+const pDateRaw = document.getElementById("partnerBirthdate")?.value || "";
+const pTimeRaw = document.getElementById("partnerBirthtime")?.value || "";
+
+// ★ ここが重要：相手も必ず normalize
+const uDate = normalizeDateInput(uDateRaw);
+const uTime = normalizeTimeInput(uTimeRaw);
+const pDate = normalizeDateInput(pDateRaw);
+const pTime = normalizeTimeInput(pTimeRaw);
 
   // 誕生日が1つも無いなら、設計図は出さない（カードだけで成立させる）
   const hasAnyBirth = (uDate || uTime || pDate || pTime);
