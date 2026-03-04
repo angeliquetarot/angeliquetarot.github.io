@@ -1789,6 +1789,52 @@ a:hover, .menuCta:hover{
   font-size: 14px;
   line-height: 1.6;
 }
+/* ===== Result Actions layout fix ===== */
+.resultActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+  margin-top:16px;
+}
+
+/* 上の誘導ボタン（数秘/五行/LINE） */
+.resultActions .numerologyCta{
+  flex: 1 1 220px;
+  max-width: 360px;
+  text-align:center;
+  padding:10px 14px;
+  border-radius:14px;
+}
+
+/* Share/Copy/Image の行 */
+.resultActions .shareRow{
+  display:flex;
+  gap:10px;
+  flex: 0 0 auto;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+/* ゴーストボタンの“文字が見えない”対策 */
+.resultActions .btnGhost{
+  min-width:110px;
+  padding:10px 14px;
+  border-radius:14px;
+  color: rgba(255,255,255,.92);
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+}
+
+/* もう一度ひく：でかくなりすぎ防止 */
+.resultActions .btnDrawAgain{
+  min-width: 180px;
+  padding:12px 18px;
+  border-radius:16px;
+  width:auto;              /* ← 100% になってたら解除 */
+  flex: 0 0 auto;          /* ← 伸びすぎ防止 */
+}
   </style>
 </head>
 
@@ -3787,10 +3833,11 @@ function buildGlobalSummaryHTML(picked, count, labels3){
   const yn = pickTextByOrientation(card, isReversed, "yes_no");
   const meta = metaLine(card);
 
-  // coreを既存の strengthenCore に通す（themesも渡す）
-  const coreHTML = (typeof strengthenCore === "function")
-    ? strengthenCore(core, themes)
-    : ((typeof escapeHtml === "function") ? escapeHtml(core) : core);
+ // coreを既存の strengthenCore に通す（themesも渡す）
+// strengthenCore は「安全に escape 済みのHTML」を返す想定
+const coreHTML = (typeof strengthenCore === "function")
+  ? String(strengthenCore(core, themes) || "")
+  : `<div class="coreText">${safe(core)}</div>`;
 
   const safe = (s) => (typeof escapeHtml === "function") ? escapeHtml(s) : s;
 
@@ -3830,9 +3877,9 @@ function buildGlobalSummaryHTML(picked, count, labels3){
         </div>
 
         <!-- ここが“刺さる”短文（初期表示） -->
-        <div class="corePunch">
-          ${coreHTML.includes('<div class="cardSection">') ? coreHTML : `<div class="coreText">${safe(coreHTML)}</div>`}
-        </div>
+<div class="corePunch">
+  ${coreHTML}
+</div>
 
         <!-- 深読み（折りたたみ） -->
         <details class="deepRead">
