@@ -2082,6 +2082,60 @@ a:hover, .menuCta:hover{
   font-size: 12px;
   color: rgba(255,255,255,.74);
 }
+.gogyouQuickNav{
+  max-width: 980px;
+  margin: 12px auto 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(12,14,20,.55);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.gqTitle{
+  font-size: 12px;
+  letter-spacing:.14em;
+  color: rgba(245,228,170,.92);
+  font-family:"Cinzel","Shippori Mincho",serif;
+  margin-bottom: 6px;
+}
+.gqNote{ font-size: 13px; color: rgba(255,255,255,.72); margin-bottom: 10px; }
+
+.gqChips{ display:flex; gap:10px; flex-wrap:wrap; }
+
+.gqChip{
+  display:flex; flex-direction:column; gap:2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  text-decoration:none;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+  min-width: 220px;
+}
+.gqChip:hover{ border-color: rgba(245,228,170,.28); background: rgba(255,255,255,.06); }
+
+.gqChip.weak{
+  border-color: rgba(245,158,11,.26);
+  background: rgba(245,158,11,.08);
+}
+.gqChip.strong{
+  border-color: rgba(34,197,94,.26);
+  background: rgba(34,197,94,.08);
+}
+.gqLabel{ font-size:11px; letter-spacing:.12em; color: rgba(255,255,255,.70); }
+.gqMain{ font-size:16px; font-weight:800; color: rgba(255,255,255,.92); }
+.gqSub{ font-size:12px; color: rgba(255,255,255,.74); }
+.kwWrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:6px;
+}
+.kw{
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  letter-spacing: .04em;
+  opacity: .92;
+}
   </style>
 </head>
 
@@ -4034,7 +4088,7 @@ function buildGlobalSummaryHTML(picked, count, labels3){
   const frontSrc = getCardImageSrc(card);
 
   const isThree = (positionLabel === "過去" || positionLabel === "現在" || positionLabel === "未来");
-  const kwLimit = isThree ? 6 : 10;
+  const kwLimit = isThree ? 6 : 6;
 
   const themes = extractThemes(card);
   const kw = extractKeywords(card, isReversed, kwLimit);
@@ -4394,6 +4448,35 @@ function getWeakElemFromInputs(){
   const { weak } = pickStrongWeak(score);
   return weak?.[0] || "";
 }
+function getStrongElemFromInputs(){
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
+  if (!uDate) return "";
+
+  const [y,m,d] = uDate.split("-").map(n=>parseInt(n,10));
+  if (!y || !m || !d) return "";
+
+  const fpYear = approxYearForFourPillars(y,m,d);
+  const ygz = yearGanzhi(fpYear);
+
+  const mBranch = approxMonthBranch(y,m,d);
+  const mStem = monthStemFrom(ygz.stem, mBranch);
+
+  const dgz = dayGanzhi(y,m,d);
+
+  const hBranch = hourBranchFromTime(uTime);
+  const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
+
+  const score = calcFiveElements({
+    yStem: ygz.stem, yBranch: ygz.branch,
+    mStem, mBranch,
+    dStem: dgz.stem, dBranch: dgz.branch,
+    hStem, hBranch
+  });
+
+  const { strong } = pickStrongWeak(score);
+  return strong?.[0] || "";
+}
 function elemMeaning(e){
   const map = {
     "木":"育つ力・つながり",
@@ -4630,6 +4713,38 @@ function buildBothGogyouHTML(){
         ${gogyouHTML ? `<div style="margin-top:12px;">${gogyouHTML}</div>` : ""}
       </div>
     </details>
+  `;
+}
+function buildGogyouQuickNavHTML(){
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  if (!uDate) return ""; // 生年月日が無い時は出さない
+
+  const weak = getWeakElemFromInputs();
+  const strong = getStrongElemFromInputs();
+
+  const mkLink = (jp, kind) => {
+    const slug = elemKeyJPtoSlug(jp);
+    if (!slug) return "./elements/index.html";
+    return `./elements/${slug}-${kind}.html`; // kind: weak / strong
+  };
+
+  const chip = (label, jp, kind) => jp ? `
+    <a class="gqChip ${kind}" href="${mkLink(jp, kind)}" target="_blank" rel="noopener">
+      <span class="gqLabel">${label}</span>
+      <span class="gqMain">${jp}</span>
+      <span class="gqSub">${elemMeaning(jp)}</span>
+    </a>
+  ` : "";
+
+  return `
+    <section class="gogyouQuickNav">
+      <div class="gqTitle">五行の案内（あなた）</div>
+      <div class="gqNote">迷ったら「不足」から読むのがおすすめ。</div>
+      <div class="gqChips">
+        ${chip("不足", weak, "weak")}
+        ${chip("強い", strong, "strong")}
+      </div>
+    </section>
   `;
 }
 // =========================
