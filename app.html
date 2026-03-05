@@ -3480,20 +3480,23 @@ function extractPrayer(card, isReversed){
 
 // ★これが抜けてた（or 壊れてた）ので追加/復活させる
 function buildSingleReadingStory({ card, isReversed, energyProfile }){
-  const core   = extractCoreSentence(card, isReversed);
+
+  const core = extractCoreSentence(card, isReversed);
   const action = extractAction(card, isReversed);
   const prayer = extractPrayer(card, isReversed);
 
   let body =
 `${core}
 
-ひとつの流れが静かに切り替わっています。
-今日は、焦らず「整う方」を選んでください。
+いま、あなたの流れは静かに動き始めています。
+
+大きく変わろうとしなくても大丈夫。
+小さく整える行動が、次の道を照らします。
 
 ${action}`;
 
-  if (energyProfile?.tone === "soft") {
-    body = body.replace(/ください。/g, "みて。");
+  if (energyProfile?.tone === "soft"){
+    body = body.replace("ください。","みて。");
   }
 
   return { body, prayer };
@@ -3532,15 +3535,24 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
   const f = extractCoreSentence(future.card, future.isReversed);
 
   let story =
-`過去、あなたは「${p}」という流れを通ってきました。
+`${p}
 
-いま、その経験は「${n}」へと形を変えています。
+これまでの流れの中で、
+あなたは大切な気づきを重ねてきました。
 
-そして未来は、「${f}」へ向かうでしょう。
-焦らず、いまの一歩を信じて。`;
+いま、その経験は
+「${n}」という形で現れています。
+
+焦って進む必要はありません。
+この流れは、やがて
+「${f}」へと自然に繋がっていきます。`;
+
+  if (energyProfile?.tone === "soft"){
+    story = story.replace(/。/g,"。");
+  }
 
   if (energyProfile?.tone === "direct"){
-    story = story.replace("焦らず、", "迷ったら、");
+    story = story.replace("焦って進む必要はありません。","迷ったら、小さく一歩動いてみてください。");
   }
 
   return story;
@@ -3734,66 +3746,59 @@ function buildFlowSentence(pastCore, nowCore, futureCore){
 }
 
 /* ---- 結果上部の“鑑定の結論ブロック”を生成（HTML） ---- */
-function buildGlobalSummaryHTML(picked, count, labels3){
+function buildGlobalSummaryHTML(picked, count){
+
   try{
-    const isThree = count === 3;
 
-    let themesAll = "";
-    let actionOne = "";
-    let flow = "";
-    let coreNow = "";
+    let story = "";
 
-    if (isThree){
-      const past = picked[0], now = picked[1], future = picked[2];
-      const pastCore = extractCoreSentence(past.card, past.isReversed);
-      const nowCore  = extractCoreSentence(now.card,  now.isReversed);
-      const futCore  = extractCoreSentence(future.card, future.isReversed);
+    if(count === 3){
 
-      flow = buildFlowSentence(pastCore, nowCore, futCore);
-      coreNow = nowCore;
+      story = buildThreeReadingStory({
+        past: picked[0],
+        present: picked[1],
+        future: picked[2]
+      });
 
-      const t = [themeForSummary(past.card), themeForSummary(now.card), themeForSummary(future.card)]
-  .filter(Boolean).join(" / ");
-themesAll = t;
-      function themeForSummary(card){
-  const t = (extractThemes(card) || "").toString();
-  return t.split("|")[0].trim(); // “|”より左だけ
-}
+    }else{
 
-      // 行動は「現在」を優先（無ければ未来）
-      actionOne = extractAction(now.card, now.isReversed) || extractAction(future.card, future.isReversed);
-    } else {
       const one = picked[0];
-      coreNow = extractCoreSentence(one.card, one.isReversed);
-      themesAll = themeForSummary(one.card);
-      actionOne = extractAction(one.card, one.isReversed);
-      flow = ""; // 1枚引きは流れ不要
+
+      const core = extractCoreSentence(one.card, one.isReversed);
+      const action = extractAction(one.card, one.isReversed);
+
+      story =
+`${core}
+
+いまのあなたに必要なのは、
+ほんの小さな一歩です。
+
+${action}`;
+
     }
 
-    const { line1, line2 } = makeTwoLineConclusion({
-      coreNow,
-      coreFlow: flow || coreNow,
-      themes: themesAll
-    });
+    return `
+    <section class="globalSummary">
+      <div class="gsTitle">鑑定の結論</div>
+      <div class="gsLines">
+        <div class="gsLine1">${escapeHtml(story).replace(/\n/g,"<br>")}</div>
+      </div>
+    </section>`;
 
-    const safeLine1 = (typeof escapeHtml === "function") ? escapeHtml(line1) : line1;
-    const safeLine2 = (typeof escapeHtml === "function") ? escapeHtml(line2) : line2;
-    const safeAct   = (typeof escapeHtml === "function") ? escapeHtml(actionOne) : actionOne;
+  }catch(e){
+
+    console.error(e);
 
     return `
-      <section class="globalSummary">
-        <div class="gsTitle">鑑定の結論</div>
-        <div class="gsLines">
-          <div class="gsLine1">${safeLine1}</div>
-          <div class="gsLine2">${safeLine2}</div>
-        </div>
-        ${actionOne ? `<div class="gsAction"><span class="gsActionLabel">今日の一歩</span>${safeAct}</div>` : ``}
-      </section>
-    `;
-  } catch(e){
-    console.error("[buildGlobalSummaryHTML error]", e);
-    return `<section class="globalSummary"><div class="gsTitle">鑑定の結論</div><div class="gsLines"><div class="gsLine1">いまは静かに整える時間です。</div></div></section>`;
+    <section class="globalSummary">
+      <div class="gsTitle">鑑定の結論</div>
+      <div class="gsLines">
+        <div class="gsLine1">いまは静かに整える時間です。</div>
+      </div>
+    </section>`;
+
   }
+
 }
 
     function renderCard(card, isReversed, positionLabel = "", showDeepRead = true) {
@@ -4150,11 +4155,12 @@ function toDots(v){
 }
 
 function pickStrongWeak(score){
-  const entries = Object.entries(score);
-  entries.sort((a,b)=>b[1]-a[1]);
-  const strong = entries[0];
-  const weak = entries[entries.length-1];
-  return { strong, weak };
+  const entries = Object.entries(score).sort((a,b)=>b[1]-a[1]);
+
+  return {
+    strong: [entries[0][0], entries[1][0]],
+    weak: [entries[4][0], entries[3][0]]
+  };
 }
 function debugFive(dateStr, timeStr){
   dateStr = normalizeDateInput(dateStr);
