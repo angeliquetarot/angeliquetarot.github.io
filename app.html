@@ -3631,40 +3631,44 @@ function normalizeActionJP(actionText, fallback){
   return a;
 }
   function buildThreeReadingStory({ past, present, future, energyProfile }){
+  const p = ensurePoliteJP(extractCoreSentence(past.card, past.isReversed));
+  const n = ensurePoliteJP(extractCoreSentence(present.card, present.isReversed));
+  const f = toFutureJP(ensurePoliteJP(extractCoreSentence(future.card, future.isReversed)));
 
-  const p = softenStateJP(extractCoreSentence(past.card, past.isReversed));
-  const n = softenStateJP(extractCoreSentence(present.card, present.isReversed));
-  const f = toFutureJP(softenStateJP(extractCoreSentence(future.card, future.isReversed)));
+  const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
 
-  const joined = joinWithVariedConnectors({
-    past: p,
-    now: n,
-    future: f
-  });
+  const head = pickStableOne([
+    "これまでを振り返ると、",
+    "ここまでの経緯を見ると、",
+    "最近の流れを辿ると、",
+  ], seed + "|head");
 
-  const act = normalizeActionJP(
-    extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed),
-    "今日は、負担を減らす選択をひとつ。"
-  );
+  const mid = pickStableOne([
+    "そして今、",
+    "いま目の前では、",
+    "現在は、",
+  ], seed + "|mid");
 
-  const wrap = pickOne([
-    "大丈夫。整えるほど、ちゃんと戻れます。",
-    "急がなくていい。整った方へ、少しずつ。",
-    "迷ったら深呼吸。足場を整えるだけで十分です。"
-  ]);
+  const fut = pickStableOne([
+    "この先は、",
+    "少し先には、",
+    "やがて、",
+  ], seed + "|fut");
 
-  let story = `
-${joined.pastLine}
+  const bridge = bridgeJP(f);
 
-${joined.nowLine}
+  let story =
+`${head}${p}
 
-${joined.futureLine}
+${mid}${n}
 
-${inferMeaningLine(n)}
-${wrap} ${act}
-`.trim();
+${bridge}
+${fut}${f}`.trim();
 
-  return polishStoryJP(story);
+  // 最後に1回だけ整形
+  story = postProcessStoryJP(story);
+
+  return story;
 }
 function buildThreeReadingHTML({ past, present, future, energyProfile }){
   const story = buildThreeReadingStory({ past, present, future, energyProfile });
@@ -3842,13 +3846,18 @@ function inferMeaningLine(stateText){
   if (/不安|怖/.test(t))               return "安全を確かめたい心が強くなっています。";
   if (/焦|急/.test(t))                 return "スピードより整合性を優先すると流れが戻ります。";
 
-  return "流れの調整ポイントが、ここにあります。";
+  return pickOneJP([
+    "整えるべきポイントは、ここにあります。",
+    "ここが、立て直しの要所になります。",
+    "調整の鍵は、いまここにあります。"
+  ]);
 }
 
 function normalizeActionJP(actionText, fallback){
   let a = (actionText ?? "").toString().trim();
   if (!a) a = fallback || "今日は「ひとつだけ」整える選択を。";
   a = a.replace(/[「」"]/g,"").trim();
+  a = a.replace(/\.\s*。/g, "。").replace(/\.(?=[^0-9])/g, ""); // 英句点除去
   if (!/[。！？]$/.test(a)) a += "。";
   return a;
 }
@@ -3871,23 +3880,26 @@ function toFutureJP(line){
   let t = (line ?? "").toString().trim();
   if (!t) return "";
 
-  // 「〜という流れが出ています。」→「〜へ傾きやすいです。」
-  t = t.replace(/という流れが出ています。$/, "へ傾きやすいです。");
+  // まず「という流れが出ています」を未来形へ
+  t = t.replace(/という流れが出ています。?$/,"になりやすくなります。");
+  t = t.replace(/という気配が出ています。?$/,"が強まりやすくなります。");
+  t = t.replace(/しやすい流れにあります。?$/,"しやすくなります。");
+  t = t.replace(/という状況が出ています。?$/,"になりやすくなります。");
+  t = t.replace(/という傾向が出ています。?$/,"という傾向が強まりやすくなります。");
 
-  // 「〜しやすい流れにあります。」→「〜しやすくなります。」
-  t = t.replace(/しやすい流れにあります。$/, "しやすくなります。");
+  // 「へ傾きやすい」みたいな形が残ってたら救済
+  t = t.replace(/へ傾きやすいです。?$/,"傾きやすくなります。");
 
-  // 「〜という状況が出ています。」→「〜になりやすいです。」
-  t = t.replace(/という状況が出ています。$/, "になりやすいです。");
-
-  // 念のため語尾
+  // 句点
   if (!/[。！？]$/.test(t)) t += "。";
   return t;
 }
+
+
 // 文のつなぎを自然にする（固定語を減らす）
 function joinWithVariedConnectors({past, now, future}){
-  const cNow = pickOne(["そして今、","いまは、","今は、","現在は、","目の前では、","ここでは、","その結果、"], "");
-  const cFut = pickOne(["この先は、","やがて、","少し先では、","次の流れとして、","そのまま進むと、","静かに、"], "");
+  const cNow = pickOne(["そして今、","いまは、","今は、","現在は、","目の前では、","ここでは、","その結果、"]);
+  const cFut = pickOne(["この先は、","やがて、","少し先では、","次の流れとして、","そのまま進むと、","静かに、"]);
 
   return {
     pastLine: past,
@@ -3898,6 +3910,7 @@ function joinWithVariedConnectors({past, now, future}){
 // ===== JP story post-process (repeat + connector fix) =====
 function postProcessStoryJP(s){
   s = String(s || "");
+  s = s.replace(/がちなという/g, "がちだという");
 
   // ① 先頭の固定フレーズをランダム化（“これまでの流れでは”固定を回避）
   s = s.replace(/^これまでの流れでは、/m, pickOneJP([
@@ -3984,7 +3997,7 @@ function buildGlobalSummaryHTML(picked, count){
       });
     } else {
       const one = picked[0];
-      const core = softenStateJP(extractCoreSentence(one.card, one.isReversed));
+      const core = ensurePoliteJP(extractCoreSentence(one.card, one.isReversed));
       const act  = normalizeActionJP(extractAction(one.card, one.isReversed));
 
       story = `
