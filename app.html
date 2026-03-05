@@ -3737,6 +3737,42 @@ function fixDuplicateTendencyJP(s){
   return t;
 }
 
+function fixDuplicateTendencyJP(s){
+  s = String(s || "");
+
+  // 句読点の事故（.。）や 全角ピリオド混入
+  s = s.replace(/\.。/g, "。");
+  s = s.replace(/。\./g, "。");
+  s = s.replace(/\.{2,}/g, "。");
+
+  // 「時です時です」系
+  s = s.replace(/(時です)\s*\1+/g, "$1");
+  s = s.replace(/(です)\s*\1+/g, "$1");
+
+  // 「〜になりやすいに寄りやすい」/「〜しやすいに寄りやすい」
+  s = s.replace(/(なりやすい|しやすい)\s*に寄りやすい/g, "$1");
+  s = s.replace(/に寄りやすい\s*時です/g, "傾向があります。");
+
+  // 「〜がちなになりやすい」→ どちらかに統一
+  s = s.replace(/がち(な)?\s*になりやすい/g, "がちです");
+  s = s.replace(/がち(な)?\s*しやすい/g, "がちです");
+
+  // 「〜が出やすいです」：意味が壊れてることが多いので自然文へ
+  // 例「疲弊しやすいが出やすいです」→「疲弊しやすい傾向があります」
+  s = s.replace(/(やすい|がち)(?:が)?\s*出やすいです/g, "$1傾向があります。");
+  s = s.replace(/が出やすいです/g, "傾向があります。");
+
+  // 「〜になりやすいです時です」みたいな接続事故
+  s = s.replace(/(傾向があります。)\s*時です/g, "$1");
+  s = s.replace(/(です)\s*時です/g, "$1。");
+
+  // 余計な空白
+  s = s.replace(/[ \t]{2,}/g, " ");
+  s = s.replace(/\n{3,}/g, "\n\n");
+
+  return s.trim();
+}
+
 // ===== JP story post-process (repeat + connector fix) =====
 function postProcessStoryJP(s){
   s = String(s || "");
@@ -3808,7 +3844,7 @@ function bridgeJP(nextSentence){
 
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  // 0) seed は最初に作る（※これが必須）
+  // 0) seed は最初に作る（必須）
   const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
 
   // 1) 元テキスト（接続詞を剥がしたコア）
@@ -3816,25 +3852,25 @@ function bridgeJP(nextSentence){
   const n0 = stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed));
   const f0 = stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed));
 
-  // 2) 結論用：短すぎないように最大2文まで残し、語尾を安定バリエ
+  // 2) 2文まで + 語尾ゆらぎ（必要なら soften）
   const p = softenTendencyJP(
-  ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p")),
-  seed+"|p"
-);
+    ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p")),
+    seed+"|p"
+  );
 
-const n = softenTendencyJP(
-  ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n")),
-  seed+"|n"
-);
+  const n = softenTendencyJP(
+    ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n")),
+    seed+"|n"
+  );
 
-
-  // 未来は未来形へ寄せてから整える
+  // 未来だけ未来形へ寄せる
   const fFuture = toFutureJP(f0);
   const f = softenTendencyJP(
-  ensurePoliteJP(varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f")),
-  seed+"|f"
-);
-  // 3) つなぎ（固定感を消す）
+    ensurePoliteJP(varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f")),
+    seed+"|f"
+  );
+
+  // 3) つなぎ
   const head = pickStableOne([
     "これまでを振り返ると、",
     "ここまでの経緯を見ると、",
@@ -3854,17 +3890,15 @@ const n = softenTendencyJP(
   ], seed + "|fut");
 
   const themeNow = String(present.card.themes || "");
-  const nowText  = String(n0 || ""); // ← n0 がある前提（あなたの関数内にある）
-
   const bridge = (typeof bridgeForFutureJP === "function")
-    ? bridgeForFutureJP(seed, themeNow) // seedを渡すと安定する
+    ? bridgeForFutureJP(seed, themeNow)
     : pickStableOne([
         "その延長で、次の気配が少しずつ強まります。",
         "そこから、次のテーマが輪郭を帯びてきます。",
         "積み重ねの先で、次の課題が静かに現れます。",
       ], seed + "|bridge");
 
-  // 4) ストーリーを組む
+  // 4) ストーリー本文
   let story =
 `${head}${p}
 
@@ -3873,45 +3907,34 @@ ${mid}${n}
 ${bridge}
 ${fut}${f}`.trim();
 
-// ===== ここ（1）: 結びを “必要な時だけ” 付ける =====
-const shouldWrap =
-  (String(f || "").length < 28) || /傾向があります。?$/.test(String(f));
+  // ===== ここ（A）: 今日の一歩を入れる（おすすめ：wrapの前） =====
+  const step = extractAction(present.card, present.isReversed)
+            || extractAction(future.card, future.isReversed);
+  if (step) {
+    story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
+  }
 
-if (shouldWrap && typeof buildWrapUpJP === "function") {
-  const wrap = buildWrapUpJP({ p0, n0, f0, seed });
-  if (wrap) story += `\n\n${wrap}`;
+  // ===== ここ（B）: 結びは “必要な時だけ” 追加（※二重追加しない） =====
+  const shouldWrap =
+    (String(f || "").length < 28) || /傾向があります。?$/.test(String(f));
+
+  if (shouldWrap && typeof buildWrapUpJP === "function") {
+    const wrap = buildWrapUpJP({ p0, n0, f0, seed });
+    if (wrap) story += `\n\n${wrap}`;
+  }
+
+  // ① ゴミ取り
+  if (typeof fixDuplicateTendencyJP === "function") {
+    story = fixDuplicateTendencyJP(story);
+  }
+
+  // ② 全体整形
+  if (typeof postProcessStoryJP === "function") {
+    story = postProcessStoryJP(story);
+  }
+
+  return story;
 }
-// ===== ここまで =====
-
-
-
-// ★統合の一文（現在＝主役、過去＝背景、未来＝方向）
-const wrap = (typeof buildWrapUpJP === "function")
-  ? buildWrapUpJP({ p0, n0, f0, seed })
-  : "";
-
-if (wrap) story += `\n\n${wrap}`;
-
-// ここで「一歩」も付けるなら wrap の前か後どっちでもOK（おすすめは wrap の前）
-/*
-const step = extractAction(present.card, present.isReversed)
-          || extractAction(future.card, future.isReversed);
-if (step) story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
-*/
-
-// ① ゴミ取り（未定義でも落ちない）
-if (typeof fixDuplicateTendencyJP === "function") {
-  story = fixDuplicateTendencyJP(story);
-}
-
-// ② 全体整形（未定義でも落ちない）
-if (typeof postProcessStoryJP === "function") {
-  story = postProcessStoryJP(story);
-}
-
-return story;
-}
-
 function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
   const p = String(p0), n = String(n0), f = String(f0);
 
