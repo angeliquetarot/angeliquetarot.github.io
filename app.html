@@ -3682,9 +3682,12 @@ function bridgeJP(nextSentence){
 }
 
   function buildThreeReadingStory({ past, present, future, energyProfile }){
-  const p = ensurePoliteJP(extractCoreSentence(past.card, past.isReversed));
-  const n = ensurePoliteJP(extractCoreSentence(present.card, present.isReversed));
-  const f = toFutureJP(ensurePoliteJP(extractCoreSentence(future.card, future.isReversed)));
+  const p = ensurePoliteJP(stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed)));
+  const n = ensurePoliteJP(stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed)));
+
+  // 未来は “未来寄せ” に変換してから先頭接続も剥がす
+  const fRaw = ensurePoliteJP(stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed)));
+  const f = toFutureJP(fRaw);
 
   const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
 
@@ -3706,20 +3709,20 @@ function bridgeJP(nextSentence){
     "やがて、",
   ], seed + "|fut");
 
-  // bridgeJP は “つなぎ”だけ（未来導入と被らせない）
-  const bridge = (typeof bridgeJP === "function")
-    ? bridgeJP(f)
-    : "少し先では、その気配が静かに形になっていきます。";
+  // ★時間語を含まないブリッジ
+  const bridge = (typeof bridgeForFutureJP === "function")
+    ? bridgeForFutureJP()
+    : "その延長で、次の気配が少しずつ強まります。";
 
   let story =
-`${head}${stripNowPrefixJP(p)}
+`${head}${p}
 
-${mid}${stripNowPrefixJP(n)}
+${mid}${n}
 
 ${bridge}
-${fut}${stripNowPrefixJP(f)}`.trim();
+${fut}${f}`.trim();
 
-  // 最後に1回だけ整形
+  // 最後に1回だけ整形（あなたの既存）
   if (typeof postProcessStoryJP === "function") story = postProcessStoryJP(story);
 
   return story;
@@ -3934,6 +3937,24 @@ function normalizeActionJP(actionText, fallback){
 function pickOne(arr, seed){
   // seed不要なら Math.random でOK
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function bridgeForFutureJP(){
+  return pickStableOne([
+    "その延長で、次の気配が少しずつ強まります。",
+    "そこから、次の課題が輪郭を帯びてきます。",
+    "積み重ねの先で、次のテーマが表に出てきます。"
+  ], "bridge|future");
+}
+
+function stripLeadConnectorJP(s){
+  let t = String(s || "").trim();
+
+  // よくある先頭接続を剥がす（カード文に付いてるやつ）
+  t = t.replace(/^(そして)?(今は|いまは|現在は|目の前では)[、,\s]*/,"");
+  t = t.replace(/^(この先は|少し先には|やがて)[、,\s]*/,"");
+
+  return t.trim();
 }
 
 // 先頭の「今は/いま/そして今は/そしていま」系を剥がす
