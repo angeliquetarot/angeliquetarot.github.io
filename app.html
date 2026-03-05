@@ -2185,6 +2185,24 @@ a:hover, .menuCta:hover{
   line-height: 1.8;
 }
 
+.gsFold{
+  margin-top:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.14);
+  overflow:hidden;
+}
+.gsFold > summary{
+  cursor:pointer;
+  padding:12px 12px;
+  font-size:13px;
+  color:rgba(255,255,255,.84);
+  list-style:none;
+}
+.gsFold > summary::-webkit-details-marker{ display:none; }
+.gsFoldInner{ padding:12px 12px 14px; }
+
+
   </style>
 </head>
 
@@ -3922,13 +3940,15 @@ const f = ensurePoliteJP(
       ], seed + "|bridge");
 
   // 4) ストーリー本文
-  let story =
+  const hasTimeLead = /^(この先|少し先|やがて|今後|まもなく)[、]/.test(f);
+
+let story =
 `${head}${p}
 
 ${mid}${n}
 
 ${bridge}
-${fut}${f}`.trim();
+${hasTimeLead ? "" : fut}${f}`.trim();
 
   // ===== ここ（A）: 今日の一歩を入れる（おすすめ：wrapの前） =====
   const step = extractAction(present.card, present.isReversed)
@@ -4307,6 +4327,7 @@ function toFutureJP(s){
   s = s.replace(/が出やすい状態です。?$/g, "が出やすくなっていきます。");
   s = s.replace(/になりやすいです。?$/g, "になりやすくなっていきます。");
   s = s.replace(/しやすいです。?$/g, "しやすくなっていきます。");
+  s = s.replace(/傾向があります。?$/g, "になりやすくなっていきます。");
 
   return s;
 }
@@ -4478,6 +4499,9 @@ story = story
         </div>
 
         ${step ? `
+        <details class="gsFold">
+  <summary>今日の一歩 / 結び</summary>
+  <div class="gsFoldInner">
           <div class="gsAction">
             <span class="gsActionLabel">今日の一歩</span>
             <div class="gsActionText">${escapeHtml(step)}</div>
