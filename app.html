@@ -3823,15 +3823,30 @@ if (shouldWrap && typeof buildWrapUpJP === "function") {
 
 
 // ★統合の一文（現在＝主役、過去＝背景、未来＝方向）
-// p0/n0/f0 がある前提（元テキスト）
-const wrap = buildWrapUpJP({ p0, n0, f0, seed });
+const wrap = (typeof buildWrapUpJP === "function")
+  ? buildWrapUpJP({ p0, n0, f0, seed })
+  : "";
+
 if (wrap) story += `\n\n${wrap}`;
 
-  // 5) 最後に整形（あなたの既存）
-  if (typeof postProcessStoryJP === "function") story = postProcessStoryJP(story);
-  story = fixDuplicateTendencyJP(story); // ←これを追加
+// ここで「一歩」も付けるなら wrap の前か後どっちでもOK（おすすめは wrap の前）
+/*
+const step = extractAction(present.card, present.isReversed)
+          || extractAction(future.card, future.isReversed);
+if (step) story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
+*/
 
-  return story;
+// ① ゴミ取り（未定義でも落ちない）
+if (typeof fixDuplicateTendencyJP === "function") {
+  story = fixDuplicateTendencyJP(story);
+}
+
+// ② 全体整形（未定義でも落ちない）
+if (typeof postProcessStoryJP === "function") {
+  story = postProcessStoryJP(story);
+}
+
+return story;
 }
 
 function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
