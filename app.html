@@ -3525,6 +3525,12 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
     </section>
   </section>`;
 }
+  function buildThreeReadingStory({ past, present, future, energyProfile }){
+
+  const p = extractCoreSentence(past.card, past.isReversed);
+  const n = extractCoreSentence(present.card, present.isReversed);
+  const f = extractCoreSentence(future.card, future.isReversed);
+
   let story =
 `過去、あなたは「${p}」という流れを通ってきました。
 
@@ -3538,7 +3544,7 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
   }
 
   return story;
-
+}
 
 function buildThreeReadingHTML({ past, present, future, energyProfile }){
   const story = buildThreeReadingStory({ past, present, future, energyProfile });
