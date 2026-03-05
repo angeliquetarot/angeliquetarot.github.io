@@ -3716,6 +3716,69 @@ function polishStoryJP(story){
   return s.trim();
 }
 
+function fixDuplicateTendencyJP(s){
+  let t = String(s || "");
+
+  // ありがちな連結ミス（〜になりやすいになりやすい）
+  t = t.replace(/(になりやすい)(?:\s*\1)+/g, "$1");
+  t = t.replace(/(しやすい)(?:\s*\1)+/g, "$1");
+  t = t.replace(/(寄りやすい)(?:\s*\1)+/g, "$1");
+  t = t.replace(/(傾向があります)(?:\s*\1)+/g, "$1");
+  t = t.replace(/(時です)(?:\s*\1)+/g, "$1");
+
+  // 「〜しやすいに寄りやすい」みたいな不自然
+  t = t.replace(/しやすいに寄りやすい/g, "しやすい時です");
+  t = t.replace(/やすいに寄りやすい/g, "やすい時です");
+
+  // 句点のゴミ（"。." や ".。"）
+  t = t.replace(/。\.+/g, "。");
+  t = t.replace(/\.+。/g, "。");
+
+  return t;
+}
+
+// ===== JP story post-process (repeat + connector fix) =====
+function postProcessStoryJP(s){
+  s = String(s || "");
+  s = s.replace(/がちなという/g, "がちだという");
+
+  // ① 先頭の固定フレーズをランダム化（“これまでの流れでは”固定を回避）
+  s = s.replace(/^これまでの流れでは、/m, pickOneJP([
+    "これまでを振り返ると、",
+    "ここまでの経緯を見ると、",
+    "これまでの歩みの中で、",
+  ]));
+
+  // ② 「流れ」連打を弱める（“流れの〜”→“この先の〜”など）
+  s = s.replace(/流れの/g, "この先の");
+  s = s.replace(/この流れ/g, "この傾向");
+  s = s.replace(/流れが/g, "気配が");
+
+  // ③ 「今は、今は、」などの繰り返しを潰す
+  s = s.replace(/(今は、)\s*\1+/g, "$1");
+  s = s.replace(/(無理に)\s*\1+/g, "$1");
+
+  // ④ 「〜しにくいへと」みたいな不自然接続を修正
+  s = s.replace(/(しにくい|づらい)へと/g, "$1傾向へ");
+
+  // ⑤ 余計な空行を整える
+  s = s.replace(/\n{3,}/g, "\n\n");
+
+  // ⑥ 既存の重複削減も最後に一回かける（あるなら）
+  if (typeof reduceRepeatsJP === "function") {
+  s = reduceRepeatsJP(s);
+  }
+
+   // ★ここを追加：最終の崩れ取り
+ if (typeof fixJPArtifacts === "function") {
+  s = fixJPArtifacts(s);
+}
+
+  if (typeof stripStepWrapFromStoryJP === "function") {
+  s = stripStepWrapFromStoryJP(s); // ★UI側で出すなら入れる
+  }
+  return s.trim();
+}
 
 // 未来文の語尾に合わせて、つなぎを自然にする
 function endingTypeJP(s){
@@ -4247,48 +4310,7 @@ function fixJPArtifacts(s){
     .replace(/ます[.．]+/g, "ます。");
 }
 
-// ===== JP story post-process (repeat + connector fix) =====
-function postProcessStoryJP(s){
-  s = String(s || "");
-  s = s.replace(/がちなという/g, "がちだという");
 
-  // ① 先頭の固定フレーズをランダム化（“これまでの流れでは”固定を回避）
-  s = s.replace(/^これまでの流れでは、/m, pickOneJP([
-    "これまでを振り返ると、",
-    "ここまでの経緯を見ると、",
-    "これまでの歩みの中で、",
-  ]));
-
-  // ② 「流れ」連打を弱める（“流れの〜”→“この先の〜”など）
-  s = s.replace(/流れの/g, "この先の");
-  s = s.replace(/この流れ/g, "この傾向");
-  s = s.replace(/流れが/g, "気配が");
-
-  // ③ 「今は、今は、」などの繰り返しを潰す
-  s = s.replace(/(今は、)\s*\1+/g, "$1");
-  s = s.replace(/(無理に)\s*\1+/g, "$1");
-
-  // ④ 「〜しにくいへと」みたいな不自然接続を修正
-  s = s.replace(/(しにくい|づらい)へと/g, "$1傾向へ");
-
-  // ⑤ 余計な空行を整える
-  s = s.replace(/\n{3,}/g, "\n\n");
-
-  // ⑥ 既存の重複削減も最後に一回かける（あるなら）
-  if (typeof reduceRepeatsJP === "function") {
-  s = reduceRepeatsJP(s);
-  }
-
-   // ★ここを追加：最終の崩れ取り
- if (typeof fixJPArtifacts === "function") {
-  s = fixJPArtifacts(s);
-}
-
-  if (typeof stripStepWrapFromStoryJP === "function") {
-  s = stripStepWrapFromStoryJP(s); // ★UI側で出すなら入れる
-  }
-  return s.trim();
-}
 
 function pickOneJP(arr){
   return arr[Math.floor(Math.random() * arr.length)];
