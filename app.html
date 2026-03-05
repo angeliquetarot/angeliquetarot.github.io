@@ -3630,6 +3630,33 @@ function normalizeActionJP(actionText, fallback){
   if (!/[。！？]$/.test(a)) a += "。";
   return a;
 }
+
+// 未来文の語尾に合わせて、つなぎを自然にする
+function endingTypeJP(s){
+  s = (s ?? "").toString().trim();
+  if (!s) return "other";
+  if (/(しにくい|しづらい|なりやすい|やすい)\s*。?$/.test(s)) return "adj_difficulty";
+  if (/(状態です|傾向です|流れです|局面です)\s*。?$/.test(s)) return "state";
+  if (/(でしょう|かもしれません)\s*。?$/.test(s)) return "soft";
+  if (/(ます|です)\s*。?$/.test(s)) return "polite";
+  return "other";
+}
+
+function bridgeJP(nextSentence){
+  const t = endingTypeJP(nextSentence);
+
+  if (t === "adj_difficulty"){
+    return "その先では、そう感じやすい時間が続きそうです。";
+  }
+  if (t === "state"){
+    return "少し先には、その傾向がもう一段はっきりしていきます。";
+  }
+  if (t === "soft"){
+    return "この先は、その気配が静かに広がっていくでしょう。";
+  }
+  return "やがて、その意味が現実の場面に表れてきます。";
+}
+
   function buildThreeReadingStory({ past, present, future, energyProfile }){
   const p = ensurePoliteJP(extractCoreSentence(past.card, past.isReversed));
   const n = ensurePoliteJP(extractCoreSentence(present.card, present.isReversed));
@@ -3655,7 +3682,9 @@ function normalizeActionJP(actionText, fallback){
     "やがて、",
   ], seed + "|fut");
 
-  const bridge = bridgeJP(f);
+  const bridge = (typeof bridgeJP === "function")
+  ? bridgeJP(f)
+  : "この先は、その気配が静かに形になっていきます。";
 
   let story =
 `${head}${p}
