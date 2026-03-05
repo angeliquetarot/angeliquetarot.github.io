@@ -3843,20 +3843,33 @@ function extractThemes(card){
 }
 
 function extractCoreSentence(card, isReversed){
-  // ① core優先
-  t = softenEndingJP(t);
+
+  let t = "";
+
   const core = pickTextByOrientation(card, isReversed, "core");
-  if (core) return normalizeJP(core);
+  if (core) t = core;
 
-  // ② interpretationの最初の一文
-  const interp = pickTextByOrientation(card, isReversed, "interpretation");
-  if (interp) return normalizeJP(firstSentenceJP(interp));
+  if (!t){
+    const interp = pickTextByOrientation(card, isReversed, "interpretation");
+    if (interp) t = firstSentenceJP(interp);
+  }
 
-  // ③ angelの最初の一文
-  const angel = pickTextByOrientation(card, isReversed, "angel");
-  if (angel) return normalizeJP(firstSentenceJP(angel));
+  if (!t){
+    const angel = pickTextByOrientation(card, isReversed, "angel");
+    if (angel) t = firstSentenceJP(angel);
+  }
 
-  return "いまは静かに整える時間です。";
+  if (!t){
+    t = "いまは静かに整える時間です。";
+  }
+
+  t = normalizeJP(t);
+
+  if (typeof softenEndingJP === "function"){
+    t = softenEndingJP(t);
+  }
+
+  return t;
 }
 
 function extractInterpretation(card, isReversed){
