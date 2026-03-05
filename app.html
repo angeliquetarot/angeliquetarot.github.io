@@ -3140,7 +3140,7 @@ async function onDraw() {
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
-    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count);
+    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
     const gogyouNavHTML =
   (typeof buildGogyouQuickNavHTML === "function") ? buildGogyouQuickNavHTML() : "";
 
@@ -3185,26 +3185,6 @@ if (!window.__shareOneLine) {
   }
 }
     
-
-  // 五行：弱点だけ“物語の調律”として混ぜる（長くしない）
-  let weak = "";
-  try {
-    weak = (typeof getWeakElemFromInputs === "function") ? (getWeakElemFromInputs() || "") : "";
-  } catch (e) { weak = ""; }
-
-  const weakTune = weak
-    ? `いまのあなたは「${weak}（${elemMeaning(weak)}）」を足すほど、流れが整います。`
-    : "";
-
-  // 数秘：LPを一言で混ぜる（長い説明は別ページ）
-  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
-  let lpLine = "";
-  try {
-    if (uDate && typeof calculateLifePath === "function") {
-      const lp = calculateLifePath(uDate);
-      lpLine = `数秘の軸（ライフパスナンバー${lp}）は「自分のリズムを信じて進む」サイン。`;
-    }
-  } catch (e) { lpLine = ""; }
 
         /**
          * basePoetic: 詩的1文
@@ -4285,8 +4265,14 @@ function buildGogyouBlock(title, dateStr, timeStr){
 
   const dgz = dayGanzhi(y,m,d);
 
-  const hBranch = hourBranchFromTime(timeStr);
-  const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
+ function hourBranchFromTime(timeStr){
+  const t = normalizeTimeInput(timeStr);
+  if (!t) return null;
+  const hh = parseInt(t.split(":")[0], 10);
+  // 子:23-1, 丑:1-3, 寅:3-5 ... の簡易
+  const idx = Math.floor(((hh + 1) % 24) / 2);
+  return window.BRANCHES[idx]; // 0=子
+}
 
   const score = calcFiveElements({
     yStem: ygz.stem, yBranch: ygz.branch,
@@ -4825,24 +4811,7 @@ function openImageFallbackFromBlob(blob) {
       }
       ctx.restore();
     }
-    function buildGlobalSummaryHTML(picked, count, labels3){
-  const story = (typeof hasBirthInput === "function" && hasBirthInput())
-    ? buildIntegratedStory({ picked, count })
-    : buildCardOnlyStory({ picked, count });
-
-  const safeStory = (typeof escapeHtml === "function")
-    ? escapeHtml(story).replace(/\n/g,"<br>")
-    : String(story).replace(/\n/g,"<br>");
-
-  return `
-    <section class="globalSummary">
-      <div class="gsTitle">鑑定の結論</div>
-      <div class="gsLines">
-        <div class="gsLine1">${safeStory}</div>
-      </div>
-    </section>
-  `;
-}
+    
   </script>
   <!-- <script src="numerology_logic_pure.js"></script> -->
   <script src="assets/js/energy/energy_logic_clean.js"></script>
