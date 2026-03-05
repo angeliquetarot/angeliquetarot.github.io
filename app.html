@@ -3530,29 +3530,35 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
 }
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  const p = extractCoreSentence(past.card, past.isReversed);
-  const n = extractCoreSentence(present.card, present.isReversed);
-  const f = extractCoreSentence(future.card, future.isReversed);
+  const p = past.card.core_past || extractCoreSentence(past.card, past.isReversed);
+const n = present.card.core_present || extractCoreSentence(present.card, present.isReversed);
+const f = future.card.core_future || extractCoreSentence(future.card, future.isReversed);
+  const action =
+    extractAction(present.card, present.isReversed) ||
+    extractAction(future.card, future.isReversed) ||
+    "";
 
   let story =
 `${p}
 
 これまでの流れの中で、
-あなたは大切な気づきを重ねてきました。
+あなたは大切な経験を重ねてきました。
 
-いま、その経験は
+いま、その流れは
 「${n}」という形で現れています。
 
-焦って進む必要はありません。
-この流れは、やがて
-「${f}」へと自然に繋がっていきます。`;
+焦らなくて大丈夫。
+この流れはやがて
+「${f}」へと静かに繋がっていきます。
+
+${action}`;
 
   if (energyProfile?.tone === "soft"){
-    story = story.replace(/。/g,"。");
+    story = story.replace(/ください。/g,"みて。");
   }
 
   if (energyProfile?.tone === "direct"){
-    story = story.replace("焦って進む必要はありません。","迷ったら、小さく一歩動いてみてください。");
+    story = story.replace("焦らなくて大丈夫。","迷ったら、小さく動いてみてください。");
   }
 
   return story;
