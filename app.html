@@ -3733,6 +3733,7 @@ function polishStoryJP(story){
   const p = ensurePoliteJP(extractCoreSentence(past.card, past.isReversed));
   const n = ensurePoliteJP(extractCoreSentence(present.card, present.isReversed));
   const f = ensurePoliteJP(extractCoreSentence(future.card, future.isReversed));
+  console.log("F:", f, "type:", endingTypeJP(f));
 
   const seed = `${past.card.id}|${present.card.id}|${future.card.id}|${past.isReversed?"R":"U"}${present.isReversed?"R":"U"}${future.isReversed?"R":"U"}`;
 
@@ -4032,6 +4033,41 @@ function joinWithVariedConnectors({past, now, future}){
     futureLine: `${cFut}${future}`,
   };
 }
+// ===== JP story post-process (repeat + connector fix) =====
+function postProcessStoryJP(s){
+  s = String(s || "");
+
+  // ① 先頭の固定フレーズをランダム化（“これまでの流れでは”固定を回避）
+  s = s.replace(/^これまでの流れでは、/m, pickOneJP([
+    "これまでを振り返ると、",
+    "ここまでの経緯を見ると、",
+    "これまでの歩みの中で、",
+  ]));
+
+  // ② 「流れ」連打を弱める（“流れの〜”→“この先の〜”など）
+  s = s.replace(/流れの/g, "この先の");
+  s = s.replace(/この流れ/g, "この傾向");
+  s = s.replace(/流れが/g, "気配が");
+
+  // ③ 「今は、今は、」などの繰り返しを潰す
+  s = s.replace(/(今は、)\s*\1+/g, "$1");
+  s = s.replace(/(無理に)\s*\1+/g, "$1");
+
+  // ④ 「〜しにくいへと」みたいな不自然接続を修正
+  s = s.replace(/(しにくい|づらい)へと/g, "$1傾向へ");
+
+  // ⑤ 余計な空行を整える
+  s = s.replace(/\n{3,}/g, "\n\n");
+
+  // ⑥ 既存の重複削減も最後に一回かける（あるなら）
+  if (typeof reduceRepeatsJP === "function") s = reduceRepeatsJP(s);
+
+  return s.trim();
+}
+
+function pickOneJP(arr){
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 function buildThreeReadingStory({ past, present, future, energyProfile }){
   const pCore = softenStateJP(extractCoreSentence(past.card, past.isReversed));
   const nCoreRaw = softenStateJP(extractCoreSentence(present.card, present.isReversed));
@@ -4072,6 +4108,7 @@ ${wrap} ${act}
 
   // ★最後に重複を間引く（「今は」「無理」など）
   story = reduceRepeatsJP(story);
+  story = postProcessStoryJP(story);
 
   // トーン調整
   if (energyProfile?.tone === "soft"){
