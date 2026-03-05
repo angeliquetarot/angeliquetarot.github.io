@@ -3589,9 +3589,6 @@ function polishStoryJP(story){
 
 
 
-
-
-
 // 文頭の固定を避ける：候補から「安定選択」(同じカードなら同じ導入)
 function pickStableOne(list, seed){
   if (!Array.isArray(list) || !list.length) return "";
@@ -3682,15 +3679,24 @@ function bridgeJP(nextSentence){
 }
 
   function buildThreeReadingStory({ past, present, future, energyProfile }){
-  const p = ensurePoliteJP(stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed)));
-  const n = ensurePoliteJP(stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed)));
 
-  // 未来は “未来寄せ” に変換してから先頭接続も剥がす
-  const fRaw = ensurePoliteJP(stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed)));
-  const f = toFutureJP(fRaw);
-
+  // 0) seed は最初に作る（※これが必須）
   const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
 
+  // 1) 元テキスト（接続詞を剥がしたコア）
+  const p0 = stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed));
+  const n0 = stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed));
+  const f0 = stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed));
+
+  // 2) 結論用：短すぎないように最大2文まで残し、語尾を安定バリエ
+  const p = ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p"));
+  const n = ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n"));
+
+  // 未来は未来形へ寄せてから整える
+  const fFuture = toFutureJP(f0);
+  const f = ensurePoliteJP(varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f"));
+
+  // 3) つなぎ（固定感を消す）
   const head = pickStableOne([
     "これまでを振り返ると、",
     "ここまでの経緯を見ると、",
@@ -3709,11 +3715,18 @@ function bridgeJP(nextSentence){
     "やがて、",
   ], seed + "|fut");
 
-  // ★時間語を含まないブリッジ
-  const bridge = (typeof bridgeForFutureJP === "function")
-    ? bridgeForFutureJP()
-    : "その延長で、次の気配が少しずつ強まります。";
+  const themeNow = String(present.card.themes || "");
+  const nowText  = String(n0 || ""); // ← n0 がある前提（あなたの関数内にある）
 
+  const bridge = (typeof bridgeForFutureJP === "function")
+    ? bridgeForFutureJP(seed, themeNow) // seedを渡すと安定する
+    : pickStableOne([
+        "その延長で、次の気配が少しずつ強まります。",
+        "そこから、次のテーマが輪郭を帯びてきます。",
+        "積み重ねの先で、次の課題が静かに現れます。",
+      ], seed + "|bridge");
+
+  // 4) ストーリーを組む
   let story =
 `${head}${p}
 
@@ -3722,10 +3735,59 @@ ${mid}${n}
 ${bridge}
 ${fut}${f}`.trim();
 
-  // 最後に1回だけ整形（あなたの既存）
+const step = extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed);
+if (step) story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
+
+// ★統合の一文（現在＝主役、過去＝背景、未来＝方向）
+// p0/n0/f0 がある前提（元テキスト）
+const wrap = buildWrapUpJP({ p0, n0, f0, seed });
+if (wrap) story += `\n\n${wrap}`;
+
+  // 5) 最後に整形（あなたの既存）
   if (typeof postProcessStoryJP === "function") story = postProcessStoryJP(story);
 
   return story;
+}
+
+function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
+  const p = String(p0), n = String(n0), f = String(f0);
+
+  // “現在”を主役にして、結び方を変える（ざっくりでOK）
+  if (/癒|回復|安心|休|落ち着/.test(n)){
+    return pickStableOne([
+      "結び：いまは回復が最優先です。過去の疲れをほどきながら、未来へ進む余白が戻ってきます。",
+      "結び：整えるほどに光が戻ります。過去の名残を手放し、未来の選択がやさしく開いていきます。",
+    ], seed+"|wrap|heal");
+  }
+
+  if (/決|選択|転|変|進む|動く/.test(n)){
+    return pickStableOne([
+      "結び：いまは選択の軸を定める時です。過去の経験を糧に、未来へ向けて一歩が決まっていきます。",
+      "結び：決めることで流れが整います。過去を整理し、未来の方向がはっきりしていきます。",
+    ], seed+"|wrap|decide");
+  }
+
+  if (/不安|怖|迷|孤立|見失/.test(n)){
+    return pickStableOne([
+      "結び：いまは心の安全を作り直す時です。過去の影響を抱えすぎず、未来へ向けて呼吸を整えましょう。",
+      "結び：不安は“守るためのサイン”です。過去の負担を軽くして、未来に向けた小さな安心を積み重ねて。",
+    ], seed+"|wrap|anx");
+  }
+
+  // default
+  return pickStableOne([
+    "結び：現在の気づきが、過去を癒し、未来を選び直す鍵になります。",
+    "結び：過去の背景を踏まえた上で、いまの選択が未来の形を作ります。",
+  ], seed+"|wrap|default");
+}
+
+function firstSentencesJP(text, max = 2){
+  const t = String(text || "").trim();
+  if (!t) return "";
+
+  const parts = t.split("。").map(s => s.trim()).filter(Boolean);
+  const out = parts.slice(0, max).join("。");
+  return out ? out + "。" : "";
 }
 
 function buildThreeReadingHTML({ past, present, future, energyProfile }){
@@ -3828,13 +3890,14 @@ function getCardImageSrc(card){
 }
 
 
-function firstSentenceJP(text){
-  const t = (text ?? "").toString().trim();
+function firstSentencesJP(text, max = 2){
+  const t = String(text || "").trim();
   if (!t) return "";
-  // 「。」が無ければそのまま
-  const idx = t.indexOf("。");
-  if (idx === -1) return t;
-  return t.slice(0, idx + 1);
+
+  // 「。」で区切って最大max文まで
+  const parts = t.split("。").map(s => s.trim()).filter(Boolean);
+  const out = parts.slice(0, max).join("。");
+  return out ? out + "。" : "";
 }
 
 function normalizeJP(text){
@@ -3873,6 +3936,24 @@ function extractCoreSentence(card, isReversed){
   }
 
   return t;
+}
+
+function varyEndingJP(line, seed){
+  const t = String(line || "").trim();
+  if (!t) return "";
+
+  // すでに丁寧語ならそのまま
+  if (/[。！？]$/.test(t) && /(です|ます|でしょう|かもしれません|なります|やすい)/.test(t)) return t;
+
+  const tail = pickStableOne([
+    "という気配があります。",
+    "になりやすいようです。",
+    "という傾向が出ています。",
+    "かもしれません。",
+  ], seed + "|tail");
+
+  const base = t.replace(/[。！？]$/,"");
+  return base + tail;
 }
 
 function extractInterpretation(card, isReversed){
@@ -3939,12 +4020,37 @@ function pickOne(arr, seed){
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function bridgeForFutureJP(){
+function bridgeForFutureJP(seed, themeNow="", nowText=""){
+  const t = String(themeNow);
+  const n = String(nowText);
+
+  // テーマ優先
+  if (/癒|回復|安心|休/.test(t) || /癒|回復|安心|休/.test(n)){
+    return pickStableOne([
+      "その延長で、心の回復が次の判断を助けていきます。",
+      "整い始めたところから、次の光が見えやすくなります。",
+    ], seed+"|bridge|heal");
+  }
+
+  if (/決|選択|転|変/.test(t) || /決|迷い|選べ|変/.test(n)){
+    return pickStableOne([
+      "その延長で、決めるべき一点が輪郭を帯びてきます。",
+      "ここからは、選択の軸が静かに定まっていきます。",
+    ], seed+"|bridge|decide");
+  }
+
+  if (/恋|愛|関係|対人/.test(t) || /距離|関係|孤立|誤解/.test(n)){
+    return pickStableOne([
+      "その延長で、関係性の温度が少しずつ変わっていきます。",
+      "ここからは、距離感の調整が次の流れを作ります。",
+    ], seed+"|bridge|love");
+  }
+
   return pickStableOne([
     "その延長で、次の気配が少しずつ強まります。",
-    "そこから、次の課題が輪郭を帯びてきます。",
-    "積み重ねの先で、次のテーマが表に出てきます。"
-  ], "bridge|future");
+    "そこから、次のテーマが輪郭を帯びてきます。",
+    "積み重ねの先で、次の課題が静かに現れます。",
+  ], seed+"|bridge|default");
 }
 
 function stripLeadConnectorJP(s){
