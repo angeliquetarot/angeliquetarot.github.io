@@ -3720,6 +3720,8 @@ function softenStateJP(text){
   // 余計な引用符を除去
   t = t.replace(/[「」"]/g, "").trim();
 
+  t = stripNowPrefixJP(t);
+
   // 断定をやわらげる（説明文→占い文）
   t = t
     .replace(/しやすい状態です。?$/,"しやすい流れにあります。")
@@ -3749,37 +3751,102 @@ function normalizeActionJP(actionText, fallback){
   if (!/[。！？]$/.test(a)) a += "。";
   return a;
 }
+// --- 表現の重複を減らすユーティリティ ---
+function pickOne(arr, seed){
+  // seed不要なら Math.random でOK
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// 先頭の「今は/いま/そして今は/そしていま」系を剥がす
+function stripNowPrefixJP(s){
+  let t = (s ?? "").toString().trim();
+  t = t.replace(/^(そして)?(今は|いま)[、,\s]*/,"");
+  t = t.replace(/^（?現在）?[：:\s]*/,"");
+  return t.trim();
+}
+
+// 同じ単語が近距離で連発するのを抑える（簡易）
+function reduceRepeatsJP(text){
+  let t = (text ?? "").toString();
+
+  // 「今は、」の過剰を間引く（文頭・直前が句読点のときだけを狙う）
+  t = t.replace(/(。\s*)(今は、?)/g, "$1"); // 文頭以外の「今は、」を消しがちに
+  t = t.replace(/(\n+)(今は、?)/g, "$1");  // 改行直後の「今は、」を消しがちに
+
+  // 「無理」を連発しやすいので、2回目以降を言い換え候補へ
+  // （雑に全部変えない。2回以上出たら後ろを置換）
+  const hits = (t.match(/無理/g) || []).length;
+  if (hits >= 2){
+    let replacedOnce = false;
+    t = t.replace(/無理/g, (m)=>{
+      if (!replacedOnce){ replacedOnce = true; return m; }
+      return "背負いすぎ";
+    });
+  }
+
+  return t;
+}
+
+// 文のつなぎを自然にする（固定語を減らす）
+function joinWithVariedConnectors({past, now, future}){
+  const cNow = pickOne(["そして今、","いまは、","今は、","現在は、","目の前では、","ここでは、","その結果、"], "");
+  const cFut = pickOne(["この先は、","やがて、","少し先では、","次の流れとして、","そのまま進むと、","静かに、"], "");
+
+  return {
+    pastLine: past,
+    nowLine: `${cNow}${now}`,
+    futureLine: `${cFut}${future}`,
+  };
+}
 function buildThreeReadingStory({ past, present, future, energyProfile }){
   const pCore = softenStateJP(extractCoreSentence(past.card, past.isReversed));
-  const nCore = softenStateJP(extractCoreSentence(present.card, present.isReversed));
-  const fCore = softenStateJP(extractCoreSentence(future.card, future.isReversed));
+  const nCoreRaw = softenStateJP(extractCoreSentence(present.card, present.isReversed));
+  const fCoreRaw = softenStateJP(extractCoreSentence(future.card, future.isReversed));
 
-  const act  = normalizeActionJP(
+  // 未来は断定を少し弱める（「でしょう」を使わず自然に）
+  const fCore = fCoreRaw
+    .replace(/という流れが出ています。$/, "が出やすくなります。")
+    .replace(/しやすい流れにあります。$/, "に傾きやすいです。");
+
+  // 接続詞を固定しない
+  const joined = joinWithVariedConnectors({
+    past: pCore,
+    now: nCoreRaw,
+    future: fCore
+  });
+
+  const act = normalizeActionJP(
     extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed),
     "今日は、負担を減らす選択をひとつ。"
   );
 
-  // 未来だけは断定を弱める（「〜でしょう」を避ける）
-  const futureSoft = fCore
-    .replace(/出ています。$/, "が出やすくなります。")
-    .replace(/あります。$/, "に傾きやすいです。");
+  // まとめ文も固定しない（「焦らなくて」も毎回出さない）
+  const wrap = pickOne([
+    "焦らなくて大丈夫。整った方へ、少しずつ戻れます。",
+    "大丈夫。急がず整えるほど、流れは味方します。",
+    "急がなくていい。まずは呼吸を深くして、足場を整えて。"
+  ]);
 
   let story = `
-これまであなたは、${pCore}
+これまでの流れでは、${joined.pastLine}
 
-そして今は、${nCore}
+${joined.nowLine}
 
-ここで無理をすると、${futureSoft}
+${joined.futureLine}
 
-${inferMeaningLine(nCore)}
-焦らなくて大丈夫。${act}
+${inferMeaningLine(nCoreRaw)}
+${wrap} ${act}
 `.trim();
 
+  // ★最後に重複を間引く（「今は」「無理」など）
+  story = reduceRepeatsJP(story);
+
+  // トーン調整
   if (energyProfile?.tone === "soft"){
     story = story.replace(/焦らなくて大丈夫。/g, "大丈夫。");
   }
   if (energyProfile?.tone === "direct"){
-    story = story.replace(/焦らなくて大丈夫。/g, "迷ったら、深呼吸。");
+    story = story.replace(/大丈夫。/g, "迷ったら、深呼吸。");
   }
 
   return story;
@@ -3827,6 +3894,7 @@ function buildFlowSentence(pastCore, nowCore, futureCore){
 function buildGlobalSummaryHTML(picked, count, labels3){
   try{
     let story = "";
+    story = reduceRepeatsJP(story);
 
     if (count === 3){
       story = buildThreeReadingStory({
