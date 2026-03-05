@@ -3633,24 +3633,152 @@ function polishStoryJP(story){
 
   return s.trim();
 }
+// 文末を整える：句点がなければ足す / です・ます調に寄せる（最低限）
+function ensurePoliteJP(s){
+  s = (s ?? "").toString().trim();
+  if (!s) return "";
+
+  // 末尾の記号を揃える
+  s = s.replace(/[。．]+$/g, "。");
+  if (!/[。！？]$/.test(s)) s += "。";
+
+  // 断定（だ/である）を雑に敬語化しすぎない：ここは最低限だけ
+  // 例: "〜だ。" → "〜です。"（ただし「〜だ。」がカード文の味なら変換しない方が良いので弱め）
+  s = s.replace(/だ。$/,"です。").replace(/である。$/,"です。");
+
+  return s;
+}
+
+// 文末タイプ判定（「〜しにくい」「〜状態です」など）
+function endingTypeJP(s){
+  s = (s ?? "").toString().trim();
+  if (!s) return "other";
+  if (/(しにくい|しづらい|なりやすい|やすい)\s*。?$/.test(s)) return "adj_difficulty";
+  if (/(状態です|傾向です|流れです|局面です)\s*。?$/.test(s)) return "state";
+  if (/(でしょう|かもしれません)\s*。?$/.test(s)) return "soft";
+  if (/(ます|です)\s*。?$/.test(s)) return "polite";
+  return "other";
+}
+
+// 接続の文言を「語尾」に合わせて選ぶ（"へと"問題を潰す）
+function bridgeJP(nextSentence){
+  const t = endingTypeJP(nextSentence);
+
+  // 「〜しにくい」系は「へと」禁止。→「…が続きそうです」「…になりやすいでしょう」
+  if (t === "adj_difficulty"){
+    return "その先では、そう感じやすい時間が続きそうです。";
+  }
+  // 「状態です」系も「へと」より「…が色濃くなります」など
+  if (t === "state"){
+    return "少し先には、その傾向がもう一段はっきりしていきます。";
+  }
+  // ふんわり予測は、そのまま受ける
+  if (t === "soft"){
+    return "この先は、その気配が静かに広がっていくでしょう。";
+  }
+  // その他は万能つなぎ
+  return "やがて、その意味が現実の場面に表れてきます。";
+}
+
+// 反復を減らす（「流れ」「いま」「少し先」など）
+function reduceRepeatsJP(text){
+  let t = (text ?? "").toString();
+
+  // 同じ語の連続を弱める
+  t = t.replace(/流れ(の)?/g, "流れ"); // 揺れ統一
+  t = t.replace(/(流れ)/g, "$1");      // ダミー（将来拡張用）
+
+  // 「今は、今は、」みたいな重複
+  t = t.replace(/(今は、)\s*\1+/g, "$1");
+  t = t.replace(/(少し先では、)\s*\1+/g, "$1");
+
+  // 「流れ」が多いときは2回目以降を削る（簡易）
+  const hits = (t.match(/流れ/g) || []).length;
+  if (hits >= 3){
+    let n = 0;
+    t = t.replace(/流れ/g, m => (++n >= 3 ? "" : m));
+    t = t.replace(/、、/g,"、");
+  }
+
+  return t;
+}
+
+// 文頭の固定を避ける：候補から「安定選択」(同じカードなら同じ導入)
+function pickStableOne(list, seed){
+  if (!Array.isArray(list) || !list.length) return "";
+  let h = 0;
+  const s = String(seed ?? "seed");
+  for (let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
+  return list[h % list.length];
+}
+
+// 最終仕上げ：空行整理・句読点揺れ・反復除去
+function polishStoryJP(story){
+  let t = (story ?? "").toString();
+
+  // 余計な空白
+  t = t.replace(/[ \t]+\n/g, "\n");
+  t = t.replace(/\n{3,}/g, "\n\n");
+
+  // 反復削減
+  t = reduceRepeatsJP(t);
+
+  // 句点が詰まった時
+  t = t.replace(/。。+/g, "。");
+
+  return t.trim();
+}
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  const p = extractCoreSentence(past.card, past.isReversed);
-  const n = extractCoreSentence(present.card, present.isReversed);
-  const f = extractCoreSentence(future.card, future.isReversed);
+  const p = ensurePoliteJP(extractCoreSentence(past.card, past.isReversed));
+  const n = ensurePoliteJP(extractCoreSentence(present.card, present.isReversed));
+  const f = ensurePoliteJP(extractCoreSentence(future.card, future.isReversed));
+
+  const seed = `${past.card.id}|${present.card.id}|${future.card.id}|${past.isReversed?"R":"U"}${present.isReversed?"R":"U"}${future.isReversed?"R":"U"}`;
+
+  const headCandidates = [
+    "ここまでのあなたは、",
+    "これまでの積み重ねは、",
+    "最近の流れを静かに辿ると、",
+    "今につながる背景は、",
+    "これまでを振り返ると、"
+  ];
+  const midCandidates = [
+    "そして今、",
+    "いま大切なのは、",
+    "現在のあなたには、",
+    "いま目の前では、",
+    "ここで一度、"
+  ];
+  const futureCandidates = [
+    "この先は、",
+    "少し先には、",
+    "続く時間では、",
+    "やがて、",
+    "次の段階では、"
+  ];
+
+  const head = pickStableOne(headCandidates, seed + "|head");
+  const mid  = pickStableOne(midCandidates,  seed + "|mid");
+  const fut  = pickStableOne(futureCandidates, seed + "|fut");
+
+  // 「へと」禁止の自然ブリッジ（未来文の語尾に合わせて変える）
+  const bridge = bridgeJP(f);
+
+  let closing = "焦らなくて大丈夫です。いまの一歩を、丁寧に選んでください。";
+  if (energyProfile?.tone === "direct"){
+    closing = "迷ったら、焦らなくて大丈夫です。いま出来る一手を、丁寧に。";
+  }
 
   let story =
-`これまでの流れは、${ensurePoliteJP(p)}
+`${head}${p}
 
-そして今は、${ensurePoliteJP(n)}
+${mid}${n}
 
-少し先には、${ensurePoliteJP(f)}
+${bridge}
+${fut}${f}
 
-焦らなくて大丈夫です。いまの一歩を、丁寧に選んでください。`;
-
-  if (energyProfile?.tone === "direct"){
-    story = story.replace("焦らなくて大丈夫です。", "迷ったら、焦らなくて大丈夫です。");
-  }
+${closing}`;
 
   return polishStoryJP(story);
 }
