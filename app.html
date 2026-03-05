@@ -3140,7 +3140,7 @@ async function onDraw() {
     const labels3 = ["過去", "現在", "未来"];
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
-    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count);
+    const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
     const gogyouNavHTML =
   (typeof buildGogyouQuickNavHTML === "function") ? buildGogyouQuickNavHTML() : "";
 
@@ -3544,12 +3544,13 @@ const f = future.card.core_future || extractCoreSentence(future.card, future.isR
 これまでの流れの中で、
 あなたは大切な経験を重ねてきました。
 
-いま、その流れは
-「${n}」という形で現れています。
+いまは、
+${n}
+という流れの中にいるようです。
 
-焦らなくて大丈夫。
-この流れはやがて
-「${f}」へと静かに繋がっていきます。
+そのまま進むと、
+${f}
+という流れになるかもしれません。
 
 ${action}`;
 
@@ -3711,7 +3712,78 @@ function extractAction(card, isReversed){
   const core = extractCoreSentence(card, isReversed);
   return core.replace(/です。$/, "を、ひとつだけ試してみて。");
 }
+// --- 鑑定文の自動整形（プロっぽくするレイヤー） ---
+function softenStateJP(text){
+  let t = (text ?? "").toString().trim();
+  if (!t) return "";
 
+  // 余計な引用符を除去
+  t = t.replace(/[「」"]/g, "").trim();
+
+  // 断定をやわらげる（説明文→占い文）
+  t = t
+    .replace(/しやすい状態です。?$/,"しやすい流れにあります。")
+    .replace(/状態です。?$/,"という流れが出ています。")
+    .replace(/状況です。?$/,"という状況が出ています。")
+    .replace(/傾向です。?$/,"という傾向が出ています。");
+
+  if (!/[。！？]$/.test(t)) t += "。";
+  return t;
+}
+
+function inferMeaningLine(stateText){
+  const t = (stateText ?? "").toString();
+
+  if (/迷い|先延ばし|決められ/.test(t)) return "本音と現実の間で、答えを熟成させている最中です。";
+  if (/疲弊|我慢|犠牲/.test(t))         return "境界線が薄くなり、エネルギーが外に漏れやすい時です。";
+  if (/不安|怖/.test(t))               return "安全を確かめたい心が強くなっています。";
+  if (/焦|急/.test(t))                 return "スピードより整合性を優先すると流れが戻ります。";
+
+  return "流れの調整ポイントが、ここにあります。";
+}
+
+function normalizeActionJP(actionText, fallback){
+  let a = (actionText ?? "").toString().trim();
+  if (!a) a = fallback || "今日は「ひとつだけ」整える選択を。";
+  a = a.replace(/[「」"]/g,"").trim();
+  if (!/[。！？]$/.test(a)) a += "。";
+  return a;
+}
+function buildThreeReadingStory({ past, present, future, energyProfile }){
+  const pCore = softenStateJP(extractCoreSentence(past.card, past.isReversed));
+  const nCore = softenStateJP(extractCoreSentence(present.card, present.isReversed));
+  const fCore = softenStateJP(extractCoreSentence(future.card, future.isReversed));
+
+  const act  = normalizeActionJP(
+    extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed),
+    "今日は、負担を減らす選択をひとつ。"
+  );
+
+  // 未来だけは断定を弱める（「〜でしょう」を避ける）
+  const futureSoft = fCore
+    .replace(/出ています。$/, "が出やすくなります。")
+    .replace(/あります。$/, "に傾きやすいです。");
+
+  let story = `
+これまであなたは、${pCore}
+
+そして今は、${nCore}
+
+ここで無理をすると、${futureSoft}
+
+${inferMeaningLine(nCore)}
+焦らなくて大丈夫。${act}
+`.trim();
+
+  if (energyProfile?.tone === "soft"){
+    story = story.replace(/焦らなくて大丈夫。/g, "大丈夫。");
+  }
+  if (energyProfile?.tone === "direct"){
+    story = story.replace(/焦らなくて大丈夫。/g, "迷ったら、深呼吸。");
+  }
+
+  return story;
+}
 function extractKeywords(card, isReversed, limit){
   const raw = isReversed ? card?.keywords_reversed : card?.keywords_upright;
   if (!raw) return [];
@@ -3752,59 +3824,50 @@ function buildFlowSentence(pastCore, nowCore, futureCore){
 }
 
 /* ---- 結果上部の“鑑定の結論ブロック”を生成（HTML） ---- */
-function buildGlobalSummaryHTML(picked, count){
-
+function buildGlobalSummaryHTML(picked, count, labels3){
   try{
-
     let story = "";
 
-    if(count === 3){
-
+    if (count === 3){
       story = buildThreeReadingStory({
         past: picked[0],
         present: picked[1],
-        future: picked[2]
+        future: picked[2],
+        energyProfile: null
       });
-
-    }else{
-
+    } else {
       const one = picked[0];
+      const core = softenStateJP(extractCoreSentence(one.card, one.isReversed));
+      const act  = normalizeActionJP(extractAction(one.card, one.isReversed));
 
-      const core = extractCoreSentence(one.card, one.isReversed);
-      const action = extractAction(one.card, one.isReversed);
+      story = `
+${core}
 
-      story =
-`${core}
-
-いまのあなたに必要なのは、
-ほんの小さな一歩です。
-
-${action}`;
-
+${inferMeaningLine(core)}
+今日は、ほんの小さな一歩で十分です。
+${act}
+`.trim();
     }
 
     return `
-    <section class="globalSummary">
-      <div class="gsTitle">鑑定の結論</div>
-      <div class="gsLines">
-        <div class="gsLine1">${escapeHtml(story).replace(/\n/g,"<br>")}</div>
-      </div>
-    </section>`;
-
-  }catch(e){
-
-    console.error(e);
-
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">${escapeHtml(story).replace(/\n/g,"<br>")}</div>
+        </div>
+      </section>
+    `;
+  } catch(e){
+    console.error("[buildGlobalSummaryHTML error]", e);
     return `
-    <section class="globalSummary">
-      <div class="gsTitle">鑑定の結論</div>
-      <div class="gsLines">
-        <div class="gsLine1">いまは静かに整える時間です。</div>
-      </div>
-    </section>`;
-
+      <section class="globalSummary">
+        <div class="gsTitle">鑑定の結論</div>
+        <div class="gsLines">
+          <div class="gsLine1">いまは静かに整える時間です。</div>
+        </div>
+      </section>
+    `;
   }
-
 }
 
     function renderCard(card, isReversed, positionLabel = "", showDeepRead = true) {
