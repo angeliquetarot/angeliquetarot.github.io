@@ -3786,7 +3786,23 @@ function reduceRepeatsJP(text){
 
   return t;
 }
+function toFutureJP(line){
+  let t = (line ?? "").toString().trim();
+  if (!t) return "";
 
+  // 「〜という流れが出ています。」→「〜へ傾きやすいです。」
+  t = t.replace(/という流れが出ています。$/, "へ傾きやすいです。");
+
+  // 「〜しやすい流れにあります。」→「〜しやすくなります。」
+  t = t.replace(/しやすい流れにあります。$/, "しやすくなります。");
+
+  // 「〜という状況が出ています。」→「〜になりやすいです。」
+  t = t.replace(/という状況が出ています。$/, "になりやすいです。");
+
+  // 念のため語尾
+  if (!/[。！？]$/.test(t)) t += "。";
+  return t;
+}
 // 文のつなぎを自然にする（固定語を減らす）
 function joinWithVariedConnectors({past, now, future}){
   const cNow = pickOne(["そして今、","いまは、","今は、","現在は、","目の前では、","ここでは、","その結果、"], "");
@@ -3804,9 +3820,7 @@ function buildThreeReadingStory({ past, present, future, energyProfile }){
   const fCoreRaw = softenStateJP(extractCoreSentence(future.card, future.isReversed));
 
   // 未来は断定を少し弱める（「でしょう」を使わず自然に）
-  const fCore = fCoreRaw
-    .replace(/という流れが出ています。$/, "が出やすくなります。")
-    .replace(/しやすい流れにあります。$/, "に傾きやすいです。");
+ const fCore = toFutureJP(fCoreRaw);
 
   // 接続詞を固定しない
   const joined = joinWithVariedConnectors({
@@ -4779,6 +4793,41 @@ const ELEMENT_SOUL = {
         copyResultText();
       }
     }
+    // =========================
+// Share helpers (ONE PLACE)
+// =========================
+function shortenJP(s, max = 40){
+  const t = String(s || "").trim();
+  if (!t) return "";
+  return t.length > max ? (t.slice(0, max) + "…") : t;
+}
+
+function loadImageSafe(src){
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve({ ok:true, img });
+    img.onerror = () => resolve({ ok:false, img:null });
+    img.src = src;
+  });
+}
+
+function drawCardOnCanvas(ctx, item, x, y, w, h) {
+  if (!item?.img) return;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 10;
+
+  if (item.isReversed) {
+    ctx.translate(x + w / 2, y + h / 2);
+    ctx.rotate(Math.PI);
+    ctx.drawImage(item.img, -w / 2, -h / 2, w, h);
+  } else {
+    ctx.drawImage(item.img, x, y, w, h);
+  }
+  ctx.restore();
+}
 
     // --- Share Image (Canvas) ---
     async function shareResultImage() {
@@ -4820,7 +4869,7 @@ const ELEMENT_SOUL = {
   ctx.fillStyle = "rgba(255,255,255,0.7)";
   ctx.fillText(dateStr, 540, 130);
 
-  // 4. 画像の描画 (現在表示されているカード画像を集める)
+    // 4. 画像の描画 (現在表示されているカード画像を集める)
   const imgs = document.querySelectorAll("#result .cardImg");
   if (imgs.length === 0) {
     showToast("カード画像がありません");
@@ -4834,23 +4883,22 @@ const ELEMENT_SOUL = {
   const cardH = count === 1 ? 480 : 384;
   const startY = 220;
 
-  const loadImg = (src, isReversed) => new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve({ img, isReversed, ok: true });
-    img.onerror = () => resolve({ img: null, isReversed, ok: false });
-    img.src = src;
-  });
-
+  // ✅ loadImg はもう不要（消す）
   const promises = [];
   const cardElements = document.querySelectorAll("#result .tcard");
+
   cardElements.forEach(cel => {
     const imgEl = cel.querySelector("img");
-    if (imgEl) {
-      const isReversed = cel.querySelector(".badge")?.classList.contains("rev") || imgEl.classList.contains("reversed");
-      promises.push(loadImg(imgEl.src, isReversed));
-    }
-  });
+    if (!imgEl) return;
+
+    const isReversed =
+      cel.querySelector(".badge")?.classList.contains("rev") ||
+      imgEl.classList.contains("reversed");
+
+    promises.push(
+      loadImageSafe(imgEl.src).then(r => ({ ...r, isReversed }))
+    );
+  }); // ← ★forEach を閉じる
 
   const loadedImgs = await Promise.all(promises);
   const validImgs = loadedImgs.filter(item => item.ok);
@@ -4861,6 +4909,7 @@ const ELEMENT_SOUL = {
     const gap = 40;
     const totalW = cardW * 3 + gap * 2;
     const startX = 540 - totalW / 2;
+
     drawCardOnCanvas(ctx, validImgs[0], startX, startY, cardW, cardH);
     drawCardOnCanvas(ctx, validImgs[1], startX + cardW + gap, startY, cardW, cardH);
     drawCardOnCanvas(ctx, validImgs[2], startX + (cardW + gap) * 2, startY, cardW, cardH);
@@ -4877,18 +4926,14 @@ const ELEMENT_SOUL = {
     ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
   }
   // --- 1行要約（鑑定の一文）を描画 ---
-const one = String(window.__shareOneLine || "").trim();
+const one = shortenJP(window.__shareOneLine, 40);
 if (one) {
   ctx.save();
   ctx.globalAlpha = 0.92;
-  ctx.font = "28px serif";         // 既存のフォントと合わせてOK
+  ctx.font = "28px serif";
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,0.90)";
-
-  // 長すぎる時は省略（安全策）
-  const text = one.length > 40 ? (one.slice(0, 40) + "…") : one;
-
-  ctx.fillText(text, canvas.width / 2, canvas.height - 140);
+  ctx.fillText(one, canvas.width / 2, canvas.height - 140);
   ctx.restore();
 }
 
@@ -4971,27 +5016,7 @@ function openImageFallbackFromBlob(blob) {
   modal.addEventListener("click", onBg);
 }
 
- 
 
-    function drawCardOnCanvas(ctx, item, x, y, w, h) {
-      if (!item || !item.img) return;
-      ctx.save();
-
-      // 影
-      ctx.shadowColor = "rgba(0,0,0,0.8)";
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetY = 10;
-
-      if (item.isReversed) {
-        // 逆位置なら回転
-        ctx.translate(x + w / 2, y + h / 2);
-        ctx.rotate(Math.PI);
-        ctx.drawImage(item.img, -w / 2, -h / 2, w, h);
-      } else {
-        ctx.drawImage(item.img, x, y, w, h);
-      }
-      ctx.restore();
-    }
     
   </script>
   <!-- <script src="numerology_logic_pure.js"></script> -->
