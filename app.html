@@ -4200,6 +4200,18 @@ function joinWithVariedConnectors({past, now, future}){
   };
 }
 
+function fixJPArtifacts(s){
+  return String(s || "")
+    .replace(/(しやすい|出やすい|疲れやすい|揺れやすい|なりやすい|見失いやすい)\s*(に)?\s*なりやすい/g, "$1")
+    .replace(/(しやすい|出やすい|疲れやすい|揺れやすい|なりやすい|見失いやすい)\s*に寄りやすい/g, "$1")
+    .replace(/傾向があります。?\s*傾向があります。?/g, "傾向があります。")
+    .replace(/[.．]+\s*。/g, "。")
+    .replace(/。。+/g, "。")
+    .replace(/[.．]{2,}/g, "。")
+    .replace(/です[.．]+/g, "です。")
+    .replace(/ます[.．]+/g, "ます。");
+}
+
 // ===== JP story post-process (repeat + connector fix) =====
 function postProcessStoryJP(s){
   s = String(s || "");
