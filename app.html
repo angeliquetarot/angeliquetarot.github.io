@@ -3752,16 +3752,20 @@ function buildGlobalSummaryHTML(picked, count, labels3){
       flow = buildFlowSentence(pastCore, nowCore, futCore);
       coreNow = nowCore;
 
-      const t = [extractThemes(past.card), extractThemes(now.card), extractThemes(future.card)]
-        .filter(Boolean).join(" / ");
-      themesAll = t;
+      const t = [themeForSummary(past.card), themeForSummary(now.card), themeForSummary(future.card)]
+  .filter(Boolean).join(" / ");
+themesAll = t;
+      function themeForSummary(card){
+  const t = (extractThemes(card) || "").toString();
+  return t.split("|")[0].trim(); // “|”より左だけ
+}
 
       // 行動は「現在」を優先（無ければ未来）
       actionOne = extractAction(now.card, now.isReversed) || extractAction(future.card, future.isReversed);
     } else {
       const one = picked[0];
       coreNow = extractCoreSentence(one.card, one.isReversed);
-      themesAll = extractThemes(one.card);
+      themesAll = themeForSummary(one.card);
       actionOne = extractAction(one.card, one.isReversed);
       flow = ""; // 1枚引きは流れ不要
     }
@@ -4152,6 +4156,40 @@ function pickStrongWeak(score){
   const strong = entries[0];
   const weak = entries[entries.length-1];
   return { strong, weak };
+}
+function debugFive(dateStr, timeStr){
+  dateStr = normalizeDateInput(dateStr);
+  timeStr = normalizeTimeInput(timeStr);
+
+  const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
+  const fpYear = approxYearForFourPillars(y,m,d);
+  const ygz = yearGanzhi(fpYear);
+
+  const mBranch = approxMonthBranch(y,m,d);
+  const mStem = monthStemFrom(ygz.stem, mBranch);
+
+  const dgz = dayGanzhi(y,m,d);
+
+  const hBranch = (timeStr && typeof hourBranchFromTime==="function") ? hourBranchFromTime(timeStr) : null;
+  const hStem   = (hBranch && typeof hourStemFromDayStem==="function") ? hourStemFromDayStem(dgz.stem, hBranch) : null;
+
+  const score = calcFiveElements({
+    yStem: ygz.stem, yBranch: ygz.branch,
+    mStem, mBranch,
+    dStem: dgz.stem, dBranch: dgz.branch,
+    hStem, hBranch
+  });
+
+  console.log("INPUT", {dateStr, timeStr});
+  console.log("PILLARS", {
+    year: `${ygz.stem}${ygz.branch}`,
+    month:`${mStem}${mBranch}`,
+    day:  `${dgz.stem}${dgz.branch}`,
+    hour: hStem && hBranch ? `${hStem}${hBranch}` : "(no hour)"
+  });
+  console.log("SCORE", score);
+  console.log("STRONG/WEAK", pickStrongWeak(score));
+  return { ygz, mStem, mBranch, dgz, hStem, hBranch, score };
 }
 function getWeakElemFromInputs(){
   const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
