@@ -4160,10 +4160,10 @@ function getWeakElemFromInputs(){
   const mStem = monthStemFrom(ygz.stem, mBranch);
 
   const dgz = dayGanzhi(y,m,d);
+  
 
- const hBranch = window.hourBranchFromTime ? window.hourBranchFromTime(uTime) : null;
- const hStem   = (hBranch && window.hourStemFromDayStem) ? window.hourStemFromDayStem(dgz.stem, hBranch) : null;
-
+const hBranch = hourBranchFromTime(uTime);
+const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
   const score = calcFiveElements({
     yStem: ygz.stem, yBranch: ygz.branch,
     mStem, mBranch,
@@ -4248,12 +4248,50 @@ function elemKeyJPtoSlug(jp){
     "水":"water"
   }[jp] || "";
 }
+function hourBranchFromTime(timeStr){
+  const t = normalizeTimeInput(timeStr);
+  if (!t) return null;
+
+  const hh = parseInt(t.split(":")[0], 10);
+  const idx = Math.floor(((hh + 1) % 24) / 2);
+
+  return window.BRANCHES[idx];
+}
+
+function computeElemProfile(dateStr, timeStr){
+  dateStr = normalizeDateInput(dateStr);
+  timeStr = normalizeTimeInput(timeStr);
+  if (!dateStr) return null;
+
+  const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
+  const fpYear = approxYearForFourPillars(y,m,d);
+  const ygz = yearGanzhi(fpYear);
+
+  const mBranch = approxMonthBranch(y,m,d);
+  const mStem = monthStemFrom(ygz.stem, mBranch);
+
+  const dgz = dayGanzhi(y,m,d);
+
+  const hBranch = (timeStr ? hourBranchFromTime(timeStr) : null);
+  const hStem   = (hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null);
+
+  const score = calcFiveElements({
+    yStem: ygz.stem, yBranch: ygz.branch,
+    mStem, mBranch,
+    dStem: dgz.stem, dBranch: dgz.branch,
+    hStem, hBranch
+  });
+
+  const { strong, weak } = pickStrongWeak(score);
+  return { score, strong, weak };
+}
 function buildGogyouBlock(title, dateStr, timeStr){
-  // ★保険：ここでも正規化しておく
+
   dateStr = normalizeDateInput(dateStr);
   timeStr = normalizeTimeInput(timeStr);
 
   if (!dateStr) return "";
+
   const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
   if (!y || !m || !d) return "";
 
@@ -4265,14 +4303,8 @@ function buildGogyouBlock(title, dateStr, timeStr){
 
   const dgz = dayGanzhi(y,m,d);
 
- function hourBranchFromTime(timeStr){
-  const t = normalizeTimeInput(timeStr);
-  if (!t) return null;
-  const hh = parseInt(t.split(":")[0], 10);
-  // 子:23-1, 丑:1-3, 寅:3-5 ... の簡易
-  const idx = Math.floor(((hh + 1) % 24) / 2);
-  return window.BRANCHES[idx]; // 0=子
-}
+  const hBranch = hourBranchFromTime(timeStr);
+  const hStem = hBranch ? hourStemFromDayStem(dgz.stem, hBranch) : null;
 
   const score = calcFiveElements({
     yStem: ygz.stem, yBranch: ygz.branch,
@@ -4280,95 +4312,38 @@ function buildGogyouBlock(title, dateStr, timeStr){
     dStem: dgz.stem, dBranch: dgz.branch,
     hStem, hBranch
   });
-  
 
   const { strong, weak } = pickStrongWeak(score);
+
   const strongJP = strong?.[0];
-const weakJP = weak?.[0];}
+  const weakJP = weak?.[0];
 
+  // 状態保存（QuickNav用）
+  try {
+    window.__gogyouState = window.__gogyouState || { user:null, partner:null };
 
-function buildGogyouQuickNavHTML(){
-  const u = window.__gogyouState?.user;
-  const p = window.__gogyouState?.partner;
+    const key =
+      title === "あなた" ? "user" :
+      title === "お相手" ? "partner" :
+      null;
 
-  // userが無ければ出さない
-  if (!u?.weak?.[0] && !u?.strong?.[0]) return "";
-
-  const linkFor = (jp, kind) => {
-    const slug = elemKeyJPtoSlug(jp);
-    if (!slug) return "./elements/index.html";
-    return `./elements/${slug}-${kind}.html`; // kind = "weak" or "strong"
-  };
-
-  const chip = (label, jp, kind) => {
-    if (!jp) return "";
-    const href = linkFor(jp, kind);
-    const sub = elemMeaning(jp);
-    const cls = kind === "weak" ? "weak" : "strong";
-    return `
-      <a class="gqChip ${cls}" href="${href}" target="_blank" rel="noopener">
-        <span class="gqLabel">${label}</span>
-        <span class="gqMain">${jp}</span>
-        <span class="gqSub">${sub}</span>
-      </a>
-    `;
-  };
-
-  const userRow = `
-    <div class="gqRow">
-      <div class="gqWho">あなた</div>
-      <div class="gqChips">
-        ${chip("不足", u.weak?.[0], "weak")}
-        ${chip("強い", u.strong?.[0], "strong")}
-      </div>
-    </div>
-  `;
-
-  const partnerRow = (p?.weak?.[0] || p?.strong?.[0]) ? `
-    <div class="gqRow">
-      <div class="gqWho">お相手</div>
-      <div class="gqChips">
-        ${chip("不足", p.weak?.[0], "weak")}
-        ${chip("強い", p.strong?.[0], "strong")}
-      </div>
-    </div>
-  ` : "";
-
-  return `
-    <section class="gogyouQuickNav">
-      <div class="gqTitle">五行の案内（あなたの“不足/強い”）</div>
-      <div class="gqNote">迷ったら「不足」から読むのがおすすめ。</div>
-      ${userRow}
-      ${partnerRow}
-    </section>
-  `;
-}
-// --- 五行結果を保持（Step3で使う） ---
-try {
-  // ここで必ず初期化してから保存する
-  window.__gogyouState = window.__gogyouState || { user: null, partner: null };
-
-  const key =
-    title === "あなた" ? "user" :
-    title === "お相手" ? "partner" :
-    null;
-
-  if (key) {
-    window.__gogyouState[key] = { score, strong, weak };
+    if (key) {
+      window.__gogyouState[key] = { score, strong, weak };
+    }
+  } catch(e){
+    console.warn("[gogyouState save skipped]", e);
   }
-} catch (e) {
-  console.warn("[gogyouState save skipped]", e);
-}
-const strongSlug = elemKeyJPtoSlug(strongJP);
-const weakSlug = elemKeyJPtoSlug(weakJP);
 
-const strongHref = strongSlug
-  ? `./elements/${strongSlug}-strong.html`
-  : "./elements/index.html";
+  const strongSlug = elemKeyJPtoSlug(strongJP);
+  const weakSlug = elemKeyJPtoSlug(weakJP);
 
-const weakHref = weakSlug
-  ? `./elements/${weakSlug}-weak.html`
-  : "./elements/index.html";
+  const strongHref = strongSlug
+    ? `./elements/${strongSlug}-strong.html`
+    : "./elements/index.html";
+
+  const weakHref = weakSlug
+    ? `./elements/${weakSlug}-weak.html`
+    : "./elements/index.html";
 
   const lines = ["木","火","土","金","水"].map(e=>{
     return `${e}：${toDots(score[e])}　<span class="gogyouSub">${elemMeaning(e)}</span>`;
@@ -4389,17 +4364,19 @@ const weakHref = weakSlug
 
     <div class="gogyouFocus">
       <a class="gogyouTag weak" href="${weakHref}" target="_blank" rel="noopener">
-  不足：${weakJP}
-</a>
+        不足：${weakJP}
+      </a>
 
-<a class="gogyouTag strong" href="${strongHref}" target="_blank" rel="noopener">
-  強い：${strongJP}
-</a>
+      <a class="gogyouTag strong" href="${strongHref}" target="_blank" rel="noopener">
+        強い：${strongJP}
+      </a>
+
       <div class="gogyouHint">
-        不足（${weak[0]}）を少し足すと、カードのメッセージが“あなた仕様”に整います。
+        不足（${weakJP}）を少し足すと、カードのメッセージが“あなた仕様”に整います。
       </div>
     </div>
   </div>`;
+}
 
 
 // =========================
@@ -4476,15 +4453,17 @@ function buildBothGogyouHTML(){
 }
 function buildGogyouQuickNavHTML(){
   const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
-  if (!uDate) return ""; // 生年月日が無い時は出さない
+  const uTime = normalizeTimeInput(document.getElementById("userBirthtime")?.value);
 
-  const weak = getWeakElemFromInputs();
-  const strong = getStrongElemFromInputs();
+  const pDate = normalizeDateInput(document.getElementById("partnerBirthdate")?.value);
+  const pTime = normalizeTimeInput(document.getElementById("partnerBirthtime")?.value);
+
+  if (!uDate && !pDate) return "";
 
   const mkLink = (jp, kind) => {
     const slug = elemKeyJPtoSlug(jp);
     if (!slug) return "./elements/index.html";
-    return `./elements/${slug}-${kind}.html`; // kind: weak / strong
+    return `./elements/${slug}-${kind}.html`;
   };
 
   const chip = (label, jp, kind) => jp ? `
@@ -4495,14 +4474,28 @@ function buildGogyouQuickNavHTML(){
     </a>
   ` : "";
 
+  const row = (who, prof) => {
+    if (!prof) return "";
+    return `
+      <div class="gqRow">
+        <div class="gqWho">${who}</div>
+        <div class="gqChips">
+          ${chip("不足", prof.weak?.[0], "weak")}
+          ${chip("強い", prof.strong?.[0], "strong")}
+        </div>
+      </div>
+    `;
+  };
+
+  const uProf = uDate ? computeElemProfile(uDate, uTime) : null;
+  const pProf = pDate ? computeElemProfile(pDate, pTime) : null;
+
   return `
     <section class="gogyouQuickNav">
-      <div class="gqTitle">五行の案内（あなた）</div>
+      <div class="gqTitle">五行の案内（不足 / 強い）</div>
       <div class="gqNote">迷ったら「不足」から読むのがおすすめ。</div>
-      <div class="gqChips">
-        ${chip("不足", weak, "weak")}
-        ${chip("強い", strong, "strong")}
-      </div>
+      ${row("あなた", uProf)}
+      ${row("お相手", pProf)}
     </section>
   `;
 }
