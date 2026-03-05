@@ -2136,6 +2136,55 @@ a:hover, .menuCta:hover{
   letter-spacing: .04em;
   opacity: .92;
 }
+
+.gsAction{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255,226,160,.08);
+  border: 1px solid rgba(255,226,160,.18);
+}
+
+.gsActionLabel{
+  display:inline-block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: rgba(255,226,160,.95);
+}
+
+.gsActionText{
+  color: rgba(255,255,255,.92);
+  line-height: 1.75;
+  font-weight: 700;
+}
+
+.gsWrap{
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.12);
+  overflow: hidden;
+}
+
+.gsWrap > summary{
+  cursor: pointer;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,.78);
+  list-style: none;
+}
+
+.gsWrap > summary::-webkit-details-marker{
+  display:none;
+}
+
+.gsWrapText{
+  padding: 10px 12px 12px;
+  color: rgba(255,255,255,.82);
+  line-height: 1.8;
+}
+
   </style>
 </head>
 
@@ -3566,6 +3615,31 @@ function ensurePoliteJP(s){
   return s;
 }
 
+function softenTendencyJP(line, seed){
+  const s = String(line || "").trim();
+
+  // 「傾向があります。」だけ狙って、言い換え候補に差し替える
+  if (/傾向があります。?$/.test(s)){
+    return pickStableOne([
+      s.replace(/傾向があります。?$/, "になりやすいです。"),
+      s.replace(/傾向があります。?$/, "が出やすいです。"),
+      s.replace(/傾向があります。?$/, "に寄りやすい時です。"),
+      s.replace(/傾向があります。?$/, "になりがちです。"),
+    ], seed + "|tend");
+  }
+
+  // 「しやすい傾向があります。」も多いならここも追加（任意）
+  if (/しやすい傾向があります。?$/.test(s)){
+    return pickStableOne([
+      s.replace(/しやすい傾向があります。?$/, "しやすい時です。"),
+      s.replace(/しやすい傾向があります。?$/, "になりやすいです。"),
+      s.replace(/しやすい傾向があります。?$/, "が出やすいです。"),
+    ], seed + "|tend2");
+  }
+
+  return s;
+}
+
 function softenEndingJP(t){
   return String(t || "")
     .replace(/状態です。/g,"傾向があります。")
@@ -3680,13 +3754,23 @@ function bridgeJP(nextSentence){
   const f0 = stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed));
 
   // 2) 結論用：短すぎないように最大2文まで残し、語尾を安定バリエ
-  const p = ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p"));
-  const n = ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n"));
+  const p = softenTendencyJP(
+  ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p")),
+  seed+"|p"
+);
+
+const n = softenTendencyJP(
+  ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n")),
+  seed+"|n"
+);
+
 
   // 未来は未来形へ寄せてから整える
   const fFuture = toFutureJP(f0);
-  const f = ensurePoliteJP(varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f"));
-
+  const f = softenTendencyJP(
+  ensurePoliteJP(varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f")),
+  seed+"|f"
+);
   // 3) つなぎ（固定感を消す）
   const head = pickStableOne([
     "これまでを振り返ると、",
@@ -3725,6 +3809,16 @@ ${mid}${n}
 
 ${bridge}
 ${fut}${f}`.trim();
+
+// ===== ここ（1）: 結びを “必要な時だけ” 付ける =====
+const shouldWrap =
+  (String(f || "").length < 28) || /傾向があります。?$/.test(String(f));
+
+if (shouldWrap && typeof buildWrapUpJP === "function") {
+  const wrap = buildWrapUpJP({ p0, n0, f0, seed });
+  if (wrap) story += `\n\n${wrap}`;
+}
+// ===== ここまで =====
 
 const step = extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed);
 if (step) story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
@@ -4195,36 +4289,80 @@ function buildFlowSentence(pastCore, nowCore, futureCore){
 function buildGlobalSummaryHTML(picked, count){
   try{
     let story = "";
+    let step = "";
+    let wrap = "";
 
     if (count === 3){
+      const past = picked[0];
+      const present = picked[1];
+      const future = picked[2];
+      const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
+
+      // 本文
       story = buildThreeReadingStory({
-        past: picked[0],
-        present: picked[1],
-        future: picked[2],
+        past,
+        present,
+        future,
         energyProfile: null
       });
+
+      // 一歩（本文とは分ける）
+      step = normalizeActionJP(
+        extractAction(present.card, present.isReversed) ||
+        extractAction(future.card, future.isReversed) ||
+        "今日は、整える選択をひとつ。"
+      );
+
+      // 結び（必要ならだけ）
+      if (typeof buildWrapUpJP === "function") {
+        wrap = buildWrapUpJP({
+          p0: stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed)),
+          n0: stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed)),
+          f0: stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed)),
+          seed
+        }) || "";
+      }
+
     } else {
       const one = picked[0];
-      const core = ensurePoliteJP(extractCoreSentence(one.card, one.isReversed));
-      const act  = normalizeActionJP(extractAction(one.card, one.isReversed));
 
       story = `
-${core}
+${ensurePoliteJP(extractCoreSentence(one.card, one.isReversed))}
 
-${inferMeaningLine(core)}
-今日は、ほんの小さな一歩で十分です。
-${act}
+${inferMeaningLine(extractCoreSentence(one.card, one.isReversed))}
 `.trim();
+
+      step = normalizeActionJP(
+        extractAction(one.card, one.isReversed) ||
+        "今日は、整える選択をひとつ。"
+      );
+
+      wrap = "";
     }
 
-    story = polishStoryJP(story); // ★最後に1回だけ
+    story = polishStoryJP(story);
 
     return `
       <section class="globalSummary">
         <div class="gsTitle">鑑定の結論</div>
+
         <div class="gsLines">
           <div class="gsLine1">${escapeHtml(story).replace(/\n/g,"<br>")}</div>
         </div>
+
+        ${step ? `
+          <div class="gsAction">
+            <span class="gsActionLabel">今日の一歩</span>
+            <div class="gsActionText">${escapeHtml(step)}</div>
+          </div>
+        ` : ""}
+
+        ${wrap ? `
+          <details class="gsWrap">
+            <summary>結びをひらく</summary>
+            <div class="gsWrapText">${escapeHtml(wrap).replace(/\n/g,"<br>")}</div>
+          </details>
+        ` : ""}
       </section>
     `;
   } catch(e){
@@ -4239,7 +4377,6 @@ ${act}
     `;
   }
 }
-
     function renderCard(card, isReversed, positionLabel = "", showDeepRead = true) {
   const safe = (s) => (typeof escapeHtml === "function") ? escapeHtml(s) : s;
 
