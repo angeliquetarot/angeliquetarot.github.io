@@ -3534,6 +3534,26 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
     </section>
   </section>`;
 }
+
+function endingTypeJP(s){
+  s = String(s || "").trim();
+  if (!s) return "other";
+  if (/(しにくい|しづらい|づらい|なりやすい|やすい)\s*。?$/.test(s)) return "adj";
+  if (/(状態です|傾向です|局面です|流れです)\s*。?$/.test(s)) return "state";
+  if (/(でしょう|かもしれません)\s*。?$/.test(s)) return "soft";
+  if (/(です|ます)\s*。?$/.test(s)) return "polite";
+  return "other";
+}
+
+// 未来文の「語尾」に合わせて、つなぎ文を自動で選ぶ
+function bridgeJP(nextSentence){
+  const t = endingTypeJP(nextSentence);
+  if (t === "adj")   return "少し先では、そう感じやすい時間が続きそうです。";
+  if (t === "state") return "少し先には、その傾向がもう一段はっきりしていきます。";
+  if (t === "soft")  return "この先は、その気配が静かに広がっていくでしょう。";
+  return "やがて、その意味が現実の場面に表れてきます。";
+}
+
 function ensurePoliteJP(s){
   s = (s ?? "").toString().trim();
   if (!s) return "";
@@ -3546,7 +3566,11 @@ function ensurePoliteJP(s){
   return s;
 }
 
-
+function softenEndingJP(t){
+  return t
+    .replace(/状態です。/g,"傾向があります。")
+    .replace(/しやすい状態です。/g,"しやすくなっています。");
+}
 
 
 // 最終仕上げ（これを story の最後に1回かける）
@@ -3682,23 +3706,25 @@ function bridgeJP(nextSentence){
     "やがて、",
   ], seed + "|fut");
 
+  // bridgeJP は “つなぎ”だけ（未来導入と被らせない）
   const bridge = (typeof bridgeJP === "function")
-  ? bridgeJP(f)
-  : "この先は、その気配が静かに形になっていきます。";
+    ? bridgeJP(f)
+    : "少し先では、その気配が静かに形になっていきます。";
 
   let story =
-`${head}${p}
+`${head}${stripNowPrefixJP(p)}
 
-${mid}${n}
+${mid}${stripNowPrefixJP(n)}
 
 ${bridge}
-${fut}${f}`.trim();
+${fut}${stripNowPrefixJP(f)}`.trim();
 
   // 最後に1回だけ整形
-  story = postProcessStoryJP(story);
+  if (typeof postProcessStoryJP === "function") story = postProcessStoryJP(story);
 
   return story;
 }
+
 function buildThreeReadingHTML({ past, present, future, energyProfile }){
   const story = buildThreeReadingStory({ past, present, future, energyProfile });
 
@@ -3818,6 +3844,7 @@ function extractThemes(card){
 
 function extractCoreSentence(card, isReversed){
   // ① core優先
+  t = softenEndingJP(t);
   const core = pickTextByOrientation(card, isReversed, "core");
   if (core) return normalizeJP(core);
 
@@ -3898,9 +3925,8 @@ function pickOne(arr, seed){
 
 // 先頭の「今は/いま/そして今は/そしていま」系を剥がす
 function stripNowPrefixJP(s){
-  let t = (s ?? "").toString().trim();
-  t = t.replace(/^(そして)?(今は|いま)[、,\s]*/,"");
-  t = t.replace(/^（?現在）?[：:\s]*/,"");
+  let t = String(s || "").trim();
+  t = t.replace(/^(そして)?(今は|いまは|いま|現在は|現在)[、,\s]*/,"");
   return t.trim();
 }
 
@@ -3927,8 +3953,13 @@ function toFutureJP(line){
 
 // 文のつなぎを自然にする（固定語を減らす）
 function joinWithVariedConnectors({past, now, future}){
-  const cNow = pickOne(["そして今、","いまは、","今は、","現在は、","目の前では、","ここでは、","その結果、"]);
-  const cFut = pickOne(["この先は、","やがて、","少し先では、","次の流れとして、","そのまま進むと、","静かに、"]);
+
+  // ★ 接続詞を付ける前に「今は」系を剥がす
+  now = stripNowPrefixJP(now);
+  future = stripNowPrefixJP(future);
+
+  const cNow = pickOne(["そして今、","いまは、","現在は、","目の前では、","ここでは、","その結果、"]);
+  const cFut = pickOne(["この先は、","やがて、","少し先では、","次の段階では、","静かに、"]);
 
   return {
     pastLine: past,
@@ -3936,6 +3967,7 @@ function joinWithVariedConnectors({past, now, future}){
     futureLine: `${cFut}${future}`,
   };
 }
+
 // ===== JP story post-process (repeat + connector fix) =====
 function postProcessStoryJP(s){
   s = String(s || "");
