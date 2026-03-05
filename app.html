@@ -3165,6 +3165,12 @@ async function onDraw() {
       </div>
       ${actionsHTML}
     `;
+    setTimeout(() => {
+  console.log(
+    "globalSummary:",
+    document.querySelector("#result .globalSummary")?.innerText
+  );
+}, 50);
     // --- share用の「鑑定の一文」を保存（HTMLタグじゃなく文字だけ取る） ---
 window.__shareOneLine =
   (document.querySelector("#result .coreText")?.textContent || "").trim();
@@ -3477,7 +3483,54 @@ function extractPrayer(card, isReversed){
   if (theme.includes("決")) return "あなたの選ぶ道が、光に守られますように。";
   return "あなたの灯す光が、静かに広がりますように。";
 }
+// 日本語を“プロっぽく”整える（言い回しの被り・不自然語尾を吸収）
+function polishJPStory(text){
+  let s = String(text || "").trim();
+  if (!s) return "";
 
+  // 連続する空白/改行を整える
+  s = s.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n");
+
+  // 「が出やすい」連発をやわらげる
+  s = s.replace(/が出やすい(状態)?です。/g, "が表に出やすい時期です。");
+  s = s.replace(/が出やすくなります。/g, "が表に出やすくなります。");
+
+  // 「今は、」の連発を抑制（文頭だけ対象）
+  const lines = s.split("\n");
+  let lastHead = "";
+  const heads = ["今は", "いまは", "無理に", "焦らなくて大丈夫", "そして"];
+  for (let i = 0; i < lines.length; i++){
+    let line = lines[i].trim();
+    if (!line) continue;
+
+    for (const h of heads){
+      if (line.startsWith(h)){
+        if (lastHead === h){
+          // 2回目以降は自然な接続に言い換え
+          line = line
+            .replace(/^今は[、 ]*/,"いまは、")
+            .replace(/^いまは[、 ]*/,"その一方で、")
+            .replace(/^無理に[、 ]*/,"力づくではなく、")
+            .replace(/^焦らなくて大丈夫[。 ]*/,"大丈夫。")
+            .replace(/^そして[、 ]*/,"やがて、");
+        } else {
+          lastHead = h;
+        }
+        break;
+      }
+    }
+    lines[i] = line;
+  }
+  s = lines.join("\n");
+
+  // 「〜という形で現れています。」→少し柔らかく
+  s = s.replace(/という形で現れています。/g, "として表れています。");
+
+  // 「〜へと向かっています。」が硬い時の緩和
+  s = s.replace(/へと向かっています。/g, "へ向かっています。");
+
+  return s.trim();
+}
 // ★これが抜けてた（or 壊れてた）ので追加/復活させる
 function buildSingleReadingStory({ card, isReversed, energyProfile }){
 
@@ -3909,6 +3962,7 @@ function buildGlobalSummaryHTML(picked, count, labels3){
   try{
     let story = "";
     story = reduceRepeatsJP(story);
+    story = polishJPStory(story);
 
     if (count === 3){
       story = buildThreeReadingStory({
