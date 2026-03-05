@@ -3642,15 +3642,6 @@ function polishStoryJP(story){
   return s.trim();
 }
 
-function normalizeActionJP(actionText, fallback){
-  let a = String(actionText || "").trim();
-  if (!a) a = fallback || "今日は、整える選択をひとつ。";
-  a = a.replace(/[「」"]/g,"").trim();
-  a = a.replace(/[.．]{2,}/g, "。");
-  a = a.replace(/[.．]。/g, "。");
-  if (!/[。！？]$/.test(a)) a += "。";
-  return a;
-}
 
 // 未来文の語尾に合わせて、つなぎを自然にする
 function endingTypeJP(s){
@@ -3773,6 +3764,13 @@ function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
       "結び：不安は“守るためのサイン”です。過去の負担を軽くして、未来に向けた小さな安心を積み重ねて。",
     ], seed+"|wrap|anx");
   }
+
+  if (/評価|恐れ|怖い|批判|見られ|期待|空回り/.test(n)){
+  return pickStableOne([
+    "結び：評価の目線よりも、自分の感覚を基準に戻すほど整っていきます。過去を抱えすぎず、未来は自然に開いていきます。",
+    "結び：怖さは“守りたい大切さ”の裏返しです。いまの基準を整えるほど、未来の選択に芯が戻ります。",
+  ], seed+"|wrap|eval");
+}
 
   // default
   return pickStableOne([
@@ -4007,10 +4005,19 @@ function inferMeaningLine(stateText){
 }
 
 function normalizeActionJP(actionText, fallback){
-  let a = (actionText ?? "").toString().trim();
-  if (!a) a = fallback || "今日は「ひとつだけ」整える選択を。";
-  a = a.replace(/[「」"]/g,"").trim();
-  a = a.replace(/\.\s*。/g, "。").replace(/\.(?=[^0-9])/g, ""); // 英句点除去
+  let a = String(actionText || "").trim();
+  if (!a) a = fallback || "今日は、整える選択をひとつ。";
+
+  // 引用符など除去
+  a = a.replace(/[「」"”’']/g, "").trim();
+
+  // ★英句点や全角句点の混在を整理
+  a = a.replace(/[.．]+$/g, "");     // 末尾の . や ． を消す
+  a = a.replace(/[.．]/g, "");       // 文中の . も不要なら消す（必要ならこの行は消してOK）
+  a = a.replace(/。。+/g, "。");     // 句点連打
+  a = a.replace(/\s+/g, " ").trim();
+
+  // 末尾句点を保証
   if (!/[。！？]$/.test(a)) a += "。";
   return a;
 }
