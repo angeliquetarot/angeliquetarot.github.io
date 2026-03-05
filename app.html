@@ -3483,54 +3483,7 @@ function extractPrayer(card, isReversed){
   if (theme.includes("決")) return "あなたの選ぶ道が、光に守られますように。";
   return "あなたの灯す光が、静かに広がりますように。";
 }
-// 日本語を“プロっぽく”整える（言い回しの被り・不自然語尾を吸収）
-function polishJPStory(text){
-  let s = String(text || "").trim();
-  if (!s) return "";
 
-  // 連続する空白/改行を整える
-  s = s.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n");
-
-  // 「が出やすい」連発をやわらげる
-  s = s.replace(/が出やすい(状態)?です。/g, "が表に出やすい時期です。");
-  s = s.replace(/が出やすくなります。/g, "が表に出やすくなります。");
-
-  // 「今は、」の連発を抑制（文頭だけ対象）
-  const lines = s.split("\n");
-  let lastHead = "";
-  const heads = ["今は", "いまは", "無理に", "焦らなくて大丈夫", "そして"];
-  for (let i = 0; i < lines.length; i++){
-    let line = lines[i].trim();
-    if (!line) continue;
-
-    for (const h of heads){
-      if (line.startsWith(h)){
-        if (lastHead === h){
-          // 2回目以降は自然な接続に言い換え
-          line = line
-            .replace(/^今は[、 ]*/,"いまは、")
-            .replace(/^いまは[、 ]*/,"その一方で、")
-            .replace(/^無理に[、 ]*/,"力づくではなく、")
-            .replace(/^焦らなくて大丈夫[。 ]*/,"大丈夫。")
-            .replace(/^そして[、 ]*/,"やがて、");
-        } else {
-          lastHead = h;
-        }
-        break;
-      }
-    }
-    lines[i] = line;
-  }
-  s = lines.join("\n");
-
-  // 「〜という形で現れています。」→少し柔らかく
-  s = s.replace(/という形で現れています。/g, "として表れています。");
-
-  // 「〜へと向かっています。」が硬い時の緩和
-  s = s.replace(/へと向かっています。/g, "へ向かっています。");
-
-  return s.trim();
-}
 // ★これが抜けてた（or 壊れてた）ので追加/復活させる
 function buildSingleReadingStory({ card, isReversed, energyProfile }){
 
@@ -3593,32 +3546,8 @@ function ensurePoliteJP(s){
   return s;
 }
 
-// 「〜が出やすくなります」系を自然に寄せる（軽く）
-function softenJP(s){
-  s = (s ?? "").toString();
 
-  // 語感の調整（必要なぶんだけ）
-  s = s.replace(/が出やすくなります/g, "が強まりやすくなります");
-  s = s.replace(/出やすくなって/g, "強まりやすくなって");
-  s = s.replace(/しやすい状態です。/g, "状態が続きやすいです。");
 
-  return s;
-}
-
-// 「いま、」「今は、」などの重複を減らす（安全に軽く）
-function reduceRepeatsJP(s){
-  s = (s ?? "").toString();
-
-  // 「いま、いま、」みたいな連続を間引く
-  s = s.replace(/(いま[、，]\s*){2,}/g, "いま、");
-  s = s.replace(/(今は[、，]\s*){2,}/g, "今は、");
-
-  // 行頭の「いま、」が続くのを少し抑える
-  s = s.replace(/\nいま[、，]/g, "\nそして、");
-  s = s.replace(/\n今は[、，]/g, "\nそして、");
-
-  return s;
-}
 
 // 最終仕上げ（これを story の最後に1回かける）
 function polishStoryJP(story){
@@ -3633,75 +3562,11 @@ function polishStoryJP(story){
 
   return s.trim();
 }
-// 文末を整える：句点がなければ足す / です・ます調に寄せる（最低限）
-function ensurePoliteJP(s){
-  s = (s ?? "").toString().trim();
-  if (!s) return "";
 
-  // 末尾の記号を揃える
-  s = s.replace(/[。．]+$/g, "。");
-  if (!/[。！？]$/.test(s)) s += "。";
 
-  // 断定（だ/である）を雑に敬語化しすぎない：ここは最低限だけ
-  // 例: "〜だ。" → "〜です。"（ただし「〜だ。」がカード文の味なら変換しない方が良いので弱め）
-  s = s.replace(/だ。$/,"です。").replace(/である。$/,"です。");
 
-  return s;
-}
 
-// 文末タイプ判定（「〜しにくい」「〜状態です」など）
-function endingTypeJP(s){
-  s = (s ?? "").toString().trim();
-  if (!s) return "other";
-  if (/(しにくい|しづらい|なりやすい|やすい)\s*。?$/.test(s)) return "adj_difficulty";
-  if (/(状態です|傾向です|流れです|局面です)\s*。?$/.test(s)) return "state";
-  if (/(でしょう|かもしれません)\s*。?$/.test(s)) return "soft";
-  if (/(ます|です)\s*。?$/.test(s)) return "polite";
-  return "other";
-}
 
-// 接続の文言を「語尾」に合わせて選ぶ（"へと"問題を潰す）
-function bridgeJP(nextSentence){
-  const t = endingTypeJP(nextSentence);
-
-  // 「〜しにくい」系は「へと」禁止。→「…が続きそうです」「…になりやすいでしょう」
-  if (t === "adj_difficulty"){
-    return "その先では、そう感じやすい時間が続きそうです。";
-  }
-  // 「状態です」系も「へと」より「…が色濃くなります」など
-  if (t === "state"){
-    return "少し先には、その傾向がもう一段はっきりしていきます。";
-  }
-  // ふんわり予測は、そのまま受ける
-  if (t === "soft"){
-    return "この先は、その気配が静かに広がっていくでしょう。";
-  }
-  // その他は万能つなぎ
-  return "やがて、その意味が現実の場面に表れてきます。";
-}
-
-// 反復を減らす（「流れ」「いま」「少し先」など）
-function reduceRepeatsJP(text){
-  let t = (text ?? "").toString();
-
-  // 同じ語の連続を弱める
-  t = t.replace(/流れ(の)?/g, "流れ"); // 揺れ統一
-  t = t.replace(/(流れ)/g, "$1");      // ダミー（将来拡張用）
-
-  // 「今は、今は、」みたいな重複
-  t = t.replace(/(今は、)\s*\1+/g, "$1");
-  t = t.replace(/(少し先では、)\s*\1+/g, "$1");
-
-  // 「流れ」が多いときは2回目以降を削る（簡易）
-  const hits = (t.match(/流れ/g) || []).length;
-  if (hits >= 3){
-    let n = 0;
-    t = t.replace(/流れ/g, m => (++n >= 3 ? "" : m));
-    t = t.replace(/、、/g,"、");
-  }
-
-  return t;
-}
 
 // 文頭の固定を避ける：候補から「安定選択」(同じカードなら同じ導入)
 function pickStableOne(list, seed){
@@ -3728,62 +3593,79 @@ function polishStoryJP(story){
 
   return t.trim();
 }
-  function buildThreeReadingStory({ past, present, future, energyProfile }){
+function reduceRepeatsJP(text){
+  let t = String(text || "");
 
-  const p = ensurePoliteJP(extractCoreSentence(past.card, past.isReversed));
-  const n = ensurePoliteJP(extractCoreSentence(present.card, present.isReversed));
-  const f = ensurePoliteJP(extractCoreSentence(future.card, future.isReversed));
-  console.log("F:", f, "type:", endingTypeJP(f));
+  // 「今は、」が連続するときだけ2回目以降を削る（弱め）
+  t = t.replace(/(今は、)\s*\1+/g, "$1");
+  t = t.replace(/(いまは、)\s*\1+/g, "$1");
 
-  const seed = `${past.card.id}|${present.card.id}|${future.card.id}|${past.isReversed?"R":"U"}${present.isReversed?"R":"U"}${future.isReversed?"R":"U"}`;
-
-  const headCandidates = [
-    "ここまでのあなたは、",
-    "これまでの積み重ねは、",
-    "最近の流れを静かに辿ると、",
-    "今につながる背景は、",
-    "これまでを振り返ると、"
-  ];
-  const midCandidates = [
-    "そして今、",
-    "いま大切なのは、",
-    "現在のあなたには、",
-    "いま目の前では、",
-    "ここで一度、"
-  ];
-  const futureCandidates = [
-    "この先は、",
-    "少し先には、",
-    "続く時間では、",
-    "やがて、",
-    "次の段階では、"
-  ];
-
-  const head = pickStableOne(headCandidates, seed + "|head");
-  const mid  = pickStableOne(midCandidates,  seed + "|mid");
-  const fut  = pickStableOne(futureCandidates, seed + "|fut");
-
-  // 「へと」禁止の自然ブリッジ（未来文の語尾に合わせて変える）
-  const bridge = bridgeJP(f);
-
-  let closing = "焦らなくて大丈夫です。いまの一歩を、丁寧に選んでください。";
-  if (energyProfile?.tone === "direct"){
-    closing = "迷ったら、焦らなくて大丈夫です。いま出来る一手を、丁寧に。";
+  // 「無理」連発だけ軽く救済（2回目以降だけ言い換え）
+  const hits = (t.match(/無理/g) || []).length;
+  if (hits >= 2){
+    let first = true;
+    t = t.replace(/無理/g, () => (first ? (first=false, "無理") : "背負いすぎ"));
   }
 
-  let story =
-`${head}${p}
+  // 空行が多すぎるのを整える
+  t = t.replace(/\n{3,}/g, "\n\n");
+  return t;
+}
 
-${mid}${n}
+function polishStoryJP(story){
+  let s = String(story || "");
+  s = s.replace(/[ \t]+\n/g, "\n");
+  s = s.replace(/\n{3,}/g, "\n\n");
+  s = s.replace(/。。+/g, "。");
+  s = reduceRepeatsJP(s);
+  return s.trim();
+}
 
-${bridge}
-${fut}${f}
+function normalizeActionJP(actionText, fallback){
+  let a = String(actionText || "").trim();
+  if (!a) a = fallback || "今日は、整える選択をひとつ。";
+  a = a.replace(/[「」"]/g,"").trim();
+  a = a.replace(/[.．]{2,}/g, "。");
+  a = a.replace(/[.．]。/g, "。");
+  if (!/[。！？]$/.test(a)) a += "。";
+  return a;
+}
+  function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-${closing}`;
+  const p = softenStateJP(extractCoreSentence(past.card, past.isReversed));
+  const n = softenStateJP(extractCoreSentence(present.card, present.isReversed));
+  const f = toFutureJP(softenStateJP(extractCoreSentence(future.card, future.isReversed)));
+
+  const joined = joinWithVariedConnectors({
+    past: p,
+    now: n,
+    future: f
+  });
+
+  const act = normalizeActionJP(
+    extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed),
+    "今日は、負担を減らす選択をひとつ。"
+  );
+
+  const wrap = pickOne([
+    "大丈夫。整えるほど、ちゃんと戻れます。",
+    "急がなくていい。整った方へ、少しずつ。",
+    "迷ったら深呼吸。足場を整えるだけで十分です。"
+  ]);
+
+  let story = `
+${joined.pastLine}
+
+${joined.nowLine}
+
+${joined.futureLine}
+
+${inferMeaningLine(n)}
+${wrap} ${act}
+`.trim();
 
   return polishStoryJP(story);
 }
-
 function buildThreeReadingHTML({ past, present, future, energyProfile }){
   const story = buildThreeReadingStory({ past, present, future, energyProfile });
 
@@ -3984,27 +3866,7 @@ function stripNowPrefixJP(s){
   return t.trim();
 }
 
-// 同じ単語が近距離で連発するのを抑える（簡易）
-function reduceRepeatsJP(text){
-  let t = (text ?? "").toString();
 
-  // 「今は、」の過剰を間引く（文頭・直前が句読点のときだけを狙う）
-  t = t.replace(/(。\s*)(今は、?)/g, "$1"); // 文頭以外の「今は、」を消しがちに
-  t = t.replace(/(\n+)(今は、?)/g, "$1");  // 改行直後の「今は、」を消しがちに
-
-  // 「無理」を連発しやすいので、2回目以降を言い換え候補へ
-  // （雑に全部変えない。2回以上出たら後ろを置換）
-  const hits = (t.match(/無理/g) || []).length;
-  if (hits >= 2){
-    let replacedOnce = false;
-    t = t.replace(/無理/g, (m)=>{
-      if (!replacedOnce){ replacedOnce = true; return m; }
-      return "背負いすぎ";
-    });
-  }
-
-  return t;
-}
 function toFutureJP(line){
   let t = (line ?? "").toString().trim();
   if (!t) return "";
@@ -4068,58 +3930,7 @@ function postProcessStoryJP(s){
 function pickOneJP(arr){
   return arr[Math.floor(Math.random() * arr.length)];
 }
-function buildThreeReadingStory({ past, present, future, energyProfile }){
-  const pCore = softenStateJP(extractCoreSentence(past.card, past.isReversed));
-  const nCoreRaw = softenStateJP(extractCoreSentence(present.card, present.isReversed));
-  const fCoreRaw = softenStateJP(extractCoreSentence(future.card, future.isReversed));
 
-  // 未来は断定を少し弱める（「でしょう」を使わず自然に）
- const fCore = toFutureJP(fCoreRaw);
-
-  // 接続詞を固定しない
-  const joined = joinWithVariedConnectors({
-    past: pCore,
-    now: nCoreRaw,
-    future: fCore
-  });
-
-  const act = normalizeActionJP(
-    extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed),
-    "今日は、負担を減らす選択をひとつ。"
-  );
-
-  // まとめ文も固定しない（「焦らなくて」も毎回出さない）
-  const wrap = pickOne([
-    "焦らなくて大丈夫。整った方へ、少しずつ戻れます。",
-    "大丈夫。急がず整えるほど、流れは味方します。",
-    "急がなくていい。まずは呼吸を深くして、足場を整えて。"
-  ]);
-
-  let story = `
-これまでの流れでは、${joined.pastLine}
-
-${joined.nowLine}
-
-${joined.futureLine}
-
-${inferMeaningLine(nCoreRaw)}
-${wrap} ${act}
-`.trim();
-
-  // ★最後に重複を間引く（「今は」「無理」など）
-  story = reduceRepeatsJP(story);
-  story = postProcessStoryJP(story);
-
-  // トーン調整
-  if (energyProfile?.tone === "soft"){
-    story = story.replace(/焦らなくて大丈夫。/g, "大丈夫。");
-  }
-  if (energyProfile?.tone === "direct"){
-    story = story.replace(/大丈夫。/g, "迷ったら、深呼吸。");
-  }
-
-  return story;
-}
 function extractKeywords(card, isReversed, limit){
   const raw = isReversed ? card?.keywords_reversed : card?.keywords_upright;
   if (!raw) return [];
@@ -4160,11 +3971,9 @@ function buildFlowSentence(pastCore, nowCore, futureCore){
 }
 
 /* ---- 結果上部の“鑑定の結論ブロック”を生成（HTML） ---- */
-function buildGlobalSummaryHTML(picked, count, labels3){
+function buildGlobalSummaryHTML(picked, count){
   try{
     let story = "";
-    story = reduceRepeatsJP(story);
-    story = polishJPStory(story);
 
     if (count === 3){
       story = buildThreeReadingStory({
@@ -4186,6 +3995,8 @@ ${inferMeaningLine(core)}
 ${act}
 `.trim();
     }
+
+    story = polishStoryJP(story); // ★最後に1回だけ
 
     return `
       <section class="globalSummary">
@@ -4311,6 +4122,7 @@ ${action ? `
   img.src = getBackSrc();
 }
 
+  // 「今は、今は
     /* =========================
    Four Pillars (Simplified) -> Five Elements
    - year boundary: approx LiChun (Feb 4)
