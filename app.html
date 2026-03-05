@@ -3567,7 +3567,7 @@ function ensurePoliteJP(s){
 }
 
 function softenEndingJP(t){
-  return t
+  return String(t || "")
     .replace(/状態です。/g,"傾向があります。")
     .replace(/しやすい状態です。/g,"しやすくなっています。");
 }
