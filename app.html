@@ -3581,41 +3581,78 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
     </section>
   </section>`;
 }
+function ensurePoliteJP(s){
+  s = (s ?? "").toString().trim();
+  if (!s) return "";
+  // 末尾が句点で終わるように
+  if (!/[。！？!?]$/.test(s)) s += "。";
+
+  // 「大丈夫。」→「大丈夫です。」みたいに統一
+  s = s.replace(/大丈夫。/g, "大丈夫です。");
+
+  return s;
+}
+
+// 「〜が出やすくなります」系を自然に寄せる（軽く）
+function softenJP(s){
+  s = (s ?? "").toString();
+
+  // 語感の調整（必要なぶんだけ）
+  s = s.replace(/が出やすくなります/g, "が強まりやすくなります");
+  s = s.replace(/出やすくなって/g, "強まりやすくなって");
+  s = s.replace(/しやすい状態です。/g, "状態が続きやすいです。");
+
+  return s;
+}
+
+// 「いま、」「今は、」などの重複を減らす（安全に軽く）
+function reduceRepeatsJP(s){
+  s = (s ?? "").toString();
+
+  // 「いま、いま、」みたいな連続を間引く
+  s = s.replace(/(いま[、，]\s*){2,}/g, "いま、");
+  s = s.replace(/(今は[、，]\s*){2,}/g, "今は、");
+
+  // 行頭の「いま、」が続くのを少し抑える
+  s = s.replace(/\nいま[、，]/g, "\nそして、");
+  s = s.replace(/\n今は[、，]/g, "\nそして、");
+
+  return s;
+}
+
+// 最終仕上げ（これを story の最後に1回かける）
+function polishStoryJP(story){
+  let s = (story ?? "").toString();
+
+  s = softenJP(s);
+  s = reduceRepeatsJP(s);
+
+  // 全体の口調を丁寧語に寄せる（最低限）
+  s = s.replace(/焦らなくて大丈夫。/g, "焦らなくて大丈夫です。");
+  s = s.replace(/無理しないで。/g, "無理しないでください。");
+
+  return s.trim();
+}
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  const p = past.card.core_past || extractCoreSentence(past.card, past.isReversed);
-const n = present.card.core_present || extractCoreSentence(present.card, present.isReversed);
-const f = future.card.core_future || extractCoreSentence(future.card, future.isReversed);
-  const action =
-    extractAction(present.card, present.isReversed) ||
-    extractAction(future.card, future.isReversed) ||
-    "";
+  const p = extractCoreSentence(past.card, past.isReversed);
+  const n = extractCoreSentence(present.card, present.isReversed);
+  const f = extractCoreSentence(future.card, future.isReversed);
 
   let story =
-`${p}
+`これまでの流れは、${ensurePoliteJP(p)}
 
-これまでの流れの中で、
-あなたは大切な経験を重ねてきました。
+そして今は、${ensurePoliteJP(n)}
 
-いまは、
-${n}
-という流れの中にいるようです。
+少し先には、${ensurePoliteJP(f)}
 
-そのまま進むと、
-${f}
-という流れになるかもしれません。
-
-${action}`;
-
-  if (energyProfile?.tone === "soft"){
-    story = story.replace(/ください。/g,"みて。");
-  }
+焦らなくて大丈夫です。いまの一歩を、丁寧に選んでください。`;
 
   if (energyProfile?.tone === "direct"){
-    story = story.replace("焦らなくて大丈夫。","迷ったら、小さく動いてみてください。");
+    story = story.replace("焦らなくて大丈夫です。", "迷ったら、焦らなくて大丈夫です。");
   }
 
-  return story;
+  return polishStoryJP(story);
 }
 
 function buildThreeReadingHTML({ past, present, future, energyProfile }){
