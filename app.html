@@ -3906,10 +3906,7 @@ const n = softenTendencyJP(
 );
 
 // 未来は soften しない
-const fFuture = toFutureJP(f0);
-const f = ensurePoliteJP(
-  varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f")
-);
+const f = normalizeFutureJP(firstSentencesJP(f0, 2));
 
   // 3) つなぎ
   const head = pickStableOne([
@@ -3925,10 +3922,10 @@ const f = ensurePoliteJP(
   ], seed + "|mid");
 
   const fut = pickStableOne([
-    "少し先には、",
+  "少し先には、",
   "やがて、",
   "この先、",
-  ], seed + "|fut");
+], seed + "|fut");
 
   const themeNow = String(present.card.themes || "");
   const bridge = (typeof bridgeForFutureJP === "function")
@@ -4306,6 +4303,35 @@ function stripNowPrefixJP(s){
   return t.trim();
 }
 
+function normalizeFutureJP(text){
+  let s = String(text || "").trim();
+  if (!s) return "";
+
+  // 先頭の時間語は buildThreeReadingStory 側で付けるので剥がす
+  s = s.replace(/^(この先|少し先|やがて|今後)[、,\s]*/, "");
+
+  // まず未来化
+  s = toFutureJP(s);
+
+  // 二重化をここで確実に止める
+  s = s.replace(/しやすいになりやすくなっていきます。?/g, "しやすくなっていきます。");
+  s = s.replace(/やすいになりやすくなっていきます。?/g, "やすくなっていきます。");
+  s = s.replace(/になりやすいになりやすくなっていきます。?/g, "になりやすくなっていきます。");
+
+  // 「〜しやすい時です」→「〜しやすくなっていきます」
+  s = s.replace(/しやすい時です。?/g, "しやすくなっていきます。");
+  s = s.replace(/しにくい時です。?/g, "しにくくなっていきます。");
+  s = s.replace(/になりやすい時です。?/g, "になりやすくなっていきます。");
+
+  // 「〜傾向があります」も未来寄せ
+  s = s.replace(/傾向があります。?$/g, "傾向が強まりやすくなっていきます。");
+
+  // 句点整理
+  s = s.replace(/\.。/g, "。");
+  s = s.replace(/。。+/g, "。");
+
+  return s;
+}
 
 function toFutureJP(s){
   s = String(s || "").trim();
