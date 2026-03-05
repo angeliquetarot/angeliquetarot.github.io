@@ -3820,8 +3820,7 @@ if (shouldWrap && typeof buildWrapUpJP === "function") {
 }
 // ===== ここまで =====
 
-const step = extractAction(present.card, present.isReversed) || extractAction(future.card, future.isReversed);
-if (step) story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
+
 
 // ★統合の一文（現在＝主役、過去＝背景、未来＝方向）
 // p0/n0/f0 がある前提（元テキスト）
@@ -3830,6 +3829,7 @@ if (wrap) story += `\n\n${wrap}`;
 
   // 5) 最後に整形（あなたの既存）
   if (typeof postProcessStoryJP === "function") story = postProcessStoryJP(story);
+  story = fixDuplicateTendencyJP(story); // ←これを追加
 
   return story;
 }
@@ -4098,22 +4098,13 @@ function inferMeaningLine(stateText){
   ]);
 }
 
-function normalizeActionJP(actionText, fallback){
-  let a = String(actionText || "").trim();
-  if (!a) a = fallback || "今日は、整える選択をひとつ。";
-
-  // 引用符など除去
-  a = a.replace(/[「」"”’']/g, "").trim();
-
-  // ★英句点や全角句点の混在を整理
-  a = a.replace(/[.．]+$/g, "");     // 末尾の . や ． を消す
-  a = a.replace(/[.．]/g, "");       // 文中の . も不要なら消す（必要ならこの行は消してOK）
-  a = a.replace(/。。+/g, "。");     // 句点連打
-  a = a.replace(/\s+/g, " ").trim();
-
-  // 末尾句点を保証
-  if (!/[。！？]$/.test(a)) a += "。";
-  return a;
+function normalizeActionJP(s){
+  return String(s || "")
+    .trim()
+    .replace(/[.．]+$/g, "")   // ← 末尾の . を消す
+    .replace(/。+$/g, "")      // ← 末尾の 。も一旦消す
+    .replace(/\s+/g, " ")
+    .replace(/$/,"。");        // ← 最後に必ず 。を1個だけ付ける
 }
 // --- 表現の重複を減らすユーティリティ ---
 function pickOne(arr, seed){
@@ -4239,6 +4230,10 @@ function postProcessStoryJP(s){
   // ⑥ 既存の重複削減も最後に一回かける（あるなら）
   if (typeof reduceRepeatsJP === "function") s = reduceRepeatsJP(s);
 
+   // ★ここを追加：最終の崩れ取り
+  s = fixJPArtifacts(s);
+  s = stripStepWrapFromStoryJP(s); // ★UI側で出すなら入れる
+
   return s.trim();
 }
 
@@ -4341,6 +4336,12 @@ ${inferMeaningLine(extractCoreSentence(one.card, one.isReversed))}
     }
 
     story = polishStoryJP(story);
+    // 本文に混ざってしまった「今日の一歩」「結び」を除去（保険）
+story = story
+  .replace(/\n*\s*今日の一歩：.*?(?=\n|$)/g, "")
+  .replace(/\n*\s*一歩：.*?(?=\n|$)/g, "")
+  .replace(/\n*\s*結び：.*?(?=\n|$)/g, "")
+  .trim();
 
     return `
       <section class="globalSummary">
