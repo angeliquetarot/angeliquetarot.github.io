@@ -3456,31 +3456,34 @@ window.__gogyouState = window.__gogyouState || {
 
 
     function metaLine(card) {
-      const parts = [];
-      if (card.arcana) parts.push(`区分:${card.arcana}`);
-      if (card.suit) parts.push(`スート:${card.suit}`);
-      if (card.number) parts.push(`番号:${card.number}`);
-      if (card.element) parts.push(`元素:${card.element}`);
-      if (card.polarity) parts.push(`極性:${card.polarity}`);
-      if (card.timing) parts.push(`時期:${card.timing}`);
-      return parts.join(" / ");
-    }
+  const parts = [];
+  if (card.arcana) parts.push(`区分:${card.arcana}`);
+  if (card.suit) parts.push(`スート:${card.suit}`);
+  if (card.number) parts.push(`番号:${card.number}`);
+  if (card.element) parts.push(`元素:${card.element}`);
+  if (card.polarity) parts.push(`極性:${card.polarity}`);
+  if (card.timing) parts.push(`時期:${card.timing}`);
+  return parts.join(" / ");
+}
 
-    function pickTextByOrientation(card, isReversed, keyBase){
+function pickTextByOrientation(card, isReversed, keyBase){
   const k = isReversed ? `${keyBase}_reversed` : `${keyBase}_upright`;
   return (card[k] ?? "").toString().trim();
 }
 
-
 function extractPrayer(card, isReversed){
-  // 祈りは固定テンプレでもOK（後でカード別に拡張）
   const theme = ((card.themes ?? "") + "").trim();
   if (theme.includes("癒")) return "あなたの心が、ゆっくりほどけますように。";
   if (theme.includes("決")) return "あなたの選ぶ道が、光に守られますように。";
   return "あなたの灯す光が、静かに広がりますように。";
 }
 
-  // 物語テンプレ（短く、でも“芯がある”）
+// ★これが抜けてた（or 壊れてた）ので追加/復活させる
+function buildSingleReadingStory({ card, isReversed, energyProfile }){
+  const core   = extractCoreSentence(card, isReversed);
+  const action = extractAction(card, isReversed);
+  const prayer = extractPrayer(card, isReversed);
+
   let body =
 `${core}
 
@@ -3489,13 +3492,12 @@ function extractPrayer(card, isReversed){
 
 ${action}`;
 
-  // 五行/数秘は“文章を増やさず”、語尾やニュアンスだけ調律
   if (energyProfile?.tone === "soft") {
     body = body.replace(/ください。/g, "みて。");
   }
 
   return { body, prayer };
-
+}
 
 function buildSingleReadingHTML({ card, isReversed, energyProfile }){
   const { body, prayer } = buildSingleReadingStory({ card, isReversed, energyProfile });
@@ -3514,15 +3516,15 @@ function buildSingleReadingHTML({ card, isReversed, energyProfile }){
     <div class="angel-prayer">${escapeHtml(prayer)}</div>
 
     <section id="aboutFold">
-    <details class="angel-details">
-      <summary>このサイトでできること</summary>
-      <div class="grid">
-      ${buildCardDetailHTML(card, isReversed)}
-    </details>
+      <details class="angel-details">
+        <summary>このサイトでできること</summary>
+        <div class="grid">
+          ${buildCardDetailHTML(card, isReversed)}
+        </div>
+      </details>
+    </section>
   </section>`;
 }
-
-
   let story =
 `過去、あなたは「${p}」という流れを通ってきました。
 
