@@ -3617,24 +3617,38 @@ function ensurePoliteJP(s){
 
 function softenTendencyJP(line, seed){
   const s = String(line || "").trim();
+  if (!s) return "";
 
-  // 「傾向があります。」だけ狙って、言い換え候補に差し替える
-  if (/傾向があります。?$/.test(s)){
-    return pickStableOne([
-      s.replace(/傾向があります。?$/, "になりやすいです。"),
-      s.replace(/傾向があります。?$/, "が出やすいです。"),
-      s.replace(/傾向があります。?$/, "に寄りやすい時です。"),
-      s.replace(/傾向があります。?$/, "になりがちです。"),
-    ], seed + "|tend");
+  // すでに自然な未来/状態文ならそのまま
+  if (/(時です。?|状態です。?|流れです。?|になっていきます。?|しやすくなっていきます。?)$/.test(s)) {
+    return s;
   }
 
-  // 「しやすい傾向があります。」も多いならここも追加（任意）
+  // 「〜しやすい傾向があります」
   if (/しやすい傾向があります。?$/.test(s)){
     return pickStableOne([
-      s.replace(/しやすい傾向があります。?$/, "しやすい時です。"),
-      s.replace(/しやすい傾向があります。?$/, "になりやすいです。"),
-      s.replace(/しやすい傾向があります。?$/, "が出やすいです。"),
+      s.replace(/しやすい傾向があります。?$/, "しやすいです。"),
+      s.replace(/しやすい傾向があります。?$/, "しやすい状態です。"),
+      s.replace(/しやすい傾向があります。?$/, "しやすい傾向があります。"),
     ], seed + "|tend2");
+  }
+
+  // 「〜になりやすい傾向があります」
+  if (/になりやすい傾向があります。?$/.test(s)){
+    return pickStableOne([
+      s.replace(/になりやすい傾向があります。?$/, "になりやすいです。"),
+      s.replace(/になりやすい傾向があります。?$/, "になりがちです。"),
+      s.replace(/になりやすい傾向があります。?$/, "になりやすい傾向があります。"),
+    ], seed + "|tend3");
+  }
+
+  // ふつうの「傾向があります」
+  if (/傾向があります。?$/.test(s)){
+    return pickStableOne([
+      s.replace(/傾向があります。?$/, "傾向があります。"),
+      s.replace(/傾向があります。?$/, "状態です。"),
+      s.replace(/傾向があります。?$/, "流れがあります。"),
+    ], seed + "|tend");
   }
 
   return s;
@@ -3797,6 +3811,16 @@ function postProcessStoryJP(s){
   // ④ 「〜しにくいへと」みたいな不自然接続を修正
   s = s.replace(/(しにくい|づらい)へと/g, "$1傾向へ");
 
+  // 二重化事故を潰す（よく出るやつだけ強制修正）
+s = s.replace(/がちなになりがち/g, "がちです");
+s = s.replace(/がちなになりやすい/g, "がちです");
+s = s.replace(/しやすいになりがち/g, "しやすい傾向があります");
+s = s.replace(/しやすいになりやすい/g, "しやすい傾向があります");
+s = s.replace(/やすい時です時です/g, "やすい時です");
+s = s.replace(/時です時です/g, "時です");
+s = s.replace(/状態です\.\。/g, "状態です。");
+s = s.replace(/\.\。/g, "。");
+
   // ⑤ 余計な空行を整える
   s = s.replace(/\n{3,}/g, "\n\n");
 
@@ -3854,21 +3878,20 @@ function bridgeJP(nextSentence){
 
   // 2) 2文まで + 語尾ゆらぎ（必要なら soften）
   const p = softenTendencyJP(
-    ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p")),
-    seed+"|p"
-  );
+  ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p")),
+  seed+"|p"
+);
 
-  const n = softenTendencyJP(
-    ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n")),
-    seed+"|n"
-  );
+const n = softenTendencyJP(
+  ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n")),
+  seed+"|n"
+);
 
-  // 未来だけ未来形へ寄せる
-  const fFuture = toFutureJP(f0);
-  const f = softenTendencyJP(
-    ensurePoliteJP(varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f")),
-    seed+"|f"
-  );
+// 未来は soften しない
+const fFuture = toFutureJP(f0);
+const f = ensurePoliteJP(
+  varyEndingJP(firstSentencesJP(fFuture, 2), seed+"|f")
+);
 
   // 3) つなぎ
   const head = pickStableOne([
@@ -3884,9 +3907,9 @@ function bridgeJP(nextSentence){
   ], seed + "|mid");
 
   const fut = pickStableOne([
-    "この先は、",
     "少し先には、",
-    "やがて、",
+  "やがて、",
+  "この先、",
   ], seed + "|fut");
 
   const themeNow = String(present.card.themes || "");
@@ -4264,23 +4287,28 @@ function stripNowPrefixJP(s){
 }
 
 
-function toFutureJP(line){
-  let t = (line ?? "").toString().trim();
-  if (!t) return "";
+function toFutureJP(s){
+  s = String(s || "").trim();
 
-  // まず「という流れが出ています」を未来形へ
-  t = t.replace(/という流れが出ています。?$/,"になりやすくなります。");
-  t = t.replace(/という気配が出ています。?$/,"が強まりやすくなります。");
-  t = t.replace(/しやすい流れにあります。?$/,"しやすくなります。");
-  t = t.replace(/という状況が出ています。?$/,"になりやすくなります。");
-  t = t.replace(/という傾向が出ています。?$/,"という傾向が強まりやすくなります。");
+  // 1) 「〜な時です」系は未来化（最優先）
+  // 例: 「不安が出やすい時です。」→「不安が出やすくなっていきます。」
+  s = s.replace(/([ぁ-んァ-ン一-龥A-Za-z0-9]+?)が出やすい時です。?/g, "$1が出やすくなっていきます。");
+  s = s.replace(/([ぁ-んァ-ン一-龥A-Za-z0-9]+?)が強まりやすい時です。?/g, "$1が強まりやすくなっていきます。");
+  s = s.replace(/([ぁ-んァ-ン一-龥A-Za-z0-9]+?)になりやすい時です。?/g, "$1になりやすくなっていきます。");
+  s = s.replace(/([ぁ-んァ-ン一-龥A-Za-z0-9]+?)しやすい時です。?/g, "$1しやすくなっていきます。");
+  s = s.replace(/([ぁ-んァ-ン一-龥A-Za-z0-9]+?)しにくい時です。?/g, "$1しにくくなっていきます。");
 
-  // 「へ傾きやすい」みたいな形が残ってたら救済
-  t = t.replace(/へ傾きやすいです。?$/,"傾きやすくなります。");
+  // 2) 汎用：「〜時です。」→「〜になっていきます。」に寄せる
+  // 「〜する時です。」は「〜していく流れです。」の方が自然なこともあるので保守的に
+  s = s.replace(/時です。?$/g, "になっていきます。");
 
-  // 句点
-  if (!/[。！？]$/.test(t)) t += "。";
-  return t;
+  // 3) 「〜です。」で終わる短文も未来寄せ（※未来にしたい場合）
+  // 例: 「焦りが出やすい状態です。」→「焦りが出やすくなっていきます。」
+  s = s.replace(/が出やすい状態です。?$/g, "が出やすくなっていきます。");
+  s = s.replace(/になりやすいです。?$/g, "になりやすくなっていきます。");
+  s = s.replace(/しやすいです。?$/g, "しやすくなっていきます。");
+
+  return s;
 }
 
 function stripStepWrapFromStoryJP(s){
