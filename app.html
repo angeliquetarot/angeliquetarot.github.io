@@ -4468,7 +4468,6 @@ function buildGlobalSummaryHTML(picked, count){
       const future = picked[2];
       const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
 
-      // 本文
       story = buildThreeReadingStory({
         past,
         present,
@@ -4476,14 +4475,12 @@ function buildGlobalSummaryHTML(picked, count){
         energyProfile: null
       });
 
-      // 一歩（本文とは分ける）
       step = normalizeActionJP(
         extractAction(present.card, present.isReversed) ||
         extractAction(future.card, future.isReversed) ||
         "今日は、整える選択をひとつ。"
       );
 
-      // 結び（必要ならだけ）
       if (typeof buildWrapUpJP === "function") {
         wrap = buildWrapUpJP({
           p0: stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed)),
@@ -4511,12 +4508,12 @@ ${inferMeaningLine(extractCoreSentence(one.card, one.isReversed))}
     }
 
     story = polishStoryJP(story);
-    // 本文に混ざってしまった「今日の一歩」「結び」を除去（保険）
-story = story
-  .replace(/\n*\s*今日の一歩：.*?(?=\n|$)/g, "")
-  .replace(/\n*\s*一歩：.*?(?=\n|$)/g, "")
-  .replace(/\n*\s*結び：.*?(?=\n|$)/g, "")
-  .trim();
+
+    story = story
+      .replace(/\n*\s*今日の一歩：.*?(?=\n|$)/g, "")
+      .replace(/\n*\s*一歩：.*?(?=\n|$)/g, "")
+      .replace(/\n*\s*結び：.*?(?=\n|$)/g, "")
+      .trim();
 
     return `
       <section class="globalSummary">
@@ -4527,9 +4524,6 @@ story = story
         </div>
 
         ${step ? `
-        <details class="gsFold">
-  <summary>今日の一歩 / 結び</summary>
-  <div class="gsFoldInner">
           <div class="gsAction">
             <span class="gsActionLabel">今日の一歩</span>
             <div class="gsActionText">${escapeHtml(step)}</div>
@@ -4556,6 +4550,7 @@ story = story
     `;
   }
 }
+
     function renderCard(card, isReversed, positionLabel = "", showDeepRead = true) {
   const safe = (s) => (typeof escapeHtml === "function") ? escapeHtml(s) : s;
 
