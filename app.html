@@ -2581,7 +2581,7 @@ font:12px/1.2 ui-sans-serif;">
       <div class="brandTag">Angelique Tarot</div>
       <h1 class="brandTitle">光の導きで、心をほどく。</h1>
       <div class="topCtaRow">
-  <a href="#drawStart" class="btnPrimary">🔮 今すぐカードを引く</a>
+  <button type="button" class="btnPrimary" onclick="scrollToDrawStart()">🔮 今すぐカードを引く</button>
 </div>
 
       <p class="brandLead">
@@ -2687,12 +2687,14 @@ font:12px/1.2 ui-sans-serif;">
     </div>
   </div>
 
+  <div id="drawStart"></div>
+
   <h2 class="panelTitle" style="text-align:center;margin:18px 0 8px;">
     カードを引いてみる
   </h2>
 
   <!-- 操作バー：ここに移動（導線を上へ） -->
-  <div class="drawBar" id="drawStart">
+  <div class="drawBar">
     <div class="drawModeInline" aria-label="引き方を選ぶ">
       <label class="chip">
         <input type="radio" name="drawMode" value="1" checked>
@@ -2848,12 +2850,13 @@ window.BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午",
     });
 
     function scrollToResultSmooth() {
-  const target = document.getElementById("result");
+  const target =
+    document.querySelector("#result .globalSummary") ||
+    document.getElementById("result");
   if (!target) return;
 
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce) {
-    // 動きを減らす設定なら一発で
     const top = target.getBoundingClientRect().top + window.pageYOffset - 12;
     window.scrollTo(0, top);
     return;
@@ -2862,10 +2865,9 @@ window.BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午",
   const startY = window.pageYOffset;
   const targetY = target.getBoundingClientRect().top + window.pageYOffset - 12;
 
-  const duration = 1200; // ← ゆっくり（ms）
+  const duration = 1200;
   const startT = performance.now();
 
-  // 上品なイージング（呼吸っぽい）
   const easeInOut = (t) => (t < 0.5)
     ? 4 * t * t * t
     : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -2877,9 +2879,37 @@ window.BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午",
     if (p < 1) requestAnimationFrame(tick);
   }
 
-  // 描画完了後に始める（2フレーム待ち）
   requestAnimationFrame(() => requestAnimationFrame((t) => tick(t)));
 }
+
+    function scrollToDrawStart() {
+  const target = document.getElementById("drawStart");
+  if (!target) return;
+
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const top = target.getBoundingClientRect().top + window.pageYOffset - 12;
+
+  if (reduce) {
+    window.scrollTo(0, top);
+    return;
+  }
+
+  window.scrollTo({
+    top,
+    behavior: "smooth"
+  });
+}
+
+  function tick(now) {
+    const p = Math.min(1, (now - startT) / duration);
+    const y = startY + (targetY - startY) * easeInOut(p);
+    window.scrollTo(0, y);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+
+  // 描画完了後に始める（2フレーム待ち）
+  requestAnimationFrame(() => requestAnimationFrame((t) => tick(t)));
+
 
     const STORAGE_KEY = "angelique_tarot_csv_rows_v2";
     let cards = [];
@@ -3555,7 +3585,6 @@ async function onDraw() {
     const drawMode = document.querySelector('input[name="drawMode"]:checked')?.value || "1";
     const count = (String(drawMode) === "3") ? 3 : 1;
 
-    // ✅ 演出（呼吸/発光）を復活させたいので戻す
     setStatus(`シャッフル中…（${count}枚）`);
     if (typeof startShuffle === "function") startShuffle();
     await new Promise(r => setTimeout(r, 900));
@@ -3568,7 +3597,7 @@ async function onDraw() {
 
     const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
     const gogyouNavHTML =
-  (typeof buildGogyouQuickNavHTML === "function") ? buildGogyouQuickNavHTML() : "";
+      (typeof buildGogyouQuickNavHTML === "function") ? buildGogyouQuickNavHTML() : "";
 
     const energyHTML =
       (typeof hasBirthInput === "function" && hasBirthInput() && typeof buildBothGogyouHTML === "function")
@@ -3591,23 +3620,26 @@ async function onDraw() {
       </div>
       ${actionsHTML}
     `;
+
     setTimeout(() => {
-  console.log(
-    "globalSummary:",
-    document.querySelector("#result .globalSummary")?.innerText
-  );
-}, 50);
-    // --- share用の「鑑定の一文」を保存（HTMLタグじゃなく文字だけ取る） ---
-window.__shareOneLine =
-  (document.querySelector("#result .coreText")?.textContent || "").trim();
+      console.log(
+        "globalSummary:",
+        document.querySelector("#result .globalSummary")?.innerText
+      );
+    }, 50);
 
-if (!window.__shareOneLine) {
-  // 予備：サマリーが別クラスならここで拾う
-  window.__shareOneLine =
-    (document.querySelector("#result .globalSummary")?.textContent || "").trim();
-}
+    // --- share用の「鑑定の一文」を保存 ---
+    window.__shareOneLine =
+      (document.querySelector("#result .coreText")?.textContent || "").trim();
 
-    
+    if (!window.__shareOneLine) {
+      window.__shareOneLine =
+        (document.querySelector("#result .globalSummary")?.textContent || "").trim();
+    }
+
+    // ★ これを戻す
+    setTimeout(scrollToResultSmooth, 160);
+    setStatus(`結果表示：${count}枚引き。`);
 
   } catch (e) {
     console.error(e);
