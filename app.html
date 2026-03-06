@@ -2656,6 +2656,48 @@ html{
     animation: none !important;
   }
 }
+.numerologyMini{
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.nmTitle{
+  font-size: 12px;
+  letter-spacing: .12em;
+  color: rgba(245,228,170,.92);
+  font-family:"Cinzel","Shippori Mincho",serif;
+  margin-bottom: 8px;
+}
+
+.nmChips{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.nmChip{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.nmLabel{
+  font-size: 12px;
+  color: rgba(255,255,255,.72);
+}
+
+.nmValue{
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(255,255,255,.94);
+}
   </style>
 </head>
 
@@ -5742,6 +5784,10 @@ function buildBothGogyouHTML(){
       <a href="./elements/index.html" target="_blank" rel="noopener">五行を詳しく</a>
     </div>
   `;
+  const numerologyHTML =
+  (typeof buildNumerologyMiniHTML === "function")
+    ? buildNumerologyMiniHTML()
+    : "";
 
   // 折りたたみで返す（ここが最終return）
   return `
@@ -5752,9 +5798,44 @@ function buildBothGogyouHTML(){
           ※ 深く知りたい人向け。本文はカードだけで成立するようにしています。
         </div>
         ${links}
+
+        ${numerologyHTML}
+
         ${gogyouHTML ? `<div style="margin-top:12px;">${gogyouHTML}</div>` : ""}
       </div>
     </details>
+  `;
+}
+function buildNumerologyMiniHTML() {
+  const uDate = normalizeDateInput(document.getElementById("userBirthdate")?.value);
+  const pDate = normalizeDateInput(document.getElementById("partnerBirthdate")?.value);
+
+  if (!uDate && !pDate) return "";
+
+  let userLp = "";
+  let partnerLp = "";
+
+  try {
+    if (uDate && typeof calculateLifePath === "function") {
+      userLp = calculateLifePath(uDate);
+    }
+    if (pDate && typeof calculateLifePath === "function") {
+      partnerLp = calculateLifePath(pDate);
+    }
+  } catch (e) {
+    console.warn("[buildNumerologyMiniHTML] failed:", e);
+  }
+
+  if (!userLp && !partnerLp) return "";
+
+  return `
+    <div class="numerologyMini">
+      <div class="nmTitle">数秘の番号</div>
+      <div class="nmChips">
+        ${userLp ? `<div class="nmChip"><span class="nmLabel">あなた</span><span class="nmValue">${userLp}</span></div>` : ""}
+        ${partnerLp ? `<div class="nmChip"><span class="nmLabel">お相手</span><span class="nmValue">${partnerLp}</span></div>` : ""}
+      </div>
+    </div>
   `;
 }
 function buildGogyouQuickNavHTML(){
