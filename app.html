@@ -6030,14 +6030,29 @@ function drawCardOnCanvas(ctx, item, x, y, w, h) {
     ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
   }
   // --- 1行要約（鑑定の一文）を描画 ---
-const one = shortenJP(window.__shareOneLine, 40);
+const one = shortenJP(String(window.__shareOneLine || "").trim(), 56);
+
 if (one) {
   ctx.save();
   ctx.globalAlpha = 0.92;
-  ctx.font = "28px serif";
+  ctx.font = "26px 'Noto Serif JP', serif";
   ctx.textAlign = "center";
+  ctx.textBaseline = "top";
   ctx.fillStyle = "rgba(255,255,255,0.90)";
-  ctx.fillText(one, canvas.width / 2, canvas.height - 140);
+
+  const maxWidth = 760;     // 文章エリアの横幅
+  const lineHeight = 42;    // 行間
+  const startY = canvas.height - 185;
+
+  const lineCount = drawWrappedText(
+    ctx,
+    one,
+    canvas.width / 2,
+    startY,
+    maxWidth,
+    lineHeight
+  );
+
   ctx.restore();
 }
 
@@ -6081,7 +6096,49 @@ if (one) {
     }
   }, "image/png");
 }
+function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {
+  const chars = String(text || "").split("");
+  let line = "";
+  const lines = [];
 
+  for (const ch of chars) {
+    const test = line + ch;
+    const w = ctx.measureText(test).width;
+
+    if (w > maxWidth && line) {
+      lines.push(line);
+      line = ch;
+
+      if (lines.length === maxLines - 1) {
+        break;
+      }
+    } else {
+      line = test;
+    }
+  }
+
+  // 残り文字を最後の行に入れる
+  if (line) {
+    let rest = line + chars.slice(lines.join("").length + line.length).join("");
+    while (ctx.measureText(rest).width > maxWidth && rest.length > 1) {
+      rest = rest.slice(0, -1);
+    }
+
+    const original = String(text || "");
+    const consumed = lines.join("").length + rest.length;
+    if (consumed < original.length) {
+      rest = rest.replace(/…?$/, "") + "…";
+    }
+
+    lines.push(rest);
+  }
+
+  lines.slice(0, maxLines).forEach((ln, i) => {
+    ctx.fillText(ln, x, y + i * lineHeight);
+  });
+
+  return lines.length;
+}
 // ✅ ここは shareResultImage の「外」に置く（超重要）
 function openImageFallbackFromBlob(blob) {
   showToast("画像を表示しました。右クリック/長押しで保存できます", 3500);
