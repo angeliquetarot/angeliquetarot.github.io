@@ -548,7 +548,8 @@ button{
 
 /* ふわふわ（常時は弱め） */
 #result .tcard{
-  animation: cardDrift 4.6s ease-in-out infinite;
+  animation: cardDrift 7.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* 3枚はズレた波で“生きてる感じ” */
@@ -2648,6 +2649,11 @@ html{
 @media (min-width: 641px){
   .drawBar{
     margin-bottom: 20px !important;
+  }
+}
+@media (max-width: 640px){
+  #result .tcard{
+    animation: none !important;
   }
 }
   </style>
