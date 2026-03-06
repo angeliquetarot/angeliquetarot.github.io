@@ -2557,7 +2557,94 @@ html{
 #drawStart{
   scroll-margin-top: 40px;
 }
+/* =========================
+   DrawBar: PCは通常配置 / mobileだけsticky
+   ========================= */
 
+/* まず基本は通常配置に戻す */
+.drawBar{
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+  margin: 18px auto 14px;
+}
+
+/* PCでデッキと少し距離を取る */
+#shuffleArea{
+  margin-top: 12px;
+}
+
+/* mobileだけstickyにする */
+@media (max-width: 640px){
+  .drawBar{
+    position: sticky !important;
+    top: 14px !important;
+    z-index: 50 !important;
+  }
+}
+@media (min-width: 641px){
+  .drawBar{
+    margin-bottom: 18px !important;
+  }
+
+  #shuffleArea .deck{
+    margin-top: 10px;
+  }
+}
+/* =========================
+   Mobile: 3枚引きは横スクロールにする
+   ========================= */
+@media (max-width: 640px){
+
+  .cardsGrid.three{
+    display: grid !important;
+    grid-auto-flow: column;
+    grid-auto-columns: 82%;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 4px 10px 10px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cardsGrid.three > .tcard{
+    scroll-snap-align: start;
+    min-width: 0;
+  }
+
+  /* スクロールバーを目立たせたくない時 */
+  .cardsGrid.three::-webkit-scrollbar{
+    display: none;
+  }
+  .cardsGrid.three{
+    scrollbar-width: none;
+  }
+
+  /* 3枚引きのカードは少し軽く */
+  .cardsGrid.three .tcardHeader{
+    padding: 10px 10px 8px;
+  }
+
+  .cardsGrid.three .tcardVisual{
+    padding: 12px;
+  }
+
+  .cardsGrid.three .tcardBody{
+    padding: 0 10px 10px !important;
+  }
+}
+@media (max-width: 640px){
+  .cardsGrid.three::before{
+    content: "← 横にスワイプして 過去・現在・未来 を見る";
+    display: block;
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: rgba(255,255,255,.65);
+    margin-bottom: 4px;
+    padding-left: 2px;
+  }
+}
   </style>
 </head>
 
