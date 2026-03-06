@@ -2202,6 +2202,339 @@ a:hover, .menuCta:hover{
 .gsFold > summary::-webkit-details-marker{ display:none; }
 .gsFoldInner{ padding:12px 12px 14px; }
 
+/* =========================================
+   Mobile readability fix
+   ========================================= */
+@media (max-width: 640px){
+
+  html{
+    font-size: 16px;
+  }
+
+  body{
+    padding-inline: 10px;
+  }
+
+  .app{
+    width: 100%;
+  }
+
+  /* ヒーロー */
+  .brandHero{
+    padding: 10px 0 4px;
+  }
+
+  .brandHeroInner{
+    padding: 6px;
+  }
+
+  .brandTag{
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .brandTitle{
+    font-size: 24px;
+    line-height: 1.28;
+    margin: 10px 0 10px;
+    letter-spacing: .01em;
+  }
+
+  .brandLead{
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+
+  .brandMini{
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  /* パネル共通 */
+  .panel,
+  .stage,
+  .summaryCard,
+  .globalSummary,
+  .birthPanel{
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .panelTitle{
+    font-size: 16px;
+    margin: 0 0 10px;
+  }
+
+  /* 折りたたみ */
+  .foldSection{
+    width: 100%;
+    margin: 10px auto;
+  }
+
+  .foldSection summary{
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  /* 入力欄 */
+  .birthGrid{
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .birthBlock{
+    gap: 5px;
+  }
+
+  .birthLabel{
+    font-size: 12px;
+  }
+
+  .birthInput{
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 11px 12px;
+    font-size: 16px; /* iPhone zoom防止 */
+    border-radius: 12px;
+  }
+
+  /* 引くエリア */
+  .drawBar{
+    position: static;
+    width: 100%;
+    margin: 10px auto 12px;
+    padding: 10px 10px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+
+  .drawModeInline{
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .drawModeInline .chip{
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    justify-content: flex-start;
+  }
+
+  .drawModeInline .chip strong{
+    font-size: 15px;
+  }
+
+  .drawModeInline .chip span{
+    font-size: 12px;
+  }
+
+  #btnDraw,
+  .drawBtn{
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+    border-radius: 999px;
+  }
+
+  /* デッキ画像 */
+  #shuffleArea{
+    margin-top: 8px;
+  }
+
+  #shuffleArea .deck{
+    width: min(72vw, 290px);
+    max-width: 290px;
+    margin: 8px auto 0;
+  }
+
+  .birthHint{
+    font-size: 12px;
+    line-height: 1.8;
+    margin-top: 10px;
+  }
+
+  /* 結果上部 */
+  .globalSummary{
+    margin: 14px auto 12px;
+    padding: 14px;
+  }
+
+  .gsTitle{
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .gsLine1{
+    font-size: 14px;
+    line-height: 1.9;
+  }
+
+  .gsAction{
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .gsActionLabel{
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+
+  .gsActionText{
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .gsWrap > summary{
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .gsWrapText{
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  /* 五行カード */
+  .gogyouQuickNav,
+  .energyDetails{
+    margin-top: 10px;
+    padding: 12px;
+  }
+
+  .gqRow{
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .gqWho{
+    min-width: 0;
+    padding-top: 0;
+  }
+
+  .gqChip{
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* カード */
+  .cardsGrid{
+    padding-inline: 0;
+    gap: 12px;
+  }
+
+  .cardsGrid.single{
+    grid-template-columns: 1fr;
+  }
+
+  .tcardHeader{
+    padding: 10px 10px 8px;
+  }
+
+  .tcardTitle .name{
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .tcardTitle .sub{
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .tcardBody{
+    font-size: 12px;
+    line-height: 1.8;
+    padding: 0 10px 10px;
+  }
+
+  .deepRead > summary{
+    font-size: 12px;
+    padding: 11px 12px;
+  }
+
+  .deepRead .deepText{
+    font-size: 12px;
+    line-height: 1.9;
+  }
+
+  /* 結果アクション */
+  .resultActions{
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .readingLinks{
+    gap: 8px;
+    margin: 14px 0;
+  }
+
+  .readingLink{
+    font-size: 13px;
+    padding: 10px 12px;
+    line-height: 1.6;
+  }
+
+  .resultActions .shareRow{
+    width: 100%;
+    gap: 8px;
+  }
+
+  .resultActions .shareRow .btnGhost{
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+    font-size: 12px;
+    padding: 10px 8px;
+  }
+
+  .btnDrawAgain{
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  /* VERSIONバッジは下固定をやめる */
+  #versionBadge{
+    position: static !important;
+    display: inline-block;
+    margin: 10px 0 0 auto;
+    float: right;
+    font-size: 11px !important;
+    padding: 7px 10px !important;
+    border-radius: 10px !important;
+  }
+}
+@media (max-width: 640px){
+  #shuffleArea .deck{
+    width: min(68vw, 260px);
+  }
+}
+@media (max-width: 640px){
+  .foldSection summary{
+    font-size: 14px;
+    padding: 11px 13px;
+  }
+
+  .brandCard,
+  .menuItem{
+    padding: 10px 12px;
+  }
+
+  .menuName,
+  .brandCard h3{
+    font-size: 14px;
+  }
+
+  .menuDesc,
+  .brandCard p{
+    font-size: 12px;
+    line-height: 1.7;
+  }
+}
 
   </style>
 </head>
