@@ -3736,6 +3736,10 @@ async function onDraw() {
     const gridClass = count === 1 ? "cardsGrid single" : "cardsGrid three";
 
     const globalSummaryHTML = buildGlobalSummaryHTML(picked, count, labels3);
+    const numerologyMiniHTML =
+  (typeof buildNumerologyMiniHTML === "function")
+    ? buildNumerologyMiniHTML()
+    : "";
     const gogyouNavHTML =
       (typeof buildGogyouQuickNavHTML === "function") ? buildGogyouQuickNavHTML() : "";
 
@@ -3751,6 +3755,7 @@ async function onDraw() {
 
     elResult.innerHTML = `
       ${globalSummaryHTML}
+      ${numerologyMiniHTML}
       ${gogyouNavHTML}
       ${energyHTML}
       <div class="${gridClass}">
