@@ -21,7 +21,8 @@
 
 /* base */
 *{ box-sizing:border-box; }
-html{ font-size: 18px; }
+html{ font-size: 18px;   scroll-behavior:smooth;
+}
 body{
   margin:0;
   min-height:100vh;
@@ -2535,6 +2536,24 @@ a:hover, .menuCta:hover{
     line-height: 1.7;
   }
 }
+html{
+  font-size: 18px;
+}
+
+.topCtaRow{
+  display: none;
+}
+
+@media (max-width: 640px){
+  html{
+    scroll-behavior: smooth;
+  }
+
+  .topCtaRow{
+    display: flex;
+    margin-top: 12px;
+  }
+}
 
   </style>
 </head>
@@ -2558,6 +2577,10 @@ font:12px/1.2 ui-sans-serif;">
     <div class="brandCopy">
       <div class="brandTag">Angelique Tarot</div>
       <h1 class="brandTitle">光の導きで、心をほどく。</h1>
+      <div class="topCtaRow">
+  <a href="#drawStart" class="btnPrimary">🔮 今すぐカードを引く</a>
+</div>
+<div id="drawStart"></div>
       <p class="brandLead">
         タロット × 数秘 × 九星 × 五行で、いま必要な「結論」と「一歩」を短く、やさしく。
       </p>
@@ -2947,7 +2970,7 @@ window.BRANCHES = window.BRANCHES || ["子","丑","寅","卯","辰","巳","午",
 
         cards = rows;
 setDeckInfo();
-setStatus(`同梱CSV 読み込み完了：${cards.length}枚。引けます。`);
+setStatus("");
 showReady();
 } catch (e) {
   console.error(e);
@@ -3037,7 +3060,7 @@ function bindDomRefs() {
 }
 function setDeckInfo() {
   if (!elDeckInfo) return;
-  elDeckInfo.textContent = `Deck: ${cards.length} cards loaded`;
+  elDeckInfo.textContent = "";
 }
 function setStatus(msg) {
   if (!elStatus) {
@@ -3581,8 +3604,7 @@ if (!window.__shareOneLine) {
     (document.querySelector("#result .globalSummary")?.textContent || "").trim();
 }
 
-    setTimeout(scrollToResultSmooth, 90);
-    setStatus(`結果表示：${count}枚引き。`);
+    
 
   } catch (e) {
     console.error(e);
