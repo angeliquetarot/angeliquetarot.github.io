@@ -2451,7 +2451,7 @@ function drawCardOnCanvas(ctx, item, x, y, w, h) {
   if (summaryTitleEl) {
     ctx.font = "bold 28px 'Noto Serif JP', serif";
     ctx.fillStyle = "rgba(255,255,255,0.95)";
-    ctx.fillText(summaryTitleEl.innerText.replace("【結論】", ""), 540, startY + cardH + 60);
+    drawWrappedText(ctx, summaryTitleEl.innerText.replace("【結論】", ""),540, startY + cardH + 60, 960, 40, 3);
   }
   // --- 1行要約（鑑定の一文）を描画 ---
 const one = shortenJP(String(window.__shareOneLine || "").trim(), 56);
