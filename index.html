@@ -3,11 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Angelique Tarot (CSV版)</title>
+  <title>Angelique Tarot (CSVç)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+<style>
+.chip:has(input:checked){background:rgba(255,215,180,0.25);border-color:rgba(255,200,140,0.6);color:#ffd8a8;}
+.chip:has(input:checked) span{color:#ffd8a8;}
+.chip:active{transform:scale(0.96);}</style>
 </head>
 <body>
   <div id="versionBadge" style="position:fixed;bottom:12px;right:12px;z-index:9999;
@@ -15,93 +19,93 @@ background:#000a;border:1px solid #fff3;color:#fff;padding:8px 10px;border-radiu
 font:12px/1.2 ui-sans-serif;">
     VERSION:
   </div>
-  <!-- Toast（showToastが探すので必須） -->
+  <!-- Toastï¼showToastãæ¢ãã®ã§å¿é ï¼ -->
   <div id="toastContainer" aria-live="polite"></div>
   <div class="app">
-    <!-- ヘッダー -->
+    <!-- ãããã¼ -->
     <header class="appHeader">
       <!-- ===== Brand LP ===== -->
 <section class="panel brandHero" id="top">
   <div class="brandHeroInner">
     <div class="brandCopy">
       <div class="brandTag">Angelique Tarot</div>
-      <h1 class="brandTitle">光の導きで、心をほどく。</h1>
+      <h1 class="brandTitle">åã®å°ãã§ãå¿ãã»ã©ãã</h1>
       <div class="topCtaRow">
-  <button type="button" class="btnPrimary" onclick="scrollToDrawStart()">🔮 今すぐカードを引く</button>
+  <button type="button" class="btnPrimary" onclick="scrollToDrawStart()">ð® ä»ããã«ã¼ããå¼ã</button>
 </div>
       <p class="brandLead">
-        タロット × 数秘 × 九星 × 五行で、いま必要な「結論」と「一歩」を短く、やさしく。
+        ã¿ã­ãã Ã æ°ç§ Ã ä¹æ Ã äºè¡ã§ããã¾å¿è¦ãªãçµè«ãã¨ãä¸æ­©ããç­ããããããã
       </p>
      
       <div class="brandMini">
-        <span>📩 LINE登録で無料ミニ鑑定</span>
-        <span>🔮 1枚 / 3枚（過去・現在・未来）</span>
-        <span>🌿 生年月日でパーソナル調律</span>
+        <span>ð© LINEç»é²ã§ç¡æããéå®</span>
+        <span>ð® 1æ / 3æï¼éå»ã»ç¾å¨ã»æªæ¥ï¼</span>
+        <span>ð¿ çå¹´ææ¥ã§ãã¼ã½ãã«èª¿å¾</span>
       </div>
     </div>
   </div>
 </section>
 <details class="foldSection">
-  <summary>このサイトでできること</summary>
+  <summary>ãã®ãµã¤ãã§ã§ãããã¨</summary>
 <section class="panel brandAbout" id="about">
   <div class="brandGrid">
     <div class="brandCard">
-      <h3>① 今のメッセージ</h3>
-      <p>迷いの中心を「結論」→「理由」→「今日は」→「一歩」で整理します。</p>
+      <h3>â  ä»ã®ã¡ãã»ã¼ã¸</h3>
+      <p>è¿·ãã®ä¸­å¿ããçµè«ãâãçç±ãâãä»æ¥ã¯ãâãä¸æ­©ãã§æ´çãã¾ãã</p>
     </div>
     <div class="brandCard">
-      <h3>② エネルギー調律</h3>
-      <p>五行（木火土金水）の偏りを見て、無理なく整う行動へ。</p>
+      <h3>â¡ ã¨ãã«ã®ã¼èª¿å¾</h3>
+      <p>äºè¡ï¼æ¨ç«åéæ°´ï¼ã®åããè¦ã¦ãç¡çãªãæ´ãè¡åã¸ã</p>
     </div>
     <div class="brandCard">
-      <h3>③ 恋愛/仕事/金運</h3>
-      <p>テーマに合わせて読み筋を変え、現実に落ちる言葉にします。</p>
+      <h3>â¢ ææ/ä»äº/éé</h3>
+      <p>ãã¼ãã«åããã¦èª­ã¿ç­ãå¤ããç¾å®ã«è½ã¡ãè¨èã«ãã¾ãã</p>
     </div>
   </div>
 </section>
 </details>
 <details class="foldSection">
-  <summary>メニュー</summary>
+  <summary>ã¡ãã¥ã¼</summary>
 <section class="panel brandMenu" id="menu">
-  <h2 class="panelTitle">メニュー</h2>
+  <h2 class="panelTitle">ã¡ãã¥ã¼</h2>
   <div class="menuGrid">
     <div class="menuItem">
-      <div class="menuName">無料：1枚引き / 3枚引き</div>
-      <div class="menuDesc">今日の結論と一歩を確認</div>
+      <div class="menuName">ç¡æï¼1æå¼ã / 3æå¼ã</div>
+      <div class="menuDesc">ä»æ¥ã®çµè«ã¨ä¸æ­©ãç¢ºèª</div>
     </div>
     <div class="menuItem">
-      <div class="menuName">LINE登録：無料ミニ鑑定</div>
-      <div class="menuDesc">状況に合わせた短文アドバイス</div>
-      <a class="menuCta" href="https://lin.ee/Cm7TuLh" target="_blank">LINEへ</a>
+      <div class="menuName">LINEç»é²ï¼ç¡æããéå®</div>
+      <div class="menuDesc">ç¶æ³ã«åãããç­æã¢ããã¤ã¹</div>
+      <a class="menuCta" href="https://lin.ee/Cm7TuLh" target="_blank">LINEã¸</a>
     </div>
     <div class="menuItem">
-      <div class="menuName">個別鑑定（PDF）</div>
-      <div class="menuDesc">恋愛/仕事/人生の流れを総合整理</div>
-      <a class="menuCta" href="https://example.com" target="_blank">詳細</a>
+      <div class="menuName">åå¥éå®ï¼PDFï¼</div>
+      <div class="menuDesc">ææ/ä»äº/äººçã®æµããç·åæ´ç</div>
+      <a class="menuCta" href="https://example.com" target="_blank">è©³ç´°</a>
     </div>
   </div>
 </section>
 </details>
 <div class="divider" id="appStart"></div>
 <!-- ===== /Brand LP ===== -->
-    <!-- 生年月日入力（JSが読むidで） -->
+    <!-- çå¹´ææ¥å¥åï¼JSãèª­ãidã§ï¼ -->
 <section class="panel birthPanel" id="birthPanel">
-  <h2 class="panelTitle">生年月日</h2>
+  <h2 class="panelTitle">çå¹´ææ¥</h2>
   <div class="birthGrid">
     <div class="birthBlock">
-      <label class="birthLabel" for="userBirthdate">あなた</label>
+      <label class="birthLabel" for="userBirthdate">ããªã</label>
       <input type="date" id="userBirthdate" class="birthInput" />
     </div>
     <div class="birthBlock">
-      <label class="birthLabel" for="userBirthtime">あなた（任意：出生時刻）</label>
+      <label class="birthLabel" for="userBirthtime">ããªãï¼ä»»æï¼åºçæå»ï¼</label>
       <input id="userBirthtime" class="birthInput" type="time" step="60" />
     </div>
     <div class="birthBlock">
-      <label class="birthLabel" for="partnerBirthdate">お相手（任意）</label>
+      <label class="birthLabel" for="partnerBirthdate">ãç¸æï¼ä»»æï¼</label>
       <input type="date" id="partnerBirthdate" class="birthInput" />
     </div>
     <div class="birthBlock">
-      <label class="birthLabel" for="partnerBirthtime">お相手（任意：出生時刻）</label>
+      <label class="birthLabel" for="partnerBirthtime">ãç¸æï¼ä»»æï¼åºçæå»ï¼</label>
       <input id="partnerBirthtime" class="birthInput" type="time" step="60" />
     </div>
   </div>
@@ -109,24 +113,24 @@ font:12px/1.2 ui-sans-serif;">
     <!-- ===== Draw bar ===== -->
     <div id="drawStart"></div>
     <div class="drawBar" id="drawBar">
-      <div class="drawModeInline" role="group" aria-label="カード枚数">
+      <div class="drawModeInline" role="group" aria-label="ã«ã¼ãææ°">
         <label class="chip" id="chip1">
           <input type="radio" name="drawMode" value="1" checked style="display:none">
-          <strong>1枚</strong><span>今日のメッセージ</span>
+          <strong>1æ</strong><span>ä»æ¥ã®ã¡ãã»ã¼ã¸</span>
         </label>
         <label class="chip" id="chip3">
           <input type="radio" name="drawMode" value="3" style="display:none">
-          <strong>3枚</strong><span>過去・現在・未来</span>
+          <strong>3æ</strong><span>éå»ã»ç¾å¨ã»æªæ¥</span>
         </label>
       </div>
       <button class="drawBtn btnPrimary" id="btnDraw" onclick="onDraw()">
-        カードを引く
+        ã«ã¼ããå¼ã
       </button>
     </div>
     <!-- ===== Shuffle / Deck ===== -->
     <div id="shuffleArea">
       <img class="deck" id="deckImg"
-           src="public/cards/back.webp"
+           src="public/cards/back.png"
            alt="Tarot deck" />
     </div>
     <!-- ===== Result ===== -->
@@ -138,7 +142,7 @@ font:12px/1.2 ui-sans-serif;">
   <script src="numerology_logic_pure.js"></script>
   <script src="assets/js/energy/energy_logic_clean.js"></script>
 
-  <!-- Share Image Modal (iPhone安定版) -->
+  <!-- Share Image Modal (iPhoneå®å®ç) -->
 <div id="shareModal" style="display:none; position:fixed; inset:0; z-index:99999;
   background:rgba(0,0,0,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   padding:18px;">
@@ -147,22 +151,23 @@ font:12px/1.2 ui-sans-serif;">
     box-shadow:0 18px 60px rgba(0,0,0,.55);">
     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
       <div style="color:rgba(249,224,138,.92); font-weight:700;">Share Image</div>
-      <button class="btnGhost" id="shareModalClose" style="padding:8px 12px;">閉じる</button>
+      <button class="btnGhost" id="shareModalClose" style="padding:8px 12px;">éãã</button>
     </div>
     <img id="shareModalImg" alt="share" style="width:100%; height:auto; display:block; border-radius:14px;
       border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.45);" />
     <div style="margin-top:10px; color:rgba(255,255,255,.75); font-size:13px; line-height:1.6;">
-      iPhoneは画像を <b>長押し→"写真に追加"</b> してから、LINEなどで共有してください。
+      iPhoneã¯ç»åã <b>é·æ¼ãâ"åçã«è¿½å "</b> ãã¦ãããLINEãªã©ã§å±æãã¦ãã ããã
     </div>
     <div style="display:flex; gap:10px; margin-top:10px;">
   <a id="shareModalOpen" class="btnGhost"
      style="flex:1; display:block; text-align:center; padding:10px 12px;"
-     target="_blank" rel="noopener">画像を開く</a>
+     target="_blank" rel="noopener">ç»åãéã</a>
   <a id="shareModalDownload" class="btnGhost"
      style="flex:1; display:block; text-align:center; padding:10px 12px;"
-     download="reading.png">ダウンロード</a>
+     download="reading.png">ãã¦ã³ã­ã¼ã</a>
 </div>
   </div>
 </div>
+<canvas id="shareCanvas" width="1080" height="1080" style="display:none;position:absolute;left:-9999px"></canvas>
 </body>
 </html>
