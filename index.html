@@ -8,7 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-</head>
+<style>
+.chip:has(input:checked){background:rgba(255,215,180,0.25)!important;border-color:rgba(255,200,140,0.7)!important;color:#ffd8a8!important;box-shadow:0 0 8px rgba(255,200,140,0.3);}
+.chip:has(input:checked) span{color:#ffd8a8!important;}
+.chip:active{transform:scale(0.95);transition:transform 0.1s;}
+.chip{transition:background 0.2s,border-color 0.2s,color 0.2s;}
+</style></head>
 <body>
   <div id="versionBadge" style="position:fixed;bottom:12px;right:12px;z-index:9999;
 background:#000a;border:1px solid #fff3;color:#fff;padding:8px 10px;border-radius:10px;
