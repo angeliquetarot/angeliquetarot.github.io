@@ -13,6 +13,10 @@
 .chip:has(input:checked) span{color:#ffd8a8!important;}
 .chip:active{transform:scale(0.95);transition:transform 0.1s;}
 .chip{transition:background 0.2s,border-color 0.2s,color 0.2s;}
+
+#toastContainer{position:fixed!important;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:center;}
+.toast{background:rgba(20,18,40,0.93);color:#f5e6b3;padding:10px 22px;border-radius:999px;font-size:14px;border:1px solid rgba(214,178,94,0.3);opacity:0;transform:translateY(10px);transition:opacity 0.3s ease,transform 0.3s ease;pointer-events:none;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;transform:translateY(0);}
 </style></head>
 <body>
   <div id="versionBadge" style="position:fixed;bottom:12px;right:12px;z-index:9999;
@@ -59,8 +63,8 @@ font:12px/1.2 ui-sans-serif;">
       <p>五行（木火土金水）の偏りを見て、無理なく整う行動へ。</p>
     </div>
     <div class="brandCard">
-      <h3>③ 恋愛/仕事/金運</h3>
-      <p>テーマに合わせて読み筋を変え、現実に落ちる言葉にします。</p>
+      <h3>③ 五行エネルギー診断</h3>
+      <p>木・火・土・金・水のバランスを見て、今あなたに足りないエネルギーを補います。</p>
     </div>
   </div>
 </section>
@@ -80,11 +84,10 @@ font:12px/1.2 ui-sans-serif;">
       <a class="menuCta" href="https://lin.ee/Cm7TuLh" target="_blank">LINEへ</a>
     </div>
     <div class="menuItem">
-      <div class="menuName">個別鑑定（PDF）</div>
-      <div class="menuDesc">恋愛/仕事/人生の流れを総合整理</div>
-      <a class="menuCta" href="https://example.com" target="_blank">詳細</a>
+      <div class="menuName">五行エネルギー診断</div>
+      <div class="menuDesc">木火土金水の偏りを見て、今の状態を整える</div>
+      <a class="menuCta" href="/elements/index.html">診断へ</a>
     </div>
-  </div>
 </section>
 </details>
 <div class="divider" id="appStart"></div>
