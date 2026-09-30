@@ -4261,6 +4261,33 @@ function softenEndingJP(t){
 }
 
 
+// getSelectedTheme — テーマ選択UIがあれば値を返す（フォールバック）
+function getSelectedTheme() {
+  const el = document.querySelector('input[name="readingTheme"]:checked');
+  return el ? el.value : "";
+}
+
+// softenJP — 断定的な語尾を柔らかくする（グローバル定義）
+function softenJP(s) {
+  s = (s ?? "").toString();
+  s = s.replace(/できません。/g, "できないことがあります。");
+  s = s.replace(/ありません。/g, "ないかもしれません。");
+  s = s.replace(/しません。/g, "しにくい状態です。");
+  s = s.replace(/です。(\s*)です。/g, "です。$1");
+  s = s.replace(/ます。(\s*)ます。/g, "ます。$1");
+  return s;
+}
+
+// firstSentenceJP — テキストから最初の1文を取り出す（グローバル定義）
+function firstSentenceJP(text) {
+  const t = String(text || "").trim();
+  if (!t) return "";
+  const m = t.match(/^(.+?[。！？])/);
+  if (m) return m[1];
+  // 句点がなければ最初の50文字
+  return t.slice(0, 50) + (t.length > 50 ? "…" : "");
+}
+
 // 最終仕上げ（これを story の最後に1回かける）
 function polishStoryJP(story){
   let s = (story ?? "").toString();
