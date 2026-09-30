@@ -4107,6 +4107,10 @@ ${action}`;
     body = body.replace("ください。","みて。");
   }
 
+  // 疑問符・感嘆符の直後の句読点を除去
+  body = body.replace(/([？！])[。、]/g, "$1");
+  if (typeof postProcessStoryJP === "function") body = postProcessStoryJP(body);
+
   return { body, prayer };
 }
 
@@ -4373,6 +4377,9 @@ s = s.replace(/やすい時です時です/g, "やすい時です");
 s = s.replace(/時です時です/g, "時です");
 s = s.replace(/状態です\.\。/g, "状態です。");
 s = s.replace(/\.\。/g, "。");
+
+  // ⑤' 疑問符・感嘆符の直後の句読点を除去（「？。」「？、」「！。」「！、」）
+s = s.replace(/([？！])[。、]/g, "$1");
 
   // ⑤ 余計な空行を整える
   s = s.replace(/\n{3,}/g, "\n\n");
