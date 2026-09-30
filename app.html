@@ -4421,94 +4421,65 @@ function bridgeJP(nextSentence){
 
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  // 0) seed は最初に作る（必須）
   const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
 
-  // 1) 元テキスト（接続詞を剥がしたコア）
-  const p0 = stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed));
-  const n0 = stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed));
-  const f0 = stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed));
-
-  // 2) 2文まで + 語尾ゆらぎ（必要なら soften）
-  const p = softenTendencyJP(
-  ensurePoliteJP(varyEndingJP(firstSentencesJP(p0, 2), seed+"|p")),
-  seed+"|p"
-);
-
-const n = softenTendencyJP(
-  ensurePoliteJP(varyEndingJP(firstSentencesJP(n0, 2), seed+"|n")),
-  seed+"|n"
-);
-
-// 未来は soften しない
-const f = normalizeFutureJP(firstSentencesJP(f0, 2));
-
-  // 3) つなぎ
-  const head = pickStableOne([
-    "これまでを振り返ると、",
-    "ここまでの経緯を見ると、",
-    "最近の流れを辿ると、",
-  ], seed + "|head");
-
-  const mid = pickStableOne([
-    "そして今、",
-    "いま目の前では、",
-    "現在は、",
-  ], seed + "|mid");
-
-  const fut = pickStableOne([
-  "少し先には、",
-  "やがて、",
-  "この先、",
-], seed + "|fut");
-
-  const themeNow = String(present.card.themes || "");
-  const bridge = (typeof bridgeForFutureJP === "function")
-    ? bridgeForFutureJP(seed, themeNow)
-    : pickStableOne([
-        "その延長で、次の気配が少しずつ強まります。",
-        "そこから、次のテーマが輪郭を帯びてきます。",
-        "積み重ねの先で、次の課題が静かに現れます。",
-      ], seed + "|bridge");
-
-  // 4) ストーリー本文
-  const hasTimeLead = /^(この先|少し先|やがて|今後|まもなく)[、]/.test(f);
-
-let story =
-`${head}${p}
-
-${mid}${n}
-
-${bridge}
-${hasTimeLead ? "" : fut}${f}`.trim();
-
-  // ===== ここ（A）: 今日の一歩を入れる（おすすめ：wrapの前） =====
-  const step = extractAction(present.card, present.isReversed)
-            || extractAction(future.card, future.isReversed);
-  if (step) {
-    story += `\n\n今日の一歩：${firstSentencesJP(step, 1).replace(/。$/,"")}。`;
+  // 各カードのcore（1〜2文）とinterpretation（深い読み解き）を取得
+  function getCore(c, rev) {
+    const t = String(extractCoreSentence(c, rev) || “”).trim();
+    return firstSentencesJP(t, 2);
+  }
+  function getInterp(c, rev) {
+    const t = String(extractInterpretation(c, rev) || “”).trim();
+    return firstSentencesJP(t, 2);
   }
 
-  // ===== ここ（B）: 結びは “必要な時だけ” 追加（※二重追加しない） =====
-  const shouldWrap =
-    (String(f || "").length < 28) || /傾向があります。?$/.test(String(f));
+  const pCore  = getCore(past.card, past.isReversed);
+  const nCore  = getCore(present.card, present.isReversed);
+  const fCore  = getCore(future.card, future.isReversed);
+  const pInterp = getInterp(past.card, past.isReversed);
+  const nInterp = getInterp(present.card, present.isReversed);
 
-  if (shouldWrap && typeof buildWrapUpJP === "function") {
-    const wrap = buildWrapUpJP({ p0, n0, f0, seed });
-    if (wrap) story += `\n\n${wrap}`;
-  }
+  // 過去ブロック：coreがあればcore、なければinterp
+  const pastBlock = pCore || pInterp || “”;
+  // 現在ブロック：core + interpretを両方使う（深みを出す）
+  const nowBlock = nCore
+    ? (nInterp && nInterp !== nCore ? `${nCore}\n${nInterp}` : nCore)
+    : nInterp || “”;
+  // 未来ブロック：coreのみ（希望・方向性として）
+  const futBlock = fCore || “”;
 
-  // ① ゴミ取り
-  if (typeof fixDuplicateTendencyJP === "function") {
+  // 過去→現在のつなぎ
+  const pastToNow = pickStableOne([
+    “その経験が、いまのあなたを形作っています。”,
+    “その流れがいまに繋がっています。”,
+    “そこから積み上げてきたものが、いまここにあります。”,
+  ], seed + “|ptn”);
+
+  // 現在→未来のつなぎ
+  const nowToFut = pickStableOne([
+    “そしてこの先、”,
+    “その先に待っているのは、”,
+    “この流れの向こうに、”,
+  ], seed + “|ntf”);
+
+  // ストーリーを組み立て
+  let parts = [];
+  if (pastBlock) parts.push(pastBlock);
+  if (pastBlock && nowBlock) parts.push(pastToNow);
+  if (nowBlock) parts.push(nowBlock);
+  if (futBlock) parts.push(`${nowToFut}${futBlock}`);
+
+  let story = parts.join(“\n\n”);
+
+  // 重複行・ゴミ取り
+  if (typeof fixDuplicateTendencyJP === “function”) {
     story = fixDuplicateTendencyJP(story);
   }
-
-  // ② 全体整形
-  if (typeof postProcessStoryJP === "function") {
+  if (typeof postProcessStoryJP === “function”) {
     story = postProcessStoryJP(story);
   }
 
-  return story;
+  return story.trim();
 }
 function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
   const p = String(p0), n = String(n0), f = String(f0);
@@ -5032,14 +5003,8 @@ function buildGlobalSummaryHTML(picked, count){
         "今日は、整える選択をひとつ。"
       );
 
-      if (typeof buildWrapUpJP === "function") {
-        wrap = buildWrapUpJP({
-          p0: stripLeadConnectorJP(extractCoreSentence(past.card, past.isReversed)),
-          n0: stripLeadConnectorJP(extractCoreSentence(present.card, present.isReversed)),
-          f0: stripLeadConnectorJP(extractCoreSentence(future.card, future.isReversed)),
-          seed
-        }) || "";
-      }
+      // 3枚引きのwrapは使わない（story内に統合済み）
+      wrap = "";
 
     } else {
       const one = picked[0];
