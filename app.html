@@ -6370,12 +6370,20 @@ function openImageFallbackFromBlob(blob) {
     r.addEventListener("change", renderSlots);
   });
 
-  // 読み解くボタン
-  document.addEventListener("DOMContentLoaded", () => {
+  // 読み解くボタン — DOMContentLoadedは既に済んでいる可能性があるため直接バインド
+  function bindPracticeBtn() {
     const btn = document.getElementById("btnPracticeRead");
-    if (btn) btn.addEventListener("click", onPracticeRead);
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", onPracticeRead);
+    }
     renderSlots();
-  });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindPracticeBtn);
+  } else {
+    bindPracticeBtn();
+  }
 
   window.onPracticeRead = function() {
     const n = getSlotCount();
