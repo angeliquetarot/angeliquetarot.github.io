@@ -6269,6 +6269,29 @@ function openImageFallbackFromBlob(blob) {
   modal.addEventListener("click", onBg);
 }
 
+// buildCardDetailHTML — カード詳細（正位置/逆位置）のHTML
+function buildCardDetailHTML(card, isReversed) {
+  if (!card) return "";
+  const orient = isReversed ? "逆位置" : "正位置";
+  const core = isReversed
+    ? (card.core_reversed || card.core_upright || "")
+    : (card.core_upright || "");
+  const interp = isReversed
+    ? (card.interpretation_reversed || card.interpretation_upright || "")
+    : (card.interpretation_upright || "");
+  const action = isReversed
+    ? (card.action_reversed || card.action_upright || "")
+    : (card.action_upright || "");
+
+  return `
+    <div style="font-size:13px;line-height:1.8;color:rgba(255,255,255,.82);">
+      <p><strong>${escapeHtml(card.name_ja)}</strong>（${escapeHtml(card.name_en)}）— ${orient}</p>
+      ${core   ? `<p><strong>核心：</strong>${escapeHtml(core)}</p>` : ""}
+      ${interp ? `<p><strong>読み方：</strong>${escapeHtml(interp)}</p>` : ""}
+      ${action ? `<p><strong>アドバイス：</strong>${escapeHtml(action)}</p>` : ""}
+    </div>`;
+}
+
 // ===== 練習モード =====
 // スロット状態（グローバル）
 var practiceState = [
