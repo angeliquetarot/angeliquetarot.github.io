@@ -1501,6 +1501,22 @@ body{ font-size: var(--base); }
 .birthPanel { padding: 14px; }
 .birthGrid { gap: 10px; }
 
+/* 練習モード */
+.practicePanel { padding: 20px 16px; }
+.practiceSlot { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 14px; }
+.practiceSlot .slotLabel { font-size: 11px; letter-spacing: .08em; color: rgba(255,255,255,.5); text-transform: uppercase; margin-bottom: 8px; }
+.practiceSearch { width: 100%; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 8px; color: #fff; padding: 8px 10px; font-size: 14px; margin-bottom: 8px; outline: none; }
+.practiceSearch::placeholder { color: rgba(255,255,255,.35); }
+.practiceCardList { max-height: 160px; overflow-y: auto; border-radius: 8px; background: rgba(0,0,0,.25); }
+.practiceCardList button { display: block; width: 100%; text-align: left; background: none; border: none; color: rgba(255,255,255,.8); padding: 7px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,.06); }
+.practiceCardList button:hover { background: rgba(255,255,255,.1); color: #fff; }
+.practiceCardList button.selected { background: rgba(200,160,255,.2); color: #d4b4ff; font-weight: bold; }
+.practiceOrient { display: flex; gap: 8px; margin-top: 10px; }
+.practiceOrient label { flex:1; display:flex; align-items:center; gap:6px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: 13px; }
+.practiceOrient input[type=radio] { accent-color: #c89fff; }
+.practiceOrient label:has(input:checked) { background: rgba(200,160,255,.15); border-color: rgba(200,160,255,.4); color: #d4b4ff; }
+.selectedCardName { font-size: 13px; color: #c89fff; font-weight: bold; margin-bottom: 4px; }
+
 .drawBar { padding: 10px; }
 .drawBtn { padding: 10px 14px; font-size: 14px; }
 .chip { padding: 8px 10px; }
@@ -2857,6 +2873,33 @@ font:12px/1.2 ui-sans-serif;">
 
   <p class="birthHint">※ 任意：時刻まで入れると、五行（木火土金水）がよりパーソナルに整います。</p>
   <p class="birthHint">※ 生年月日を入れると、読み解きがよりパーソナルになります</p>
+</section>
+
+<!-- ===== 練習モード ===== -->
+<section class="panel practicePanel" id="practicePanel">
+  <h2 class="panelTitle" style="text-align:center;margin-bottom:6px;">🎴 練習モード</h2>
+  <p style="text-align:center;font-size:13px;color:rgba(255,255,255,.6);margin-bottom:18px;">
+    カードを自分で選んで、読み解きを確認できます
+  </p>
+
+  <!-- 枚数選択 -->
+  <div class="drawModeInline" aria-label="枚数を選ぶ" id="practiceModeSwitch">
+    <label class="chip">
+      <input type="radio" name="practiceMode" value="1" checked>
+      <div><strong>1枚</strong> <span>今のメッセージ</span></div>
+    </label>
+    <label class="chip">
+      <input type="radio" name="practiceMode" value="3">
+      <div><strong>3枚</strong> <span>過去/現在/未来</span></div>
+    </label>
+  </div>
+
+  <!-- カード選択エリア -->
+  <div id="practiceSlots" style="margin-top:18px;display:flex;flex-direction:column;gap:16px;"></div>
+
+  <button id="btnPracticeRead" class="drawBtn" type="button" style="margin-top:20px;width:100%;">
+    読み解く
+  </button>
 </section>
 
 <div class="divider"></div>
@@ -6226,8 +6269,197 @@ function openImageFallbackFromBlob(blob) {
   modal.addEventListener("click", onBg);
 }
 
+// ===== 練習モード =====
+(function initPracticeMode() {
 
-    
+  // スロット状態
+  const practiceState = [
+    { card: null, reversed: false },
+    { card: null, reversed: false },
+    { card: null, reversed: false },
+  ];
+
+  function getSlotCount() {
+    return parseInt(document.querySelector('input[name="practiceMode"]:checked')?.value || "1");
+  }
+
+  function renderSlots() {
+    const n = getSlotCount();
+    const container = document.getElementById("practiceSlots");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const labels = ["", "過去", "現在", "未来"];
+
+    for (let i = 0; i < n; i++) {
+      const state = practiceState[i];
+      const label = n === 1 ? "カード" : labels[i + 1];
+      const slot = document.createElement("div");
+      slot.className = "practiceSlot";
+      slot.dataset.slot = i;
+
+      const selectedName = state.card
+        ? `<div class="selectedCardName">✓ ${state.card.name_ja}（${state.card.name_en}）</div>`
+        : "";
+
+      slot.innerHTML = `
+        <div class="slotLabel">${label}</div>
+        ${selectedName}
+        <input class="practiceSearch" type="text" placeholder="カード名で検索…" data-slot="${i}" value="">
+        <div class="practiceCardList" data-slot="${i}"></div>
+        <div class="practiceOrient">
+          <label>
+            <input type="radio" name="orient_${i}" value="0" ${!state.reversed ? "checked" : ""}> 正位置
+          </label>
+          <label>
+            <input type="radio" name="orient_${i}" value="1" ${state.reversed ? "checked" : ""}> 逆位置
+          </label>
+        </div>
+      `;
+      container.appendChild(slot);
+
+      // search input
+      const searchEl = slot.querySelector(".practiceSearch");
+      const listEl = slot.querySelector(".practiceCardList");
+
+      function renderList(query) {
+        const allCards = typeof cards !== "undefined" ? cards : [];
+        const q = (query || "").trim().toLowerCase();
+        const filtered = q
+          ? allCards.filter(c =>
+              (c.name_ja || "").toLowerCase().includes(q) ||
+              (c.name_en || "").toLowerCase().includes(q))
+          : allCards;
+        listEl.innerHTML = "";
+        filtered.slice(0, 40).forEach(c => {
+          const btn = document.createElement("button");
+          btn.textContent = `${c.name_ja} (${c.name_en})`;
+          btn.type = "button";
+          if (state.card?.id === c.id) btn.classList.add("selected");
+          btn.addEventListener("click", () => {
+            practiceState[i].card = c;
+            renderSlots();
+          });
+          listEl.appendChild(btn);
+        });
+        // リスト表示
+        listEl.style.display = filtered.length > 0 ? "block" : "none";
+      }
+
+      // 初期はリストを隠す（カード選択済みなら不要）
+      if (!state.card) {
+        renderList("");
+      } else {
+        listEl.style.display = "none";
+      }
+
+      searchEl.addEventListener("input", () => renderList(searchEl.value));
+      searchEl.addEventListener("focus", () => renderList(searchEl.value));
+
+      // 逆位置ラジオ
+      slot.querySelectorAll(`input[name="orient_${i}"]`).forEach(r => {
+        r.addEventListener("change", () => {
+          practiceState[i].reversed = r.value === "1";
+        });
+      });
+    }
+  }
+
+  // 枚数変更
+  document.querySelectorAll('input[name="practiceMode"]').forEach(r => {
+    r.addEventListener("change", renderSlots);
+  });
+
+  // 読み解くボタン
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btnPracticeRead");
+    if (btn) btn.addEventListener("click", onPracticeRead);
+    renderSlots();
+  });
+
+  window.onPracticeRead = function() {
+    const n = getSlotCount();
+
+    // バリデーション
+    for (let i = 0; i < n; i++) {
+      if (!practiceState[i].card) {
+        const labels = ["カード", "過去", "現在", "未来"];
+        alert(`「${n === 1 ? labels[0] : labels[i+1]}」のカードを選んでください`);
+        return;
+      }
+    }
+
+    // エネルギープロファイル（生年月日があれば使う）
+    const energyProfile = (typeof computeEnergyProfile === "function")
+      ? computeEnergyProfile()
+      : {};
+
+    let html = "";
+
+    if (n === 1) {
+      const { card, reversed } = practiceState[0];
+      // 通常の1枚鑑定HTMLを生成
+      html = buildSingleReadingHTML({ card, isReversed: reversed, energyProfile });
+      // 練習モード補足を追加
+      html += buildPracticeGuideHTML(card, reversed, null);
+    } else {
+      const past    = { card: practiceState[0].card, isReversed: practiceState[0].reversed };
+      const present = { card: practiceState[1].card, isReversed: practiceState[1].reversed };
+      const future  = { card: practiceState[2].card, isReversed: practiceState[2].reversed };
+      html = buildThreeReadingHTML({ past, present, future, energyProfile });
+      html += buildPracticeGuideHTML(past.card, past.isReversed, "past");
+      html += buildPracticeGuideHTML(present.card, present.isReversed, "present");
+      html += buildPracticeGuideHTML(future.card, future.isReversed, "future");
+    }
+
+    // 結果エリアに表示
+    const result = document.getElementById("result");
+    if (result) {
+      result.innerHTML = html;
+      triggerResultAppear();
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  function buildPracticeGuideHTML(card, isReversed, position) {
+    if (!card) return "";
+
+    const orient = isReversed ? "逆位置" : "正位置";
+    const core = isReversed
+      ? (card.core_reversed || card.core_upright || "")
+      : (card.core_upright || "");
+    const interp = isReversed
+      ? (card.interpretation_reversed || card.interpretation_upright || "")
+      : (card.interpretation_upright || "");
+    const action = isReversed
+      ? (card.action_reversed || card.action_upright || "")
+      : (card.action_upright || "");
+
+    const posLabel = position === "past" ? "【過去】"
+                   : position === "present" ? "【現在】"
+                   : position === "future" ? "【未来】"
+                   : "";
+
+    return `
+<div class="practiceGuide" style="
+  margin-top:20px;
+  background: rgba(200,160,255,.08);
+  border: 1px solid rgba(200,160,255,.25);
+  border-radius: 14px;
+  padding: 18px 16px;
+">
+  <div style="font-size:11px;letter-spacing:.1em;color:rgba(200,160,255,.7);margin-bottom:10px;">
+    📖 練習ガイド ${posLabel}${card.name_ja}（${orient}）
+  </div>
+  ${core ? `<p style="font-size:13px;line-height:1.75;margin-bottom:10px;"><strong style="color:rgba(200,160,255,.9);">核心</strong><br>${escapeHtml(core)}</p>` : ""}
+  ${interp ? `<p style="font-size:13px;line-height:1.75;margin-bottom:10px;"><strong style="color:rgba(200,160,255,.9);">占い師はこう読む</strong><br>${escapeHtml(interp)}</p>` : ""}
+  ${action ? `<p style="font-size:13px;line-height:1.75;margin:0;"><strong style="color:rgba(200,160,255,.9);">アドバイス</strong><br>${escapeHtml(action)}</p>` : ""}
+</div>`;
+  }
+
+})();
+
+
   </script>
   <!-- <script src="numerology_logic_pure.js"></script> -->
   <script src="assets/js/energy/energy_logic_clean.js"></script>
