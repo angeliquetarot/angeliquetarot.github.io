@@ -6269,6 +6269,24 @@ function openImageFallbackFromBlob(blob) {
   modal.addEventListener("click", onBg);
 }
 
+// buildCardDetailMiniHTML — 3枚引き用カード詳細（ポジション付き）
+function buildCardDetailMiniHTML(card, isReversed, posLabel) {
+  if (!card) return "";
+  const orient = isReversed ? "逆位置" : "正位置";
+  const core = isReversed
+    ? (card.core_reversed || card.core_upright || "")
+    : (card.core_upright || "");
+  const interp = isReversed
+    ? (card.interpretation_reversed || card.interpretation_upright || "")
+    : (card.interpretation_upright || "");
+  return `
+    <div style="font-size:12px;line-height:1.75;color:rgba(255,255,255,.8);margin-bottom:12px;">
+      <strong style="color:rgba(249,224,138,.9);">【${escapeHtml(posLabel)}】${escapeHtml(card.name_ja)}（${orient}）</strong>
+      ${core  ? `<br>${escapeHtml(core)}`  : ""}
+      ${interp ? `<br><span style="color:rgba(255,255,255,.65);">${escapeHtml(interp)}</span>` : ""}
+    </div>`;
+}
+
 // buildCardDetailHTML — カード詳細（正位置/逆位置）のHTML
 function buildCardDetailHTML(card, isReversed) {
   if (!card) return "";
