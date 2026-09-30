@@ -279,7 +279,7 @@ button{
   color: rgba(255,255,255,.90);
 }
 
-/* ====== 第一層（結論）を“刺す” ====== */
+/* ====== 第一層（結論）を"刺す" ====== */
 .angel-summary .angel-conclusion{
   border-color: rgba(249,224,138,.28);
   background: linear-gradient(180deg, rgba(249,224,138,.14), rgba(255,255,255,.05));
@@ -296,8 +296,8 @@ button{
   color: rgba(255,255,255,.96);
 }
 
-/* ====== 第二層（理由/今日は/一歩）を“折りたたみ風に沈める” ======
-   ※ JS/HTMLを触らないため「開閉」はしない。まずは情報量を“隠す見た目”に寄せる。
+/* ====== 第二層（理由/今日は/一歩）を"折りたたみ風に沈める" ======
+   ※ JS/HTMLを触らないため「開閉」はしない。まずは情報量を"隠す見た目"に寄せる。
 */
 .angel-summary .angel-block:not(.angel-conclusion){
   margin-top: 10px;
@@ -321,7 +321,7 @@ button{
   background: linear-gradient(180deg, rgba(12,12,24,0), rgba(12,12,24,.55));
 }
 
-/* “続きを読む”の幽霊ボタン（見た目だけ / STEP2で本物にする） */
+/* "続きを読む"の幽霊ボタン（見た目だけ / STEP2で本物にする） */
 .angel-summary::before{
   content:"続きを読む（詳細）";
   position:absolute;
@@ -474,7 +474,7 @@ button{
     0 0 0 1px rgba(255,255,255,.10);
 }
 
-/* 3枚引き：カードが“べた張り”に見えないよう間隔と影を強化 */
+/* 3枚引き：カードが"べた張り"に見えないよう間隔と影を強化 */
 .cardsGrid.three{
   gap: 18px;
 }
@@ -509,7 +509,7 @@ button{
 
 
 
-/* “ぽわっ” を視覚的に分かりやすくする外側ハロー（上品） */
+/* "ぽわっ" を視覚的に分かりやすくする外側ハロー（上品） */
 #shuffleArea .deck::before{
   content:"";
   position:absolute;
@@ -524,7 +524,7 @@ button{
 
 
 
-/* 安っぽい“スイープ”が残ってる場合は無効化（保険） */
+/* 安っぽい"スイープ"が残ってる場合は無効化（保険） */
 #btnDraw::after{ display:none !important; }
 /* =========================================
    Result Cards: gentle floating + richer depth
@@ -552,7 +552,7 @@ button{
   will-change: transform;
 }
 
-/* 3枚はズレた波で“生きてる感じ” */
+/* 3枚はズレた波で"生きてる感じ" */
 #result .cardsGrid.three .tcard:nth-child(1){ animation-delay: .00s; }
 #result .cardsGrid.three .tcard:nth-child(2){ animation-delay: .55s; }
 #result .cardsGrid.three .tcard:nth-child(3){ animation-delay: 1.10s; }
@@ -591,7 +591,7 @@ button{
   pointer-events: none;
 }
 
-/* デッキ本体：停止時にも“薄い余光”を残して作り物感を消す */
+/* デッキ本体：停止時にも"薄い余光"を残して作り物感を消す */
 #shuffleArea .deck{
   position: relative;
   margin-inline: auto;
@@ -603,7 +603,7 @@ button{
     filter 1200ms cubic-bezier(.22,1,.36,1);
   will-change: transform, box-shadow, filter;
 
-  /* “完全にゼロ”にしない：薄い余白として残す */
+  /* "完全にゼロ"にしない：薄い余白として残す */
   box-shadow:
     0 26px 90px rgba(0,0,0,.65),
     0 1px 0 rgba(255,255,255,.10) inset,
@@ -618,7 +618,7 @@ button{
     filter 1400ms cubic-bezier(.22,1,.36,1);
 }
 
-/* 呼吸を“ゆっくり・優しく”に */
+/* 呼吸を"ゆっくり・優しく"に */
 @keyframes deckFloat {
   0%   { transform: translateY(0) rotateX(0deg); }
   50%  { transform: translateY(-10px) rotateX(1.0deg); }
@@ -660,7 +660,7 @@ button{
    FIX PACK: 1) glow fade-out  2) pedestal/frame  3) badge UI
    ========================================= */
 
-/* ---------- 1) デッキの“光”を「呼吸＋余韻フェードアウト」にする ---------- */
+/* ---------- 1) デッキの"光"を「呼吸＋余韻フェードアウト」にする ---------- */
 /* ポイント：opacityは animation で揺らさず、状態で変える（transitionが効く） */
 
 #shuffleArea .deck::before{
@@ -676,12 +676,12 @@ button{
 
 /* シャッフル中：強く光る（でも上品に） */
 #shuffleArea.shuffling .deck::before{
-  opacity: .78;              /* ← “光った”と分かる強さ */
+  opacity: .78;              /* ← "光った"と分かる強さ */
   transform: scale(1.00);
   filter: blur(18px);
 }
 
-/* 呼吸は opacity ではなく “わずかなスケール/揺れ” だけにする */
+/* 呼吸は opacity ではなく "わずかなスケール/揺れ" だけにする */
 @keyframes haloBreathSoft{
   0%   { transform: scale(.995); }
   50%  { transform: scale(1.005); }
@@ -691,7 +691,7 @@ button{
   animation: haloBreathSoft 4.2s cubic-bezier(.45,0,.2,1) infinite;
 }
 
-/* deck の光も “ドン消え”しないよう、常時の余光を残しつつ transition を効かせる */
+/* deck の光も "ドン消え"しないよう、常時の余光を残しつつ transition を効かせる */
 #shuffleArea .deck{
   box-shadow:
     0 26px 90px rgba(0,0,0,.65),
@@ -703,7 +703,7 @@ button{
     filter 2400ms cubic-bezier(.22,1,.36,1);
 }
 
-/* 既存の deckGlow が残っていると“急に消える”原因になるので無効化（保険） */
+/* 既存の deckGlow が残っていると"急に消える"原因になるので無効化（保険） */
 #shuffleArea.shuffling .deck{
   animation-name: deckFloat !important; /* deckGlowを強制的に外す */
   animation-duration: 4.2s !important;
@@ -711,8 +711,8 @@ button{
   animation-iteration-count: infinite !important;
 }
 
-/* ---------- 2) 結果カードを“台座＋透明フレーム”に載せて高級感 ---------- */
-/* tcard自体の影だけだと平面に見えるので、下に“台座影”を追加 */
+/* ---------- 2) 結果カードを"台座＋透明フレーム"に載せて高級感 ---------- */
+/* tcard自体の影だけだと平面に見えるので、下に"台座影"を追加 */
 #result .tcard{
   position: relative;
   border-color: rgba(255,255,255,.16);
@@ -765,7 +765,7 @@ button{
 }
 
 /* ---------- 3) 正位置/逆位置バッジのUI崩れを修正 ---------- */
-/* “囲い枠が変”は大抵ここ：行の高さ/余白/nowrap */
+/* "囲い枠が変"は大抵ここ：行の高さ/余白/nowrap */
 .tcardHeader{
   align-items: flex-start;
 }
@@ -808,7 +808,7 @@ button{
   box-shadow: 0 26px 80px rgba(0,0,0,.55);
 }
 
-/* “展示台”（下に影＋うっすら反射） */
+/* "展示台"（下に影＋うっすら反射） */
 #result .tcard::after{
   content:"";
   position:absolute;
@@ -858,7 +858,7 @@ button{
    Deck: idle breathing glow + strong on shuffle
    ========================================= */
 
-/* 通常時の“残光”を少し上げる（消えすぎ防止） */
+/* 通常時の"残光"を少し上げる（消えすぎ防止） */
 #shuffleArea .deck::before{
   opacity: .22 !important; /* ←通常時の光。好みで .18〜.26 */
 }
@@ -873,7 +873,7 @@ button{
   animation: idleHalo 6.8s cubic-bezier(.45,0,.2,1) infinite;
 }
 
-/* シャッフル中は“しっかり光る” */
+/* シャッフル中は"しっかり光る" */
 #shuffleArea.shuffling .deck::before{
   opacity: .92 !important;
   animation: haloBreathSoft 4.2s cubic-bezier(.45,0,.2,1) infinite; /* 既に入れてるやつ */
@@ -883,7 +883,7 @@ button{
    - 強めに効かせて「変わった」と分かる版
    ========================================= */
 
-/* カード全体の“立体”を増やす */
+/* カード全体の"立体"を増やす */
 #result .tcard{
   background: rgba(10,10,18,.26) !important;
   border: 1px solid rgba(255,255,255,.22) !important;
@@ -916,7 +916,7 @@ button{
   z-index: 0 !important;
 }
 
-/* 画像を“額縁の中の作品”に（影と輪郭を強める） */
+/* 画像を"額縁の中の作品"に（影と輪郭を強める） */
 #result .tcardVisual .cardImg{
   position: relative !important;
   z-index: 1 !important;
@@ -1000,7 +1000,7 @@ button{
   z-index:-1 !important;
 }
 
-/* 画像まわりの“額装”を見える強さに */
+/* 画像まわりの"額装"を見える強さに */
 #result .tcardVisual{
   padding: 18px !important;
   position: relative !important;
@@ -1126,7 +1126,7 @@ button{
   }
 }
 
-/* 押した時だけ “ぽわっ” */
+/* 押した時だけ "ぽわっ" */
 #shuffleArea.pulse .deck::after{
   animation: deckPulse 1.8s ease-in-out 1;
 }
@@ -1181,7 +1181,7 @@ button{
   isolation: isolate;
 }
 
-/* ガラスの薄い面（内側の“1重”の質感） */
+/* ガラスの薄い面（内側の"1重"の質感） */
 .cardStage::before{
   content:"";
   position:absolute;
@@ -1241,7 +1241,7 @@ button{
   /* ここは変えなくてOK */
 }
 
-/* 光は“別レイヤ”で1回だけ */
+/* 光は"別レイヤ"で1回だけ */
 .tcard.appear .cardStage .revealHalo{
   animation: revealGlow 2.2s ease-out 1;
 }
@@ -1257,7 +1257,7 @@ button{
   pointer-events:none;
   z-index:0;
 }
-/* 結果カードが“出た瞬間だけ”ふわっと光る */
+/* 結果カードが"出た瞬間だけ"ふわっと光る */
 #result.resultAppear .tcardVisual{
   animation: resultGlow 1.8s ease-out 1;
 }
@@ -1274,7 +1274,7 @@ button{
     box-shadow:
       0 26px 70px rgba(0,0,0,.62),
       0 0 0 1px rgba(255,255,255,.08),
-      0 0 34px rgba(255,225,160,.22); /* ここが“ほんのり” */
+      0 0 34px rgba(255,225,160,.22); /* ここが"ほんのり" */
   }
   100%{
     filter: brightness(1) saturate(1);
@@ -1328,7 +1328,7 @@ button{
   font-size: 12px;
 }
 
-/* ===== Card: “刺さる短文”の見せ方 ===== */
+/* ===== Card: "刺さる短文"の見せ方 ===== */
 .corePunch{
   margin-top: 10px;
   padding: 12px 12px;
@@ -1451,7 +1451,7 @@ button{
   .brandGrid, .menuGrid{ grid-template-columns: 1fr; }
   .brandTitle{ font-size: 28px; }
 }
-/* 全体の文字と余白を “一段だけ” 圧縮 */
+/* 全体の文字と余白を "一段だけ" 圧縮 */
 :root{
   --base: 14.5px; /* 例：いまが16pxなら少し下げる */
 }
@@ -1702,7 +1702,7 @@ body{ font-size: var(--base); }
   filter: drop-shadow(0 18px 44px rgba(0,0,0,.55));
 }
 
-/* シャッフル中だけ“強い発光” */
+/* シャッフル中だけ"強い発光" */
 #shuffleArea.shuffling .deck{
   animation: deckGlow 1.1s ease-in-out infinite;
   filter: drop-shadow(0 22px 72px rgba(255,220,140,.28))
@@ -1819,7 +1819,7 @@ a:hover, .menuCta:hover{
   justify-content:center;
 }
 
-/* ゴーストボタンの“文字が見えない”対策 */
+/* ゴーストボタンの"文字が見えない"対策 */
 .resultActions .btnGhost{
   min-width:110px;
   padding:10px 14px;
@@ -1969,7 +1969,7 @@ a:hover, .menuCta:hover{
   border-top: 1px solid rgba(255,255,255,.08);
 }
 
-/* タイトルを“色とサイズ”で差をつける */
+/* タイトルを"色とサイズ"で差をつける */
 .deepRead .cardSection h4{
   margin: 0 0 8px;
   font-family: "Cinzel","Shippori Mincho",serif;
@@ -1986,7 +1986,7 @@ a:hover, .menuCta:hover{
   white-space: pre-line;          /* ← 改行を段落として反映 */
 }
 
-/* セクションごとに“帯”を付けて区切りを強く */
+/* セクションごとに"帯"を付けて区切りを強く */
 .deepRead .cardSection{
   position: relative;
 }
@@ -3570,7 +3570,7 @@ function normalizeText(s, fallback=""){
 }
 
 // dbEntry を「カード＋正逆」で取ってくる関数（あなたの既存実装に寄せる）
-// ※あとでここだけ “本物” に差し替える
+// ※あとでここだけ "本物" に差し替える
 function getDbEntryFor(card, isReversed){
   if (!card) return null;
 
@@ -3627,7 +3627,7 @@ function toShortAction(s, maxLen = 22){
 }
 // =========================
 // Reason builder (global)
-// - basePoetic / baseExplain / closing を “読みやすい一つの理由文” に整形
+// - basePoetic / baseExplain / closing を "読みやすい一つの理由文" に整形
 // =========================
 function buildReadableReason({ basePoetic = "", baseExplain = "", closing = "", optionalMetaLines = [] }){
   const clean = (s) => (s ?? "").toString().trim();
@@ -3846,8 +3846,8 @@ async function onDraw() {
             baseExplain,
             closing,
             optionalMetaLines: [
-              // 金運は “なぜ金運?” を防ぐために一行だけ添える（押しつけない）
-              "このカードは“価値・循環・物質”に触れているため、金運の助言として読めます。"
+              // 金運は "なぜ金運?" を防ぐために一行だけ添える（押しつけない）
+              "このカードは「価値・循環・物質」に触れているため、金運の助言として読めます。"
             ]
           });
         }
@@ -3984,7 +3984,7 @@ if (count === 3) {
 `;
 ===== TEMP OFF END ===== */
 
-    // === 五行の計算結果を保持する場所（ここが“答え”になる） ===
+    // === 五行の計算結果を保持する場所（ここが"答え"になる） ===
 window.__gogyouState = window.__gogyouState || {
   user: null,
   partner: null
@@ -4043,7 +4043,7 @@ window.__gogyouState = window.__gogyouState || {
   focusText = ensureEndPunc(focusText);
   directionText = ensureEndPunc(directionText);
 
-  // “1枚引きの短文”として見せる（深読みは details 側へ）
+  // "1枚引きの短文"として見せる（深読みは details 側へ）
   return `
     <div class="cardCore">
       <div class="coreText">${escapeHtml(baseText)}</div>
@@ -4345,14 +4345,14 @@ function postProcessStoryJP(s){
   s = String(s || "");
   s = s.replace(/がちなという/g, "がちだという");
 
-  // ① 先頭の固定フレーズをランダム化（“これまでの流れでは”固定を回避）
+  // ① 先頭の固定フレーズをランダム化（"これまでの流れでは"固定を回避）
   s = s.replace(/^これまでの流れでは、/m, pickOneJP([
     "これまでを振り返ると、",
     "ここまでの経緯を見ると、",
     "これまでの歩みの中で、",
   ]));
 
-  // ② 「流れ」連打を弱める（“流れの〜”→“この先の〜”など）
+  // ② 「流れ」連打を弱める（"流れの〜"→"この先の〜"など）
   s = s.replace(/流れの/g, "この先の");
   s = s.replace(/この流れ/g, "この傾向");
   s = s.replace(/流れが/g, "気配が");
@@ -4421,37 +4421,37 @@ function bridgeJP(nextSentence){
 
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  var seed = past.card.id + “|” + present.card.id + “|” + future.card.id;
+  var seed = past.card.id + "|" + present.card.id + "|" + future.card.id;
 
   // 各カードのcore（1〜2文）とinterpretation（深い読み解き）を取得
-  var pCore  = firstSentencesJP(String(extractCoreSentence(past.card, past.isReversed) || “”).trim(), 2);
-  var nCore  = firstSentencesJP(String(extractCoreSentence(present.card, present.isReversed) || “”).trim(), 2);
-  var fCore  = firstSentencesJP(String(extractCoreSentence(future.card, future.isReversed) || “”).trim(), 2);
-  var pInterp = firstSentencesJP(String(extractInterpretation(past.card, past.isReversed) || “”).trim(), 2);
-  var nInterp = firstSentencesJP(String(extractInterpretation(present.card, present.isReversed) || “”).trim(), 2);
+  var pCore  = firstSentencesJP(String(extractCoreSentence(past.card, past.isReversed) || "").trim(), 2);
+  var nCore  = firstSentencesJP(String(extractCoreSentence(present.card, present.isReversed) || "").trim(), 2);
+  var fCore  = firstSentencesJP(String(extractCoreSentence(future.card, future.isReversed) || "").trim(), 2);
+  var pInterp = firstSentencesJP(String(extractInterpretation(past.card, past.isReversed) || "").trim(), 2);
+  var nInterp = firstSentencesJP(String(extractInterpretation(present.card, present.isReversed) || "").trim(), 2);
 
   // 過去ブロック：coreがあればcore、なければinterp
-  const pastBlock = pCore || pInterp || “”;
+  const pastBlock = pCore || pInterp || "";
   // 現在ブロック：core + interpretを両方使う（深みを出す）
   const nowBlock = nCore
-    ? (nInterp && nInterp !== nCore ? nCore + “\n” + nInterp : nCore)
-    : nInterp || “”;
+    ? (nInterp && nInterp !== nCore ? nCore + "\n" + nInterp : nCore)
+    : nInterp || "";
   // 未来ブロック：coreのみ（希望・方向性として）
-  const futBlock = fCore || “”;
+  const futBlock = fCore || "";
 
   // 過去→現在のつなぎ
   const pastToNow = pickStableOne([
-    “その経験が、いまのあなたを形作っています。”,
-    “その流れがいまに繋がっています。”,
-    “そこから積み上げてきたものが、いまここにあります。”,
-  ], seed + “|ptn”);
+    "その経験が、いまのあなたを形作っています。",
+    "その流れがいまに繋がっています。",
+    "そこから積み上げてきたものが、いまここにあります。",
+  ], seed + "|ptn");
 
   // 現在→未来のつなぎ
   const nowToFut = pickStableOne([
-    “そしてこの先、”,
-    “その先に待っているのは、”,
-    “この流れの向こうに、”,
-  ], seed + “|ntf”);
+    "そしてこの先、",
+    "その先に待っているのは、",
+    "この流れの向こうに、",
+  ], seed + "|ntf");
 
   // ストーリーを組み立て
   let parts = [];
@@ -4460,13 +4460,13 @@ function bridgeJP(nextSentence){
   if (nowBlock) parts.push(nowBlock);
   if (futBlock) parts.push(nowToFut + futBlock);
 
-  let story = parts.join(“\n\n”);
+  let story = parts.join("\n\n");
 
   // 重複行・ゴミ取り
-  if (typeof fixDuplicateTendencyJP === “function”) {
+  if (typeof fixDuplicateTendencyJP === "function") {
     story = fixDuplicateTendencyJP(story);
   }
-  if (typeof postProcessStoryJP === “function”) {
+  if (typeof postProcessStoryJP === "function") {
     story = postProcessStoryJP(story);
   }
 
@@ -4475,7 +4475,7 @@ function bridgeJP(nextSentence){
 function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
   const p = String(p0), n = String(n0), f = String(f0);
 
-  // “現在”を主役にして、結び方を変える（ざっくりでOK）
+  // "現在"を主役にして、結び方を変える（ざっくりでOK）
   if (/癒|回復|安心|休|落ち着/.test(n)){
     return pickStableOne([
       "結び：いまは回復が最優先です。過去の疲れをほどきながら、未来へ進む余白が戻ってきます。",
@@ -4493,14 +4493,14 @@ function buildWrapUpJP({ p0="", n0="", f0="", seed="" }){
   if (/不安|怖|迷|孤立|見失/.test(n)){
     return pickStableOne([
       "結び：いまは心の安全を作り直す時です。過去の影響を抱えすぎず、未来へ向けて呼吸を整えましょう。",
-      "結び：不安は“守るためのサイン”です。過去の負担を軽くして、未来に向けた小さな安心を積み重ねて。",
+      "結び：不安は「守るためのサイン」です。過去の負担を軽くして、未来に向けた小さな安心を積み重ねて。",
     ], seed+"|wrap|anx");
   }
 
   if (/評価|恐れ|怖い|批判|見られ|期待|空回り/.test(n)){
   return pickStableOne([
     "結び：評価の目線よりも、自分の感覚を基準に戻すほど整っていきます。過去を抱えすぎず、未来は自然に開いていきます。",
-    "結び：怖さは“守りたい大切さ”の裏返しです。いまの基準を整えるほど、未来の選択に芯が戻ります。",
+    "結び：怖さは「守りたい大切さ」の裏返しです。いまの基準を整えるほど、未来の選択に芯が戻ります。",
   ], seed+"|wrap|eval");
 }
 
@@ -4862,7 +4862,7 @@ function toFutureJP(s){
   s = s.replace(/傾向があります。?$/g, "傾向が強まりやすくなっていきます。");
 
   // 7) 最後まで残った単純な「時です」は、無理に未来化しない
-  //    （ここを雑に変えると “整うになっていきます” が起きる）
+  //    （ここを雑に変えると "整うになっていきます" が起きる）
   //    必要ならそのまま残す
   // s = s.replace(/時です。?$/g, "時です。");
 
@@ -4953,7 +4953,7 @@ function makeTwoLineConclusion({ coreNow, coreFlow, themes }){
   return { line1, line2 };
 }
 
-/* ---- 3枚の“流れ”を作る：過去→現在→未来を一言でつなぐ ---- */
+/* ---- 3枚の"流れ"を作る：過去→現在→未来を一言でつなぐ ---- */
 function buildFlowSentence(pastCore, nowCore, futureCore){
   const p = pastCore ? pastCore.replace(/。$/, "") : "";
   const n = nowCore ? nowCore.replace(/。$/, "") : "";
@@ -4968,7 +4968,7 @@ function buildFlowSentence(pastCore, nowCore, futureCore){
   return parts.join("。") + "。";
 }
 
-/* ---- 結果上部の“鑑定の結論ブロック”を生成（HTML） ---- */
+/* ---- 結果上部の"鑑定の結論ブロック"を生成（HTML） ---- */
 function buildGlobalSummaryHTML(picked, count){
   try{
     let story = "";
@@ -5681,7 +5681,7 @@ function buildGogyouBlock(title, dateStr, timeStr){
       </a>
 
       <div class="gogyouHint">
-        不足（${weakJP}）を少し足すと、カードのメッセージが“あなた仕様”に整います。
+        不足（${weakJP}）を少し足すと、カードのメッセージが"あなた仕様"に整います。
       </div>
     </div>
   </div>`;
@@ -6241,7 +6241,7 @@ function openImageFallbackFromBlob(blob) {
       border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 30px rgba(0,0,0,.45);" />
 
     <div style="margin-top:10px; color:rgba(255,255,255,.75); font-size:13px; line-height:1.6;">
-      iPhoneは画像を <b>長押し→“写真に追加”</b> してから、LINEなどで共有してください。
+      iPhoneは画像を <b>長押し→"写真に追加"</b> してから、LINEなどで共有してください。
     </div>
 
     <div style="display:flex; gap:10px; margin-top:10px;">
