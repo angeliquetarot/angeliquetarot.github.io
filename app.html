@@ -4421,29 +4421,20 @@ function bridgeJP(nextSentence){
 
   function buildThreeReadingStory({ past, present, future, energyProfile }){
 
-  const seed = `${past.card.id}|${present.card.id}|${future.card.id}`;
+  var seed = past.card.id + “|” + present.card.id + “|” + future.card.id;
 
   // 各カードのcore（1〜2文）とinterpretation（深い読み解き）を取得
-  function getCore(c, rev) {
-    const t = String(extractCoreSentence(c, rev) || “”).trim();
-    return firstSentencesJP(t, 2);
-  }
-  function getInterp(c, rev) {
-    const t = String(extractInterpretation(c, rev) || “”).trim();
-    return firstSentencesJP(t, 2);
-  }
-
-  const pCore  = getCore(past.card, past.isReversed);
-  const nCore  = getCore(present.card, present.isReversed);
-  const fCore  = getCore(future.card, future.isReversed);
-  const pInterp = getInterp(past.card, past.isReversed);
-  const nInterp = getInterp(present.card, present.isReversed);
+  var pCore  = firstSentencesJP(String(extractCoreSentence(past.card, past.isReversed) || “”).trim(), 2);
+  var nCore  = firstSentencesJP(String(extractCoreSentence(present.card, present.isReversed) || “”).trim(), 2);
+  var fCore  = firstSentencesJP(String(extractCoreSentence(future.card, future.isReversed) || “”).trim(), 2);
+  var pInterp = firstSentencesJP(String(extractInterpretation(past.card, past.isReversed) || “”).trim(), 2);
+  var nInterp = firstSentencesJP(String(extractInterpretation(present.card, present.isReversed) || “”).trim(), 2);
 
   // 過去ブロック：coreがあればcore、なければinterp
   const pastBlock = pCore || pInterp || “”;
   // 現在ブロック：core + interpretを両方使う（深みを出す）
   const nowBlock = nCore
-    ? (nInterp && nInterp !== nCore ? `${nCore}\n${nInterp}` : nCore)
+    ? (nInterp && nInterp !== nCore ? nCore + “\n” + nInterp : nCore)
     : nInterp || “”;
   // 未来ブロック：coreのみ（希望・方向性として）
   const futBlock = fCore || “”;
@@ -4467,7 +4458,7 @@ function bridgeJP(nextSentence){
   if (pastBlock) parts.push(pastBlock);
   if (pastBlock && nowBlock) parts.push(pastToNow);
   if (nowBlock) parts.push(nowBlock);
-  if (futBlock) parts.push(`${nowToFut}${futBlock}`);
+  if (futBlock) parts.push(nowToFut + futBlock);
 
   let story = parts.join(“\n\n”);
 
