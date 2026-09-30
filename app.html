@@ -2897,7 +2897,7 @@ font:12px/1.2 ui-sans-serif;">
   <!-- カード選択エリア -->
   <div id="practiceSlots" style="margin-top:18px;display:flex;flex-direction:column;gap:16px;"></div>
 
-  <button id="btnPracticeRead" class="drawBtn" type="button" style="margin-top:20px;width:100%;">
+  <button id="btnPracticeRead" class="drawBtn" type="button" style="margin-top:20px;width:100%;" onclick="if(typeof onPracticeRead==='function')onPracticeRead()">
     読み解く
   </button>
 </section>
@@ -6385,6 +6385,19 @@ function openImageFallbackFromBlob(blob) {
     bindPracticeBtn();
   }
 
+  function showPracticeError(msg) {
+    let el = document.getElementById("practiceError");
+    if (!el) {
+      el = document.createElement("p");
+      el.id = "practiceError";
+      el.style.cssText = "color:#ff9999;font-size:13px;text-align:center;margin-top:8px;";
+      const btn = document.getElementById("btnPracticeRead");
+      if (btn) btn.after(el);
+    }
+    el.textContent = msg;
+    setTimeout(() => { if (el) el.textContent = ""; }, 3000);
+  }
+
   window.onPracticeRead = function() {
     const n = getSlotCount();
 
@@ -6392,7 +6405,7 @@ function openImageFallbackFromBlob(blob) {
     for (let i = 0; i < n; i++) {
       if (!practiceState[i].card) {
         const labels = ["カード", "過去", "現在", "未来"];
-        alert(`「${n === 1 ? labels[0] : labels[i+1]}」のカードを選んでください`);
+        showPracticeError(`「${n === 1 ? labels[0] : labels[i+1]}」のカードを選んでください`);
         return;
       }
     }
