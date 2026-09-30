@@ -6397,48 +6397,53 @@ var practiceState = [
   }
 
   function onPracticeRead() {
-    const n = getSlotCount();
+    try {
+      const n = getSlotCount();
 
-    // バリデーション
-    for (let i = 0; i < n; i++) {
-      if (!practiceState[i].card) {
-        const labels = ["カード", "過去", "現在", "未来"];
-        showPracticeError(`「${n === 1 ? labels[0] : labels[i+1]}」のカードを選んでください`);
-        return;
+      // バリデーション
+      for (let i = 0; i < n; i++) {
+        if (!practiceState[i].card) {
+          const labels = ["カード", "過去", "現在", "未来"];
+          showPracticeError(`「${n === 1 ? labels[0] : labels[i+1]}」のカードを選んでください`);
+          return;
+        }
       }
+
+      // エネルギープロファイル（生年月日があれば使う）
+      const energyProfile = (typeof computeEnergyProfile === "function")
+        ? computeEnergyProfile()
+        : {};
+
+      let html = "";
+
+      if (n === 1) {
+        const { card, reversed } = practiceState[0];
+        // 通常の1枚鑑定HTMLを生成
+        html = buildSingleReadingHTML({ card, isReversed: reversed, energyProfile });
+        // 練習モード補足を追加
+        html += buildPracticeGuideHTML(card, reversed, null);
+      } else {
+        const past    = { card: practiceState[0].card, isReversed: practiceState[0].reversed };
+        const present = { card: practiceState[1].card, isReversed: practiceState[1].reversed };
+        const future  = { card: practiceState[2].card, isReversed: practiceState[2].reversed };
+        html = buildThreeReadingHTML({ past, present, future, energyProfile });
+        html += buildPracticeGuideHTML(past.card, past.isReversed, "past");
+        html += buildPracticeGuideHTML(present.card, present.isReversed, "present");
+        html += buildPracticeGuideHTML(future.card, future.isReversed, "future");
+      }
+
+      // 結果エリアに表示
+      const result = document.getElementById("result");
+      if (result) {
+        result.innerHTML = html;
+        if (typeof triggerResultAppear === "function") triggerResultAppear();
+        result.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch(e) {
+      showPracticeError("エラー: " + e.message);
+      console.error("onPracticeRead error:", e);
     }
-
-    // エネルギープロファイル（生年月日があれば使う）
-    const energyProfile = (typeof computeEnergyProfile === "function")
-      ? computeEnergyProfile()
-      : {};
-
-    let html = "";
-
-    if (n === 1) {
-      const { card, reversed } = practiceState[0];
-      // 通常の1枚鑑定HTMLを生成
-      html = buildSingleReadingHTML({ card, isReversed: reversed, energyProfile });
-      // 練習モード補足を追加
-      html += buildPracticeGuideHTML(card, reversed, null);
-    } else {
-      const past    = { card: practiceState[0].card, isReversed: practiceState[0].reversed };
-      const present = { card: practiceState[1].card, isReversed: practiceState[1].reversed };
-      const future  = { card: practiceState[2].card, isReversed: practiceState[2].reversed };
-      html = buildThreeReadingHTML({ past, present, future, energyProfile });
-      html += buildPracticeGuideHTML(past.card, past.isReversed, "past");
-      html += buildPracticeGuideHTML(present.card, present.isReversed, "present");
-      html += buildPracticeGuideHTML(future.card, future.isReversed, "future");
-    }
-
-    // 結果エリアに表示
-    const result = document.getElementById("result");
-    if (result) {
-      result.innerHTML = html;
-      triggerResultAppear();
-      result.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+  }
 
   function buildPracticeGuideHTML(card, isReversed, position) {
     if (!card) return "";
