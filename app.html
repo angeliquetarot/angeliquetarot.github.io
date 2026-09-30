@@ -6270,10 +6270,8 @@ function openImageFallbackFromBlob(blob) {
 }
 
 // ===== 練習モード =====
-(function initPracticeMode() {
-
-  // スロット状態
-  const practiceState = [
+// スロット状態（グローバル）
+var practiceState = [
     { card: null, reversed: false },
     { card: null, reversed: false },
     { card: null, reversed: false },
@@ -6398,7 +6396,7 @@ function openImageFallbackFromBlob(blob) {
     setTimeout(() => { if (el) el.textContent = ""; }, 3000);
   }
 
-  window.onPracticeRead = function() {
+  function onPracticeRead() {
     const n = getSlotCount();
 
     // バリデーション
@@ -6478,7 +6476,6 @@ function openImageFallbackFromBlob(blob) {
 </div>`;
   }
 
-})();
 
 
   </script>
