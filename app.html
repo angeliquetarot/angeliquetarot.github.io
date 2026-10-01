@@ -6391,13 +6391,17 @@ var practiceState = [
       function renderList(query) {
         const allCards = typeof cards !== "undefined" ? cards : [];
         const q = (query || "").trim().toLowerCase();
-        const filtered = q
-          ? allCards.filter(c =>
-              (c.name_ja || "").toLowerCase().includes(q) ||
-              (c.name_en || "").toLowerCase().includes(q))
-          : allCards;
+        // 検索なしのときはリストを隠す
+        if (!q) {
+          listEl.innerHTML = "";
+          listEl.style.display = "none";
+          return;
+        }
+        const filtered = allCards.filter(c =>
+          (c.name_ja || "").toLowerCase().includes(q) ||
+          (c.name_en || "").toLowerCase().includes(q));
         listEl.innerHTML = "";
-        filtered.slice(0, 40).forEach(c => {
+        filtered.forEach(c => {
           const btn = document.createElement("button");
           btn.textContent = `${c.name_ja} (${c.name_en})`;
           btn.type = "button";
@@ -6408,12 +6412,12 @@ var practiceState = [
           });
           listEl.appendChild(btn);
         });
-        // リスト表示
         listEl.style.display = filtered.length > 0 ? "block" : "none";
       }
 
-      // 初期はリストを隠す（カード選択済みなら不要）
+      // 初期はリストを隠す
       if (!state.card) {
+        listEl.style.display = "none";
         renderList("");
       } else {
         listEl.style.display = "none";
